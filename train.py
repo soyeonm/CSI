@@ -40,10 +40,10 @@ for epoch in range(start_epoch, P.epochs + 1):
     model.eval()
 
     if epoch % P.save_step == 0 and P.local_rank == 0:
-        if P.multi_gpu:
-            save_states = model.module.state_dict()
-        else:
-            save_states = model.state_dict()
+        #if P.multi_gpu:
+        #    save_states = model.module.state_dict()
+        #else:
+        #    save_states = model.state_dict()
         #save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
         #save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
 
@@ -53,6 +53,11 @@ for epoch in range(start_epoch, P.epochs + 1):
         is_best = (best > error)
         if is_best:
             best = error
+
+            if P.multi_gpu:
+                save_states = model.module.state_dict()
+            else:
+                save_states = model.state_dict()
 
             save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
             save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
