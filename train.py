@@ -49,11 +49,13 @@ for epoch in range(start_epoch, P.epochs + 1):
 		pass
 
 	if epoch % P.error_step == 0 and ('sup' in P.mode):
+		marginal_error = test_classifier(P, model, test_loader, epoch, marginal=True, logger=logger)
 		error = test_classifier(P, model, test_loader, epoch, logger=logger)
 		print("Error is ", error)
-		is_best = (best > error)
+		print("Marginal error is ", marginal_error)
+		is_best = (best > marginal_error)
 		if is_best:
-			best = error
+			best = marginal_error
 
 			if P.multi_gpu:
 				save_states = model.module.state_dict()
