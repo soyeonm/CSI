@@ -7,7 +7,7 @@ https://arxiv.org/abs/2007.08176) (NeurIPS 2020) by
 [Sangwoo Mo*](https://sites.google.com/view/sangwoomo),
 [Jongheon Jeong](https://sites.google.com/view/jongheonj),
 and [Jinwoo Shin](http://alinlab.kaist.ac.kr/shin.html).
-
+ 
 <p align="center">
     <img src=figures/shifting_transformations.png width="900"> 
 </p>
