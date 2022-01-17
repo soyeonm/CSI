@@ -35,7 +35,8 @@ for epoch in range(start_epoch, P.epochs + 1):
     kwargs['simclr_aug'] = simclr_aug
 
     train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, logger=logger, **kwargs)
-    print("epoch is ", epoch)
+    #print("epoch is ", epoch)
+    #print("save step is ",  P.save_step)
     model.eval()
 
     if epoch % P.save_step == 0 and P.local_rank == 0:
@@ -48,7 +49,7 @@ for epoch in range(start_epoch, P.epochs + 1):
 
     if epoch % P.error_step == 0 and ('sup' in P.mode):
         error = test_classifier(P, model, test_loader, epoch, logger=logger)
-        print("Error is ", error)
+        #print("Error is ", error)
         is_best = (best > error)
         if is_best:
             best = error
