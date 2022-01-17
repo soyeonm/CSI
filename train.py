@@ -59,7 +59,7 @@ for epoch in range(start_epoch, P.epochs + 1):
 				save_states = model.module.state_dict()
 			else:
 				save_states = model.state_dict()
-
+			print("Saved at epoch ", epoch)
 			save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
 			save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
 
