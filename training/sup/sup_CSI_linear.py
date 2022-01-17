@@ -67,6 +67,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         else:
             batch_size = images[0].size(0)
             images = images[0].to(device)
+        print("batch size is ", batch_size)
 
         labels = labels.to(device)
         images = torch.cat([torch.rot90(images, rot, (2, 3)) for rot in range(4)])  # 4B
