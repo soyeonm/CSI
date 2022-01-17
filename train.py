@@ -63,8 +63,10 @@ for epoch in range(start_epoch, P.epochs + 1):
 			else:
 				save_states = model.state_dict()
 			print("Saved at epoch ", epoch)
-			save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
-			save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
+			#save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
+			#save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
+			save_checkpoint(epoch, save_states, optimizer.state_dict(), 'temp_models')
+			save_linear_checkpoint(linear_optim.state_dict(), 'temp_models')
 
 		logger.scalar_summary('eval/best_error', best, epoch)
 		logger.log('[Epoch %3d] [Test %5.2f] [Best %5.2f]' % (epoch, error, best))
