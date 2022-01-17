@@ -48,7 +48,7 @@ for epoch in range(start_epoch, P.epochs + 1):
 
     if epoch % P.error_step == 0 and ('sup' in P.mode):
         error = test_classifier(P, model, test_loader, epoch, logger=logger)
-
+        print("Error is ", error)
         is_best = (best > error)
         if is_best:
             best = error
