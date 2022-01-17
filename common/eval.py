@@ -75,7 +75,8 @@ for ood in P.ood_dataset:
 
 ### Initialize model ###
 
-simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
+#simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)
+simclr_aug =  None
 P.shift_trans, P.K_shift = C.get_shift_module(P, eval=True)
 P.shift_trans = P.shift_trans.to(device)
 
