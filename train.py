@@ -48,6 +48,17 @@ for epoch in range(start_epoch, P.epochs + 1):
 		#save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
 		#pass
 
+		if P.multi_gpu:
+				save_states = model.module.state_dict()
+			else:
+				save_states = model.state_dict()
+			print("Saved at epoch ", epoch)
+			#save_checkpoint(epoch, save_states, optimizer.state_dict(), logger.logdir)
+			#save_linear_checkpoint(linear_optim.state_dict(), logger.logdir)
+			save_checkpoint(epoch, save_states, optimizer.state_dict(), 'ttemp_models')
+			save_linear_checkpoint(linear_optim.state_dict(), 'ttemp_models')
+
+
 		from evals.ood_pre import eval_ood_detection
 
 		with torch.no_grad():
