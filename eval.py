@@ -11,6 +11,7 @@ elif P.mode == 'test_marginalized_acc':
     from evals import test_classifier
     with torch.no_grad():
         error = test_classifier(P, model, test_loader, 0, marginal=True, logger=None)
+        error_while_train = test_classifier(P, model, test_loader, 0, logger=logger)
 
 elif P.mode in ['ood', 'ood_pre']:
     if P.mode == 'ood':
