@@ -35,7 +35,7 @@ for epoch in range(start_epoch, P.epochs + 1):
     kwargs['simclr_aug'] = simclr_aug
 
     train(P, epoch, model, criterion, optimizer, scheduler_warmup, train_loader, logger=logger, **kwargs)
-
+    print("epoch is ", epoch)
     model.eval()
 
     if epoch % P.save_step == 0 and P.local_rank == 0:
