@@ -7,9 +7,10 @@ from torchvision import datasets, transforms
 
 from utils.utils import set_random_seed
 
-DATA_PATH = '~/data/'
-IMAGENET_PATH = '~/data/ImageNet'
-
+#DATA_PATH = '~/data/'
+DATA_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/'
+#IMAGENET_PATH = '~/data/ImageNet'
+IMAGENET_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/ImageNet'
 
 CIFAR10_SUPERCLASS = list(range(10))  # one class
 IMAGENET_SUPERCLASS = list(range(30))  # one class
