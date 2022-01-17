@@ -45,6 +45,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         else:
             batch_size = images[0].size(0)
             images1, images2 = images[0].to(device), images[1].to(device)
+        if P.print_batch_size:
+            print("batch size is ", batch_size)
 
         images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in range(4)])  # 4B
         images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in range(4)])  # 4B

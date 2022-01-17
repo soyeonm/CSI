@@ -7,15 +7,15 @@ from torchvision import datasets, transforms
 
 from utils.utils import set_random_seed
 
-DATA_PATH = '~/data/'
-IMAGENET_PATH = '~/data/ImageNet'
-co3d_small_PATH = '~/data/co3d' #change later
+DATA_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/'
+IMAGENET_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/ImageNet'
+co3d_small_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_temp' #change later
 
 
 
 CIFAR10_SUPERCLASS = list(range(10))  # one class
 IMAGENET_SUPERCLASS = list(range(30))  # one class
-CO3D_SMALL_SUPERCLASS = list(range(2))  # one class #e.g. just tv and microwave
+CO3D_SMALL_SUPERCLASS = list(range(3))  # one class #e.g. just tv, microwave, bat
 
 CIFAR100_SUPERCLASS = [
     [4, 31, 55, 72, 95],
@@ -137,10 +137,12 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         train_transform, test_transform = get_transform(image_size=image_size)
 
     if dataset == 'co3d_small':
-        image_size = (32, 32, 3) #CHANGE later
-        n_classes = 2
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        n_classes = 3
         #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
         #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
+        test_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train')
+        train_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
@@ -239,6 +241,9 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
 
     else:
         raise NotImplementedError()
+
+    print("train class idx : ", train_set.class_to_idx)
+    print("test class idx : ", test_set.class_to_idx)
 
     if test_only:
         return test_set

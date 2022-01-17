@@ -51,6 +51,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             images = images[0].to(device)
 
         labels = labels.to(device)
+        if P.print_batch_size:
+            print("batch size is ", batch_size)
 
         images = simclr_aug(images)  # simclr augmentation
         _, outputs_aux = model(images, penultimate=True)

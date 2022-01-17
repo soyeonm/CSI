@@ -40,7 +40,10 @@ else:
 P.ood_layer = P.ood_layer[0]
 
 ### Initialize dataset ###
-train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset)
+if P.dataset == 'co3d_small':
+    train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, image_size=(224, 224, 3)))
+else:
+    train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset)
 P.image_size = image_size
 P.n_classes = n_classes
 

@@ -48,6 +48,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             images_pair = torch.cat([images1, images2], dim=0)  # 2B
 
         labels = labels.to(device)
+        if P.print_batch_size:
+            print("batch size is ", batch_size)
 
         images_pair = simclr_aug(images_pair)  # simclr augmentation
 
