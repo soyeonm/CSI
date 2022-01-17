@@ -141,8 +141,8 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         n_classes = 3
         #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
         #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
-        test_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train')
-        train_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train')
+        test_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224')
+        train_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
