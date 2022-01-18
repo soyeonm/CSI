@@ -141,11 +141,28 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         if P.resize_cifar:
             image_size = (32, 32, 3) 
         n_classes = 3
-        #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
-        #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
         test_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224')
         train_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
+    elif dataset == 'co3d_small_split_one':
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        if P.resize_cifar:
+            image_size = (32, 32, 3) 
+        n_classes = 3
+        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/test')
+        train_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/train')
+        train_set = datasets.ImageFolder(train_dir, transform=train_transform)
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
+    elif dataset == 'co3d_small_split_one_ood':
+        assert test_only 
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        if P.resize_cifar:
+            image_size = (32, 32, 3) 
+        n_classes = 3
+        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/ood')
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
     elif dataset == 'imagenet_small':

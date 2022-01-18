@@ -26,7 +26,7 @@ if P.dataset == 'imagenet' and ood_eval:
     P.batch_size = 1
     P.test_batch_size = 1
 
-if P.dataset == 'co3d_small':
+if P.dataset in ['co3d_small', 'co3d_small_split_one']:
     if not (P.resize_cifar):
         train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=ood_eval, image_size=(224, 224, 3))
     else:
@@ -60,7 +60,9 @@ if P.ood_dataset is None:
         P.ood_dataset = ['cub', 'stanford_dogs', 'flowers102', 'places365', 'food_101', 'caltech_256', 'dtd', 'pets']
     elif P.dataset == 'co3d_small':
         P.ood_dataset = ['imagenet_small']
-        print("co3d OOD dataset is itself for now!")
+        #print("co3d OOD dataset is itself for now!")
+    elif P.dataset == 'co3d_small_split_one':
+        P.ood_dataset = ['co3d_small_split_one_ood']
 
 ood_test_loader = dict()
 for ood in P.ood_dataset:
