@@ -143,7 +143,7 @@ else:
     best = 100.0
     error = 100.0
 
-if P.mode == 'sup_linear' or P.mode == 'sup_CSI_linear':
+if P.mode == 'sup_linear' or P.mode == 'sup_CSI_linear' or (P.mode == 'sup_simclr_CSI' and P.train_from_pretrained):
     assert P.load_path is not None
     checkpoint = torch.load(P.load_path)
     model.load_state_dict(checkpoint, strict=not P.no_strict)
