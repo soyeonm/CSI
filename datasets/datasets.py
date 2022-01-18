@@ -253,7 +253,8 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
     else:
         raise NotImplementedError()
 
-    print("train class idx : ", train_set.class_to_idx)
+    if not(test_only):
+        print("train class idx : ", train_set.class_to_idx)
     print("test class idx : ", test_set.class_to_idx)
 
     if test_only:
