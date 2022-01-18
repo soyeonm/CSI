@@ -27,7 +27,7 @@ if P.dataset == 'imagenet' and ood_eval:
     P.test_batch_size = 1
 
 if P.dataset == 'co3d_small':
-    if not (P.resize_cifar)
+    if not (P.resize_cifar):
         train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=ood_eval, image_size=(224, 224, 3))
     else:
         train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, eval=ood_eval, image_size=(32, 32, 3))
