@@ -151,8 +151,8 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         if P.resize_cifar:
             image_size = (32, 32, 3) 
         n_classes = 3
-        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/test')
-        train_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/train')
+        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one_no_by_obj/test')
+        train_dir = os.path.join(DATA_PATH, 'co3d_small_split_one_no_by_obj/train')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
@@ -162,7 +162,7 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         if P.resize_cifar:
             image_size = (32, 32, 3) 
         n_classes = 3
-        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one/ood')
+        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one_no_by_obj/ood')
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
     elif dataset == 'imagenet_small':
