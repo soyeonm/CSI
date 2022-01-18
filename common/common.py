@@ -6,7 +6,7 @@ def parse_args(default=False):
 
     parser = ArgumentParser(description='Pytorch implementation of CSI')
 
-    parser.add_argument('--dn', type=string, required=True)
+    parser.add_argument('--dn', type='string', required=True)
     parser.add_argument('--print_batch_size', help='debugging', action='store_true')
     parser.add_argument('--resize_cifar', help='debugging', action='store_true')
 
