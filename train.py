@@ -10,6 +10,7 @@ if 'sup' in P.mode:
 else:
     from training.unsup import setup
 train, fname = setup(P.mode, P)
+fname = fname + "_" + P.dn
 
 logger = Logger(fname, ask=not resume, local_rank=P.local_rank)
 logger.log(P)
