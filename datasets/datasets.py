@@ -146,6 +146,17 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
+    elif dataset == 'imagenet_small':
+        #test_only = True
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        n_classes = 3
+        #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
+        #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
+        test_dir = os.path.join(DATA_PATH, 'imagnet_small')
+        #train_dir = os.path.join(DATA_PATH, 'imagnet_small')
+        #train_set = datasets.ImageFolder(train_dir, transform=train_transform)
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
 
     elif dataset == 'cifar10':
         image_size = (32, 32, 3)
