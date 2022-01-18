@@ -137,12 +137,24 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         train_transform, test_transform = get_transform(image_size=image_size)
 
     if dataset == 'co3d_small':
-        test_only = True
+        #test_only = True
         image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
         n_classes = 3
         #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
         #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
         test_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224_just_two_each')
+        train_dir = os.path.join(DATA_PATH, 'co3d_temp/temp_train_224_just_two_each')
+        train_set = datasets.ImageFolder(train_dir, transform=train_transform)
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
+
+    if dataset == 'imagenet_small':
+        #test_only = True
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        n_classes = 3
+        #train_set = datasets.CIFAR10(DATA_PATH, train=True, download=download, transform=train_transform)
+        #test_set = datasets.CIFAR10(DATA_PATH, train=False, download=download, transform=test_transform)
+        test_dir = os.path.join(DATA_PATH, 'imagnet_small')
         #train_dir = os.path.join(DATA_PATH, 'imagnet_small')
         #train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)

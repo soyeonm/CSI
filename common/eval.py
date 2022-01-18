@@ -57,7 +57,7 @@ if P.ood_dataset is None:
         #P.ood_dataset = ['cub', 'stanford_dogs', 'flowers102', 'places365', 'food_101', 'caltech_256', 'dtd', 'pets']
         P.ood_dataset = ['co3d_small']
     elif P.dataset == 'co3d_small':
-        P.ood_dataset = ['co3d_small']
+        P.ood_dataset = ['imagnet_small']
         print("co3d OOD dataset is itself for now!")
 
 ood_test_loader = dict()
