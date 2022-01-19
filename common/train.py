@@ -151,7 +151,7 @@ if P.mode == 'sup_linear' or P.mode == 'sup_CSI_linear' or (P.mode == 'sup_simcl
     if (P.mode == 'sup_simclr_CSI' and P.train_from_pretrained):
         #existing_model_statedict = 
         new_checkpoint = OrderedDict()
-        for k, v in sd.items():
+        for k, v in checkpoint.items():
             if k[:6] == 'linear' or k[:len('joint_distribution_layer')]  == 'joint_distribution_layer':
                 new_checkpoint[k] = model.state_dict()[k].to(v.device)
             else:
