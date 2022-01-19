@@ -48,12 +48,22 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         if P.print_batch_size:
             print("batch size is ", batch_size)
 
-        images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in range(4)])  # 4B
-        images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in range(4)])  # 4B
-        images_pair = torch.cat([images1, images2], dim=0)  # 8B
 
         labels = labels.to(device)
-        rot_sim_labels = torch.cat([labels + P.n_classes * i for i in range(4)], dim=0)
+        if P.only_180_sup:
+            images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in [0,2]])  # 2B
+            images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in [0,2]])  # 2B
+            rot_sim_labels = torch.cat([labels + P.n_classes * i for i in range(2)], dim=0)
+        else:
+            images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in range(4)])  # 4B
+            images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in range(4)])  # 4B
+            rot_sim_labels = torch.cat([labels + P.n_classes * i for i in range(4)], dim=0)
+        
+        images_pair = torch.cat([images1, images2], dim=0)  # 8B #or 4B
+
+
+        
+        
         rot_sim_labels = rot_sim_labels.to(device)
 
         images_pair = simclr_aug(images_pair)  # simclr augment
