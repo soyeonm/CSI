@@ -53,7 +53,8 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         if P.no_rotation_pred:
             #images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in [0,2]])  # B
             #images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in [0,2]])  # B
-            rot_sim_labels = labels
+            #rot_sim_labels = labels
+            rot_sim_labels = torch.cat([labels + P.n_classes * i for i in range(1)], dim=0)
         elif P.only_180_sup:
             images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in [0,2]])  # 2B
             images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in [0,2]])  # 2B
