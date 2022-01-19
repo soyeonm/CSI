@@ -155,7 +155,7 @@ if P.mode == 'sup_linear' or P.mode == 'sup_CSI_linear' or (P.mode == 'sup_simcl
             if k[:6] == 'linear' or k[:len('joint_distribution_layer')]  == 'joint_distribution_layer':
                 new_checkpoint[k] = model.state_dict()[k].to(v.device)
             else:
-                new_checkpoint[name] = v
+                new_checkpoint[k] = v
         del checkpoint
         checkpoint = new_checkpoint
     model.load_state_dict(checkpoint, strict=not P.no_strict)
