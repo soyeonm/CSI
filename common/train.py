@@ -11,6 +11,8 @@ import models.classifier as C
 from datasets import get_dataset, get_superclass_list, get_subclass_dataset
 from utils.utils import load_checkpoint
 
+from collections import OrderedDict
+
 P = parse_args()
 
 ### Set torch device ###
@@ -146,6 +148,16 @@ else:
 if P.mode == 'sup_linear' or P.mode == 'sup_CSI_linear' or (P.mode == 'sup_simclr_CSI' and P.train_from_pretrained):
     assert P.load_path is not None
     checkpoint = torch.load(P.load_path)
+    if (P.mode == 'sup_simclr_CSI' and P.train_from_pretrained):
+        #existing_model_statedict = 
+        new_checkpoint = OrderedDict()
+        for k, v in sd.items():
+            if k[:6] == 'linear' or k[:len('joint_distribution_layer')]  == 'joint_distribution_layer':
+                new_checkpoint[k] = model.state_dict()[k].to(v.device)
+            else:
+                new_checkpoint[name] = v
+        del checkpoint
+        checkpoint = new_checkpoint
     model.load_state_dict(checkpoint, strict=not P.no_strict)
 
 if P.multi_gpu:
