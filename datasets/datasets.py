@@ -4,6 +4,9 @@ import numpy as np
 import torch
 from torch.utils.data.dataset import Subset
 from torchvision import datasets, transforms
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 from utils.utils import set_random_seed
 
