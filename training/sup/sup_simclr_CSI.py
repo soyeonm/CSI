@@ -50,7 +50,11 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
 
 
         labels = labels.to(device)
-        if P.only_180_sup:
+        if P.no_rotation_pred:
+            #images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in [0,2]])  # B
+            #images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in [0,2]])  # B
+            rot_sim_labels = labels
+        elif P.only_180_sup:
             images1 = torch.cat([torch.rot90(images1, rot, (2, 3)) for rot in [0,2]])  # 2B
             images2 = torch.cat([torch.rot90(images2, rot, (2, 3)) for rot in [0,2]])  # 2B
             rot_sim_labels = torch.cat([labels + P.n_classes * i for i in range(2)], dim=0)

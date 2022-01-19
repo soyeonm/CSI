@@ -12,6 +12,7 @@ def parse_args(default=False):
     parser.add_argument('--print_batch_size', help='debugging', action='store_true')
     parser.add_argument('--resize_cifar', help='debugging', action='store_true')
     parser.add_argument('--only_180_sup', help='debugging', action='store_true')
+    parser.add_argument('--no_rotation_pred', help='debugging', action='store_true')
 
     parser.add_argument('--save_best_loss', help='debugging', action='store_true')
 
