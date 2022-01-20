@@ -234,7 +234,8 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
-    elif dataset == 'imagenet_resized_by_me':
+    #Original Imagenet-30 resized by me into 32x32
+    elif dataset == 'imagenet_test_resized_by_me':
         assert test_only and image_size is not None
         test_dir = os.path.join(IMAGENET_PATH,  'one_class_test_oriimgnet_resized_to_32_by_me')
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
