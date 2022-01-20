@@ -48,7 +48,10 @@ if P.dataset in ['co3d_small', 'co3d_small_split_one']:
     else:
         train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, image_size=(32, 32, 3))
 else:
-    train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset)
+    if P.resize_cifar:
+        train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset, image_size=(32, 32, 3))
+    else:
+        train_set, test_set, image_size, n_classes = get_dataset(P, dataset=P.dataset)
 P.image_size = image_size
 P.n_classes = n_classes
 

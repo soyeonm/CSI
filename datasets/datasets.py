@@ -129,7 +129,7 @@ def get_transform_imagenet():
 
 
 def get_dataset(P, dataset, test_only=False, image_size=None, download=False, eval=False):
-    if dataset in ['imagenet', 'cub', 'stanford_dogs', 'flowers102',
+    if not(P.resized_cifar) and dataset in ['imagenet', 'cub', 'stanford_dogs', 'flowers102',
                    'places365', 'food_101', 'caltech_256', 'dtd', 'pets']:
         if eval:
             train_transform, test_transform = get_simclr_eval_transform_imagenet(P.ood_samples,
@@ -223,6 +223,8 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
 
     elif dataset == 'imagenet':
         image_size = (224, 224, 3)
+        if P.resize_cifar:
+            image_size = (32, 32, 3)
         n_classes = 30
         train_dir = os.path.join(IMAGENET_PATH, 'one_class_train')
         #test_dir = os.path.join(IMAGENET_PATH, 'one_class_test')
