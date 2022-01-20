@@ -225,7 +225,10 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         image_size = (224, 224, 3)
         n_classes = 30
         train_dir = os.path.join(IMAGENET_PATH, 'one_class_train')
-        test_dir = os.path.join(IMAGENET_PATH, 'one_class_test')
+        #test_dir = os.path.join(IMAGENET_PATH, 'one_class_test')
+        #The above path did not work so try this path
+        #Same test set but just changed e.g.) n03255030/3.JPEG -> n03255030_3.JPEG
+        test_dir = os.path.join(IMAGENET_PATH, 'one_class_test_dirnamechanged')
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
