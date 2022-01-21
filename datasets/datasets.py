@@ -10,9 +10,13 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from utils.utils import set_random_seed
 
-DATA_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/'
-IMAGENET_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/ImageNet'
-co3d_small_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_temp' #change later
+#DATA_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/'
+#IMAGENET_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/ImageNet'
+#co3d_small_PATH = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_temp' #change later
+
+DATA_PATH = 'data/'
+IMAGENET_PATH = 'data/ImageNet'
+co3d_small_PATH = 'data/co3d_temp' #change later
 
 
 
