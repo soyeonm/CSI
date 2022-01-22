@@ -63,6 +63,9 @@ if P.one_class_idx is not None:
     train_set = get_subclass_dataset(train_set, classes=cls_list[P.one_class_idx])
     test_set = get_subclass_dataset(test_set, classes=cls_list[P.one_class_idx])
 
+if P.percent != 100:
+    train_set = get_subpercent_dataset(train_set, percent = P.percent, seed=0)
+
 kwargs = {'pin_memory': False, 'num_workers': 4}
 
 if P.multi_gpu:

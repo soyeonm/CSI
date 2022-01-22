@@ -331,13 +331,22 @@ def get_superclass_list(dataset):
 def get_subclass_dataset(dataset, classes):
     if not isinstance(classes, list):
         classes = [classes]
-
+    #
     indices = []
     for idx, tgt in enumerate(dataset.targets):
         if tgt in classes:
             indices.append(idx)
-
+    #
     dataset = Subset(dataset, indices)
+    return dataset
+
+def get_subpercent_dataset(dataset, percent, seed=0):
+    total_length = len(dataset)
+    np.random.seed(seed)
+    permed_indices = np.random.permutation(total_length).tolist()
+    chosen_indices = permed_indices[:int(total_length * percent / 100)]
+    #
+    dataset = Subset(dataset, chosen_indices)
     return dataset
 
 
