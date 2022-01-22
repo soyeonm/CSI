@@ -175,6 +175,15 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one_no_by_obj/ood')
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
+    elif dataset == 'co3d_new_ood_apple_hydrant_toilet':
+        assert test_only 
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        if P.resize_cifar:
+            image_size = (32, 32, 3) 
+        n_classes = 3
+        test_dir = os.path.join(DATA_PATH, 'co3d_small_split_one_no_by_obj/new_ood_apple_hydrant_toilet')
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
     elif dataset == 'imagenet_small':
         #test_only = True
         image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
