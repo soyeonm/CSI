@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader
 
 from common.common import parse_args
 import models.classifier as C
-from datasets import get_dataset, get_superclass_list, get_subclass_dataset
+from datasets import get_dataset, get_superclass_list, get_subclass_dataset, get_subpercent_dataset
+
 from utils.utils import load_checkpoint
 
 from collections import OrderedDict
