@@ -47,8 +47,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             images1, images2 = images[0].to(device), images[1].to(device)
             images_pair = torch.cat([images1, images2], dim=0)  # 2B
 
-        pickle.dump(images1.detach().cpu(), open("images1.p", "wb"))
-        pickle.dump(images2.detach().cpu(), open("images2.p", "wb"))
+        pickle.dump(images.detach().cpu(), open("images.p", "wb"))
         pickle.dump(images_pair.detach().cpu(), open("images_pair.p", "wb"))
         labels = labels.to(device)
         if P.print_batch_size:
