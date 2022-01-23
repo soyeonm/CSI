@@ -65,6 +65,8 @@ if P.ood_dataset is None:
         #print("co3d OOD dataset is itself for now!")
     elif P.dataset == 'co3d_small_split_one':
         P.ood_dataset = ['co3d_small_split_one_ood']
+    elif P.dataset == 'larger_co3d':
+        P.ood_dataset = ['co3d_small_split_one']
 
 ood_test_loader = dict()
 for ood in P.ood_dataset:
