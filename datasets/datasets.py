@@ -153,6 +153,17 @@ def get_dataset(P, dataset, test_only=False, image_size=None, download=False, ev
         train_set = datasets.ImageFolder(train_dir, transform=train_transform)
         test_set = datasets.ImageFolder(test_dir, transform=test_transform)
 
+    elif dataset =='larger_co3d':
+        image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
+        if P.resize_cifar:
+            image_size = (32, 32, 3) 
+        n_classes = 3
+        test_dir = os.path.join(DATA_PATH, 'largerco3d/test')
+        train_dir = os.path.join(DATA_PATH, 'largerco3d/train')
+        train_set = datasets.ImageFolder(train_dir, transform=train_transform)
+        test_set = datasets.ImageFolder(test_dir, transform=test_transform)
+
+
     elif dataset == 'co3d_small_split_one':
         image_size = (224, 224, 3) #Just resize to this, so that we can get pretrained imagenet weights
         if P.resize_cifar:

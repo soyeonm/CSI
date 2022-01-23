@@ -20,7 +20,7 @@ def parse_args(default=False):
     parser.add_argument('--save_best_loss', help='debugging', action='store_true')
 
     parser.add_argument('--dataset', help='Dataset',
-                        choices=['cifar10', 'cifar100', 'imagenet', 'co3d_small', 'co3d_small_split_one'], type=str)
+                        choices=['cifar10', 'cifar100', 'imagenet', 'co3d_small', 'co3d_small_split_one', 'larger_co3d'], type=str)
     parser.add_argument('--one_class_idx', help='None: multi-class, Not None: one-class',
                         default=None, type=int)
     parser.add_argument('--model', help='Model',
