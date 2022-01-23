@@ -57,7 +57,7 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
         pickle.dump(images_pair.detach().cpu(), open("aug_images_pair.p", "wb"))
 
         _, outputs_aux = model(images_pair, simclr=True, penultimate=True)
-        pickle.dump(outputs_aux.detach().cpu(), open("outputs_aux.p", "wb"))
+        pickle.dump(outputs_aux, open("outputs_aux.p", "wb"))
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
         pickle.dump(simclr.detach().cpu(), open("simclr.p", "wb"))
