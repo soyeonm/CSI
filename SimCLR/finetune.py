@@ -13,7 +13,8 @@ from torchvision import datasets
 import argparse
 
 from torchvision import models
-
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
