@@ -53,7 +53,7 @@ def get_cifar10_data_loaders(download, shuffle=False, batch_size=256):
   return train_loader, test_loader
 
 
-def get_co3d_data_loaders(download, shuffle=False, batch_size=256):
+def get_co3d_data_loaders(batch_size=256):
   train_dataset = datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train', transform=transforms.ToTensor())#Maybe add resize too
   train_loader = DataLoader(train_dataset, batch_size=batch_size,
                             num_workers=10, drop_last=False, shuffle=True)
