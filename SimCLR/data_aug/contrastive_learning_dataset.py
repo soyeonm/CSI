@@ -32,7 +32,7 @@ class ContrastiveLearningDataset:
                                                                   n_views),
                                                               download=True),
 
-                          'co3d': lambda: datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train', train=True,
+                          'co3d': lambda: datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train',
                                                               transform=ContrastiveLearningViewGenerator(
                                                                   self.get_simclr_pipeline_transform(32, resize_size=32),
                                                                   n_views)),
