@@ -51,6 +51,7 @@ parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 parser.add_argument('--resize_co3d', type=int, default=32)
+parser.add_argument('--co3d_cropsize', type=int, default=32)
 
 
 def main():
@@ -65,7 +66,7 @@ def main():
         args.device = torch.device('cpu')
         args.gpu_index = -1
 
-    dataset = ContrastiveLearningDataset(args.data, args.resize_co3d)
+    dataset = ContrastiveLearningDataset(args.data, args.resize_co3d, args.co3d_cropsize)
 
     train_dataset = dataset.get_dataset(args.dataset_name, args.n_views)
 
