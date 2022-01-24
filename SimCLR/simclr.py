@@ -69,6 +69,7 @@ class SimCLR(object):
         print("Start Training!")
 
         for epoch_counter in range(self.args.epochs):
+            print("Epoch is ", epoch_counter)
             for images, _ in tqdm(train_loader):
                 images = torch.cat(images, dim=0)
 
@@ -102,6 +103,7 @@ class SimCLR(object):
             if epoch_counter >= 10:
                 self.scheduler.step()
             logging.debug(f"Epoch: {epoch_counter}\tLoss: {loss}\tTop1 accuracy: {top1[0]}")
+            print("Epoch: " + epoch_counter +"Loss: " + loss + "Top1 accuracy: " + top1[0])
 
         logging.info("Training has finished.")
         # save model checkpoints
