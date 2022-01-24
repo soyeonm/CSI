@@ -71,9 +71,11 @@ class SimCLR(object):
             for images, _ in tqdm(train_loader):
                 images = torch.cat(images, dim=0)
 
+                #this is the same as image_pairs in simclr.py in CSI repo
                 images = images.to(self.args.device)
 
                 with autocast(enabled=self.args.fp16_precision):
+                    #"features" is the same as "simclr" in simclr.py in CSI repo
                     features = self.model(images)
                     logits, labels = self.info_nce_loss(features)
                     loss = self.criterion(logits, labels)

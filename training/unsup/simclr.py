@@ -47,24 +47,24 @@ def train(P, epoch, model, criterion, optimizer, scheduler, loader, logger=None,
             images1, images2 = images[0].to(device), images[1].to(device)
             images_pair = torch.cat([images1, images2], dim=0)  # 2B
 
-        pickle.dump(images.detach().cpu(), open("images.p", "wb"))
-        pickle.dump(images_pair.detach().cpu(), open("images_pair.p", "wb"))
+        #pickle.dump(images.detach().cpu(), open("images.p", "wb"))
+        #pickle.dump(images_pair.detach().cpu(), open("images_pair.p", "wb"))
         labels = labels.to(device)
         if P.print_batch_size:
             print("batch size is ", batch_size)
 
         images_pair = simclr_aug(images_pair)  # transform
-        pickle.dump(images_pair.detach().cpu(), open("aug_images_pair.p", "wb"))
+        #pickle.dump(images_pair.detach().cpu(), open("aug_images_pair.p", "wb"))
 
         _, outputs_aux = model(images_pair, simclr=True, penultimate=True)
-        pickle.dump(outputs_aux, open("outputs_aux.p", "wb"))
+        #pickle.dump(outputs_aux, open("outputs_aux.p", "wb"))
 
         simclr = normalize(outputs_aux['simclr'])  # normalize
-        pickle.dump(simclr.detach().cpu(), open("simclr.p", "wb"))
+        #pickle.dump(simclr.detach().cpu(), open("simclr.p", "wb"))
         sim_matrix = get_similarity_matrix(simclr, multi_gpu=P.multi_gpu)
-        pickle.dump(sim_matrix.detach().cpu(), open("sim_matrix.p", "wb"))
+        #pickle.dump(sim_matrix.detach().cpu(), open("sim_matrix.p", "wb"))
         loss_sim = NT_xent(sim_matrix, temperature=0.5) * P.sim_lambda
-        pickle.dump(loss_sim.detach().cpu(), open("loss_sim.p", "wb"))
+        #pickle.dump(loss_sim.detach().cpu(), open("loss_sim.p", "wb"))
 
         ### total loss ###
         loss = loss_sim
