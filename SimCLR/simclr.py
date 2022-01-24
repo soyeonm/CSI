@@ -74,13 +74,13 @@ class SimCLR(object):
                 images = torch.cat(images, dim=0)
 
                 #this is the same as image_pairs in simclr.py in CSI repo
-                pickle.dump(images, open('images.p', 'rb'))
+                pickle.dump(images, open('images.p', 'wb'))
                 images = images.to(self.args.device)
 
                 with autocast(enabled=self.args.fp16_precision):
                     #"features" is the same as "simclr" in simclr.py in CSI repo
                     features = self.model(images)
-                    pickle.dump(features, open('features.p', 'rb'))
+                    pickle.dump(features, open('features.p', 'wb'))
                     logits, labels = self.info_nce_loss(features)
                     loss = self.criterion(logits, labels)
                 self.optimizer.zero_grad()
