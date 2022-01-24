@@ -11,6 +11,8 @@ import torchvision.transforms as transforms
 from torchvision import datasets
 
 import argparse
+from utils import save_config_file, accuracy, save_checkpoint
+
 
 from torchvision import models
 from PIL import Image, ImageFile
