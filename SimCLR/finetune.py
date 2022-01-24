@@ -34,7 +34,7 @@ parser.add_argument('--lr', '--learning-rate', default=0.0003, type=float,
 parser.add_argument('-dataset-name', default='co3d',
                     help='dataset name', choices=['stl10', 'cifar10', 'co3d'])
 parser.add_argument('--dn', type=str, required=True)
-parser.add_argument('--resize', type=int)
+parser.add_argument('--resize_size', type=int)
 
 
 args = parser.parse_args()
