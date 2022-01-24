@@ -50,7 +50,7 @@ parser.add_argument('--temperature', default=0.07, type=float,
 parser.add_argument('--n-views', default=2, type=int, metavar='N',
                     help='Number of views for contrastive learning training.')
 parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
-parser.add_argument('--resize_co3d', typ=int, default=32)
+parser.add_argument('--resize_co3d', type=int, default=32)
 
 
 def main():
