@@ -159,7 +159,7 @@ for epoch in range(epochs):
   print(f"Epoch {epoch}\tTop1 Train accuracy {top1_train_accuracy.item()}\tTop1 Test accuracy: {top1_accuracy.item()}\tTop5 test acc: {top5_accuracy.item()}")
   print("Best accuracy so far is ", best_accuracy)
   if best_accuracy == top1_accuracy:
-  	best_state_dict = self.model.state_dict()
+  	best_state_dict = model.state_dict()
 print("Finisehd training and saving the best!")
 
 save_checkpoint({
