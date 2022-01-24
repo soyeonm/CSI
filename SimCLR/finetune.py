@@ -34,6 +34,8 @@ parser.add_argument('--lr', '--learning-rate', default=0.0003, type=float,
 parser.add_argument('-dataset-name', default='co3d',
                     help='dataset name', choices=['stl10', 'cifar10', 'co3d'])
 parser.add_argument('--dn', type=str, required=True)
+parser.add_argument('--resize', type=int)
+
 
 args = parser.parse_args()
 
@@ -53,12 +55,12 @@ def get_cifar10_data_loaders(download, shuffle=False, batch_size=256):
   return train_loader, test_loader
 
 
-def get_co3d_data_loaders(batch_size=256):
-  train_dataset = datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train', transform=transforms.ToTensor())#Maybe add resize too
+def get_co3d_data_loaders(batch_size=256, resize_size=args.resize_size):
+  train_dataset = datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train', transform=transforms.Compose([transforms.Resize((resize_size, resize_size)), transforms.ToTensor()]))#Maybe add resize too
   train_loader = DataLoader(train_dataset, batch_size=batch_size,
                             num_workers=10, drop_last=False, shuffle=True)
   
-  test_dataset = datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/test', transform=transforms.ToTensor())#Maybe add resize too
+  test_dataset = datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/test', transform=transforms.Compose([transforms.Resize((resize_size, resize_size)), transforms.ToTensor()]))#Maybe add resize too
 
   test_loader = DataLoader(test_dataset, batch_size=2*batch_size,
                             num_workers=10, drop_last=False, shuffle=False)
