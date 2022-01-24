@@ -3,7 +3,8 @@ from data_aug.gaussian_blur import GaussianBlur
 from torchvision import transforms, datasets
 from data_aug.view_generator import ContrastiveLearningViewGenerator
 from exceptions.exceptions import InvalidDatasetSelection
-
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class ContrastiveLearningDataset:
     def __init__(self, root_folder):
