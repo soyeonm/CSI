@@ -24,7 +24,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
 parser.add_argument('--load_path', type=str, required=True)
 parser.add_argument('--lr', '--learning-rate', default=0.0003, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
-parser.add_argument('-dataset-name', default='stl10',
+parser.add_argument('-dataset-name', default='co3d',
                     help='dataset name', choices=['stl10', 'cifar10', 'co3d'])
 parser.add_argument('--dn', type=str, required=True)
 
