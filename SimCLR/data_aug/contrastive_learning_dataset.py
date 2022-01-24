@@ -7,8 +7,9 @@ from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class ContrastiveLearningDataset:
-    def __init__(self, root_folder):
+    def __init__(self, root_folder, resize_co3d):
         self.root_folder = root_folder
+        self.resize_co3d = resize_co3d
 
     @staticmethod
     def get_simclr_pipeline_transform(size, s=1, resize_size=None):
@@ -35,7 +36,7 @@ class ContrastiveLearningDataset:
 
                           'co3d': lambda: datasets.ImageFolder('../data/co3d_small_split_one_no_by_obj/train',
                                                               transform=ContrastiveLearningViewGenerator(
-                                                                  self.get_simclr_pipeline_transform(32, resize_size=32),
+                                                                  self.get_simclr_pipeline_transform(32, resize_size=self.resize_co3d),
                                                                   n_views)),
 
                           'stl10': lambda: datasets.STL10(self.root_folder, split='unlabeled',
