@@ -53,6 +53,8 @@ parser.add_argument('--gpu-index', default=0, type=int, help='Gpu index.')
 parser.add_argument('--resize_co3d', type=int, default=32)
 parser.add_argument('--co3d_cropsize', type=int, default=32)
 
+parser.add_argument('--load_pretrained', action='store_true')
+
 
 def main():
     args = parser.parse_args()
@@ -75,6 +77,11 @@ def main():
         num_workers=args.workers, pin_memory=True, drop_last=True)
 
     model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+
+    if args.load_pretrained:
+        checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
+        state_dict = checkpoint['state_dict']
+        model.load_state_dict(state_dict)
 
     optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
