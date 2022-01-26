@@ -29,6 +29,7 @@ class SimCLR(object):
 
         labels = torch.cat([torch.arange(self.args.batch_size) for i in range(self.args.n_views)], dim=0)
         labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
+        pickle.dump(labels, open("labels.p", "wb"))
         labels = labels.to(self.args.device)
 
         features = F.normalize(features, dim=1)
