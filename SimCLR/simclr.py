@@ -26,10 +26,11 @@ class SimCLR(object):
         self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
     def info_nce_loss(self, features):
-
+        pickle.dump(features, open("features.p", "wb"))
         labels = torch.cat([torch.arange(self.args.batch_size) for i in range(self.args.n_views)], dim=0)
+        pickle.dump(labels, open("labels1.p", "wb"))
         labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
-        pickle.dump(labels, open("labels.p", "wb"))
+        pickle.dump(labels, open("labels2.p", "wb"))
         labels = labels.to(self.args.device)
 
         features = F.normalize(features, dim=1)
