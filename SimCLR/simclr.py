@@ -48,9 +48,11 @@ class SimCLR(object):
 
         # select and combine multiple positives
         positives = similarity_matrix[labels.bool()].view(labels.shape[0], -1)
+        pickle.dump(positives, open("positives.p", "wb"))
 
         # select only the negatives the negatives
         negatives = similarity_matrix[~labels.bool()].view(similarity_matrix.shape[0], -1)
+        pickle.dump(negatives, open("negatives.p", "wb"))
 
         logits = torch.cat([positives, negatives], dim=1)
         labels = torch.zeros(logits.shape[0], dtype=torch.long).to(self.args.device)
