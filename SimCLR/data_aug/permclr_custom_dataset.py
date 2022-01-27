@@ -98,7 +98,7 @@ class PermDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 
-			image = self.self.resize_transform(image)
+			image = self.resize_transform(image)
 			if self.transform is not None:
 				image = self.transform(image)
 
