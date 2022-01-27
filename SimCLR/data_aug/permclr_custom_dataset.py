@@ -92,7 +92,7 @@ class PermDataset(Dataset):
 
 			return_dict['image_' + str(v)] = image
 		return_dict['object_label'] = idx
-		return_dict['category_label'] = category
+		return_dict['category_label'] = self.category
 
 		return return_dict
 
