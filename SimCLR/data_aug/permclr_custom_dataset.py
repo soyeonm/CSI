@@ -64,8 +64,17 @@ class PermDataset(Dataset):
 		self.views = views
 		self.transform = transform
 
-	#Shuffle the value lists of self.object_dict
+	#Shuffle the key and value lists of self.object_dict
 	def shuffle(self):
+		#shuffle key
+		new_object_dict = {}
+		permute = np.random.permutation(len(self.object_dict)).tolist()
+		for i, k in enumerate(list(self.object_dict.keys())):
+			new_object_dict[permute[i]] = self.object_dict[k]
+		self.object_dict = new_object_dict
+		del new_object_dict
+
+		#shuffle value
 		for k in self.object_dict:
 			np.random.shuffle(self.object_dict[k])
 
@@ -90,43 +99,42 @@ class PermDataset(Dataset):
 			if self.transform is not None:
 				image = self.transform(image)
 
+			if self.transform is None:
+				t = transforms.ToTensor()
+				image = t(image)
+
 			return_dict['image_' + str(v)] = image
 		return_dict['object_label'] = idx
 		return_dict['category_label'] = self.category
 
 		return return_dict
 
-class PermMultipleDataset(Dataset):
-	"""Face Landmarks dataset."""
+#Should not be needed
+# class PermMultipleDataset(Dataset):
+# 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, classes, transform=None):
-		"""
-		Args:
-			csv_file (string): Path to the csv file with annotations.
-			root_dir (string): Directory with all the images.
-			transform (callable, optional): Optional transform to be applied
-				on a sample.
-		"""
-		self.landmarks_frame = pd.read_csv(csv_file)
-		self.root_dir = root_dir
-		self.transform = transform
+# 	def __init__(self, root_dir, classes, transform=None):
+# 		self.root_dir = root_dir
+# 		self.transform = transform
+# 		self.classes = classes
 
-	def __len__(self):
-		return len(self.landmarks_frame)
 
-	def __getitem__(self, idx):
-		if torch.is_tensor(idx):
-			idx = idx.tolist()
+# 	def __len__(self):
+# 		return len(self.landmarks_frame)
 
-		img_name = os.path.join(self.root_dir,
-								self.landmarks_frame.iloc[idx, 0])
-		image = io.imread(img_name)
-		landmarks = self.landmarks_frame.iloc[idx, 1:]
-		landmarks = np.array([landmarks])
-		landmarks = landmarks.astype('float').reshape(-1, 2)
-		sample = {'image': image, 'landmarks': landmarks}
+# 	def __getitem__(self, idx):
+# 		if torch.is_tensor(idx):
+# 			idx = idx.tolist()
 
-		if self.transform:
-			sample = self.transform(sample)
+# 		img_name = os.path.join(self.root_dir,
+# 								self.landmarks_frame.iloc[idx, 0])
+# 		image = io.imread(img_name)
+# 		landmarks = self.landmarks_frame.iloc[idx, 1:]
+# 		landmarks = np.array([landmarks])
+# 		landmarks = landmarks.astype('float').reshape(-1, 2)
+# 		sample = {'image': image, 'landmarks': landmarks}
 
-		return sample
+# 		if self.transform:
+# 			sample = self.transform(sample)
+
+# 		return sample
