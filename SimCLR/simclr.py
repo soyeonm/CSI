@@ -14,6 +14,14 @@ import pickle
 torch.manual_seed(0)
 
 
+def supclr_criterion(input, target, class_labels):
+    #class labels is the class label of each i (among batch)
+    #create class mask per class
+    #class_mask
+    pass
+
+
+
 class SimCLR(object):
 
     def __init__(self, *args, **kwargs):
