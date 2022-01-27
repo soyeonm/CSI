@@ -45,7 +45,7 @@ def get_obj_num(string):
 class PermDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, category, views, transform=None):
+	def __init__(self, root_dir, category, views, resize_shape, transform=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -63,6 +63,8 @@ class PermDataset(Dataset):
 		self.object_dict = {i: self.object_dict[k] for i, k in enumerate(list(self.object_dict.keys()))}
 		self.views = views
 		self.transform = transform
+		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
+		self.t = transforms.ToTensor()
 
 	#Shuffle the key and value lists of self.object_dict
 	def shuffle(self):
@@ -96,12 +98,12 @@ class PermDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 
+			image = self.self.resize_transform(image)
 			if self.transform is not None:
 				image = self.transform(image)
 
 			if self.transform is None:
-				t = transforms.ToTensor()
-				image = t(image)
+				image = self.t(image)
 
 			return_dict['image_' + str(v)] = image
 		return_dict['object_label'] = idx
