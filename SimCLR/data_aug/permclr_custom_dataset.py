@@ -59,7 +59,17 @@ class PermDataset(Dataset):
 		self.category = category
 		globs = glob(os.path.join(self.root_dir, category, '*'))
 		jpgs = [g.split('/')[-1] for g in globs]
-		self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
+		#This is taking so much time
+		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
+		object_ids = set([get_obj_num(jpg) for jpg in set(jpgs)])
+		self.object_dict = {o:[] for o in object_ids}
+		for g in globs:
+			jpg = g.split('/')[-1]
+			obj_id = get_obj_num(jpg)
+			#if not(obj_id in object_ids):
+			self.object_ids[obj_id].append(g)
+
+
 		self.object_dict = {i: self.object_dict[k] for i, k in enumerate(list(self.object_dict.keys()))}
 		self.views = views
 		self.transform = transform
