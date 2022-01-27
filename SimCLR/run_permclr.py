@@ -23,8 +23,8 @@ def main_permclr():
 		args.gpu_index = -1
 
 	#Define the dataset
-	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
-	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
+	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 	train_datasets = []
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
