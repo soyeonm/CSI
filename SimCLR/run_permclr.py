@@ -5,6 +5,7 @@ import torch
 from data_aug.permclr_custom_dataset import PermDataset
 from glob import glob
 import pickle
+import time
 
 #Import default parser from run.py
 
@@ -31,20 +32,26 @@ def main_permclr():
 	for c in classes:
 		assert c in test_classes
 	assert len(classes) == len(test_classes)
+	print("classes are ", c)
 
+	print("preparing datasets")
+	start = time.time()
 	for c in classes:
 		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
 		test_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
-
-	pickle.dump(train_datasets[i][0], open("original.p", "wb"))
+	print("preepared all c! time: ", time.time() - start)
+	pickle.dump(train_datasets[0][0], open("original.p", "wb"))
 
 
 	train_data_loaders = []
 	test_data_loaders = []
 	#dataloaders
+	print("preparing dataloaders")
+	start = time.time()
 	for i, c in enumerate(classes):
 		train_data_loaders[i].append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 		test_data_loaders[i].append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+	print("preepared all c dataloaders! time: ", time.time() - start)
 
 	#Model
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
@@ -62,12 +69,13 @@ def main_permclr():
 	#    simclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#    #TODO: implement PermCLR
 	#    simclr.train(train_loader)
+	print("shuffling dataloaders")
 	for epoch in range(10):
 		for i, c in enumerate(classes):
 			train_datasets[i].shuffle()
 			train_data_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
-		pickle.dump(train_datasets[i][0], open("shuffled.p", "wb"))
-
+		pickle.dump(train_datasets[0][0], open("shuffled.p", "wb"))
+	print("shuffled all c dataloaders! time: ", time.time() - start)
 
 
 
