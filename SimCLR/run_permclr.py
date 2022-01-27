@@ -38,7 +38,9 @@ def main_permclr():
 	start = time.time()
 	for c in classes:
 		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
-		test_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+		print("done training for ", c)
+		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
+		print("done test for ", c)
 	print("preepared all c! time: ", time.time() - start)
 	pickle.dump(train_datasets[0][0], open("original.p", "wb"))
 
