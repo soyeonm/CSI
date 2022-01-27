@@ -32,7 +32,7 @@ def main_permclr():
 	for c in classes:
 		assert c in test_classes
 	assert len(classes) == len(test_classes)
-	print("classes are ", c)
+	print("classes are ", classes)
 
 	print("preparing datasets")
 	start = time.time()
@@ -49,8 +49,8 @@ def main_permclr():
 	print("preparing dataloaders")
 	start = time.time()
 	for i, c in enumerate(classes):
-		train_data_loaders[i].append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
-		test_data_loaders[i].append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+		train_data_loaders.append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 	print("preepared all c dataloaders! time: ", time.time() - start)
 
 	#Model
