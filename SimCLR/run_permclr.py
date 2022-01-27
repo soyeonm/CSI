@@ -62,8 +62,8 @@ def main_permclr():
 		state_dict = checkpoint['state_dict']
 		model.load_state_dict(state_dict)
 
-	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
-														   last_epoch=-1)
+	#scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
+	#													   last_epoch=-1)
 	#Training epoch
 	#with torch.cuda.device(args.gpu_index):
 	#    simclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
