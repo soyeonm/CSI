@@ -1,0 +1,77 @@
+#run function of permclr
+
+from run import *
+import torch
+from data_aug.permclr_custom_dataset import PermDataset
+from glob import glob
+import pickle
+
+#Import default parser from run.py
+
+parser.add_argument('--permclr_views', type=int, default=4)
+
+
+def main_permclr():
+	args = parser.parse_args()
+	if not args.disable_cuda and torch.cuda.is_available():
+        args.device = torch.device('cuda')
+        cudnn.deterministic = True
+        cudnn.benchmark = True
+    else:
+        args.device = torch.device('cpu')
+        args.gpu_index = -1
+
+    #Define the dataset
+    train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+    test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
+    train_datasets = []
+    test_datasets = []
+    classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
+    test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+    for c in classes:
+    	assert c in test_classes
+    assert len(classes) == len(test_classes)
+
+    for c in classes:
+    	train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+    	test_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+
+    pickle.dump(train_datasets[i][0], open("original.p", "wb"))
+
+
+    train_data_loaders = []
+    test_data_loaders = []
+  	#dataloaders
+  	for i, c in enumerate(classes):
+  		train_data_loaders[i].append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+  		test_data_loaders[i].append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+
+  	#Model
+  	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+  	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
+
+  	if args.load_pretrained:
+        checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
+        state_dict = checkpoint['state_dict']
+        model.load_state_dict(state_dict)
+
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
+                                                           last_epoch=-1)
+  	#Training epoch
+  	#with torch.cuda.device(args.gpu_index):
+    #    simclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+    #    #TODO: implement PermCLR
+    #    simclr.train(train_loader)
+    for epoch in range(10):
+    	for i, c in enumerate(classes):
+    		train_datasets[i].shuffle()
+    		train_data_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
+    	pickle.dump(train_datasets[i][0], open("shuffled.p", "wb"))
+
+
+
+
+
+if __name__ == "__main__":
+	
+    main_permclr()
