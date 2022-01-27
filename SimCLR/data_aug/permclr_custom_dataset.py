@@ -67,7 +67,7 @@ class PermDataset(Dataset):
 			jpg = g.split('/')[-1]
 			obj_id = get_obj_num(jpg)
 			#if not(obj_id in object_ids):
-			self.object_ids[obj_id].append(g)
+			self.object_dict[obj_id].append(g)
 
 
 		self.object_dict = {i: self.object_dict[k] for i, k in enumerate(list(self.object_dict.keys()))}
