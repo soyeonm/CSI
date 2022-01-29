@@ -126,8 +126,8 @@ class PermCLR(object):
 					A_mat = get_A_matrix(self.args.permclr_views) #8*8
 					A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
 					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
-					#pickle.dump(A_mat, open("A_mat1.p", "wb"))
-					#pickle.dump(features, open("features1.p", "wb"))
+					pickle.dump(A_mat, open("A_mat1.p", "wb"))
+					pickle.dump(features, open("features1.p", "wb"))
 					batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
 					batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
 
