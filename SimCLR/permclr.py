@@ -152,13 +152,13 @@ class PermCLR(object):
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
 					#P_mat = torch.zeros(self.args.permclr_views*self.args.batch_size, self.args.permclr_views*self.args.batch_size).cuda()
-					P_mat = get_perm_matrix(self.args.permclr_views) #has shape 8x8 
+					P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
 					#torch.cat([torch.cat([batch_category_labels]*6, axis = 1).reshape(-1,4), torch.cat([batch_category_labels]*6)], axis=1).shape
 					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					#Apply bmm
 					#torch.cuda.empty_cache()
-					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float().to(self.args.device)
+					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 					#P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
@@ -170,8 +170,7 @@ class PermCLR(object):
 				#1. Get average features
 					avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
-					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0)
-					avg_matrix_128 = avg_matrix_128.to(self.args.device) #torch.Size([128, 8, 2])
+					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)#torch.Size([128, 8, 2])
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 
 				#2. Get score matrix
