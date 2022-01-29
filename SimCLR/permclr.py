@@ -137,7 +137,8 @@ class PermCLR(object):
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					#Apply bmm
 					#torch.cuda.empty_cache()
-					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float().to(self.args.device) #Now shape is 128x8x8
+					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+					P_mat_128 = P_mat_128.to(self.args.device) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
