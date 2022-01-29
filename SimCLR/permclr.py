@@ -146,8 +146,8 @@ class PermCLR(object):
 					#Copy this matrix diagonally and apply it to batch_object_labels
 					A_mat = get_A_matrix(self.args.permclr_views) #8*8
 					A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
-					print("A_mat shape is ", A_mat.shape)
-					print("feature shape is ", features.shape)
+					#print("A_mat shape is ", A_mat.shape)
+					#print("feature shape is ", features.shape)
 					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
 					#pickle.dump(A_mat, open("A_mat1.p", "wb"))
 					#pickle.dump(features, open("features1.p", "wb"))
@@ -253,5 +253,5 @@ class PermCLR(object):
 			#shuffle
 			for i in range(num_classes):
 				train_datasets[i].shuffle()
-				train_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=self.args.batch_size,num_workers=self.args.workers, pin_memory=True)
+				train_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=self.args.batch_size,num_workers=self.args.workers, pin_memory=True, drop_last=True)
 				
