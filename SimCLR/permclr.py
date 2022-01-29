@@ -124,10 +124,10 @@ class PermCLR(object):
 					#TODO: check if this is correct
 					#Copy this matrix diagonally and apply it to batch_object_labels
 					A_mat = get_A_matrix(self.args.permclr_views) #8*8
-					A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)) #24x24 with Car1, Car2, Cat1, Cat2, ...
+					A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
 					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
-					pickle.dump(A_mat, open("A_mat1.p", "wb"))
-					pickle.dump(features, open("features1.p", "wb"))
+					#pickle.dump(A_mat, open("A_mat1.p", "wb"))
+					#pickle.dump(features, open("features1.p", "wb"))
 					batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
 					batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
 
@@ -153,8 +153,8 @@ class PermCLR(object):
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					#Apply bmm
 					#torch.cuda.empty_cache()
-					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
-					P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
+					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float().to(self.args.device)
+					#P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					pickle.dump(features, open("features4.p", "wb"))
