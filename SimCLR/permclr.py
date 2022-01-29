@@ -249,5 +249,5 @@ class PermCLR(object):
 			#shuffle
 			for i in range(num_classes):
 				train_datasets[i].shuffle()
-				train_oaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
+				train_oaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=self.args.batch_size,num_workers=self.args.workers, pin_memory=True)
 				
