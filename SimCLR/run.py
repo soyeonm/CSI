@@ -90,8 +90,10 @@ def main():
 
     #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
     with torch.cuda.device(args.gpu_index):
+        start = time.time()
         simclr = SimCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
         simclr.train(train_loader)
+        print("time taken per epoch is ", time.time() - start)
 
 
 if __name__ == "__main__":
