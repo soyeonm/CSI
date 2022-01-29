@@ -58,6 +58,17 @@ def nll(logits, mask_logits, labels):
 	softmaxed = torch.exp(label_logits - torch.log(summed))
 	return torch.mean(softmaxed)
 
+import subprocess as sp
+import os
+
+def get_gpu_memory():
+    command = "nvidia-smi --query-gpu=memory.free --format=csv"
+    memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
+    memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+    return memory_free_values
+
+
+
 
 class PermCLR(object):
 	def __init__(self, *args, **kwargs):
@@ -106,6 +117,7 @@ class PermCLR(object):
 				#1. Put all of the images into a model and get features
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
+					print("gpu memory after features: ", get_gpu_memory())
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
 					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
@@ -120,6 +132,7 @@ class PermCLR(object):
 					features =features.reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views, -1)  #THIS is A
 					batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
+					print("gpu memory after A: ", get_gpu_memory())
 					
 				#3. Concatenate (B)
 					M = self.args.batch_size*len(self.args.classes_to_idx)
@@ -127,6 +140,7 @@ class PermCLR(object):
 					features = torch.cat([torch.cat([features]*M, axis = 1).reshape(M**2,self.args.permclr_views,-1), torch.cat([features]*M)], axis=1)
 					batch_category_labels = torch.cat([torch.cat([batch_category_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_category_labels]*M)], axis=1)
 					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
+					print("gpu memory after B: ", get_gpu_memory())
 
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
@@ -138,7 +152,7 @@ class PermCLR(object):
 					#Apply bmm
 					#torch.cuda.empty_cache()
 					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
-					P_mat_128 = P_mat_128.to(torch.device("cuda:0")) #Now shape is 128x8x8
+					P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
