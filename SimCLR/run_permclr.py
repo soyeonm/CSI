@@ -91,7 +91,7 @@ def main_permclr():
 	#print("shuffled all c dataloaders! time: ", time.time() - start)
 	with torch.cuda.device(args.gpu_index):
 		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		permclr.train(train_datasets, train_loaders)
+		permclr.train(train_datasets, train_data_loaders)
 
 
 
