@@ -133,6 +133,7 @@ class PermCLR(object):
 					#Multiply by a permutation matrix for each row
 					#P_mat = torch.zeros(self.args.permclr_views*self.args.batch_size, self.args.permclr_views*self.args.batch_size).cuda()
 					P_mat = get_perm_matrix(self.args.permclr_views) #has shape 8x8 
+					print("P_mat shape ", P_mat.shape)
 					#torch.cat([torch.cat([batch_category_labels]*6, axis = 1).reshape(-1,4), torch.cat([batch_category_labels]*6)], axis=1).shape
 					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
