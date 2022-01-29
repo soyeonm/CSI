@@ -93,7 +93,9 @@ class PermCLR(object):
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
 		for epoch_counter in range(self.args.epochs):
-			for batch_dict_tuple in zip(*train_loaders): 
+			for batch_i, batch_dict_tuple in enumerate(zip(*train_loaders)): 
+				if batch_i % 20==0:
+					print("batch i is ", batch_i)
 				start = time.time()
 				#batch_dict_tuple is a tuple of batch_dict's
 				#batch_dict_tuple[0]['image_0'] has shape torch.Size([2, 3, 32, 32]) if batch_size is 2
