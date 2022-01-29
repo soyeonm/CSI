@@ -83,7 +83,7 @@ class PermCLR(object):
 
 	def train(self, train_datasets, train_loaders):
 		torch.cuda.set_device(0)
-		classes = len(train_loaders)
+		num_classes = len(train_loaders)
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 
 		P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
@@ -247,7 +247,7 @@ class PermCLR(object):
 
 
 			#shuffle
-			for i, c in enumerate(classes):
+			for i in enumerate(range(len(num_classes)):
 				train_datasets[i].shuffle()
 				train_oaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
 				
