@@ -147,7 +147,8 @@ class PermCLR(object):
 				#1. Get average features
 					avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
-					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device) #torch.Size([128, 8, 2])
+					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0)
+					avg_matrix_128 = avg_matrix_128.to(self.args.device) #torch.Size([128, 8, 2])
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 
 				#2. Get score matrix
