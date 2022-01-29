@@ -57,7 +57,7 @@ def nll(logits, mask_logits, labels):
 	label_logits = logits[range(logits.shape[0]), labels.tolist()]
 	#softmaxed = torch.exp(label_logits - torch.log(summed))
 	log_softmaxed = label_logits - torch.log(summed)
-	return torch.mean(softmaxed)
+	return torch.mean(log_softmaxed)
 
 import subprocess as sp
 import os
