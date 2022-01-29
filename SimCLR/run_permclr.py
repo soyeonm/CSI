@@ -6,6 +6,13 @@ from data_aug.permclr_custom_dataset import PermDataset
 from glob import glob
 import pickle
 import time
+from permclr import PermCLR
+
+import torch
+import torch.backends.cudnn as cudnn
+from torchvision import models
+from models.resnet_simclr import ResNetSimCLR
+
 
 #Import default parser from run.py
 
@@ -29,6 +36,7 @@ def main_permclr():
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
 	test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+	args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
 	for c in classes:
 		assert c in test_classes
 	assert len(classes) == len(test_classes)
@@ -71,13 +79,19 @@ def main_permclr():
 	#    simclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#    #TODO: implement PermCLR
 	#    simclr.train(train_loader)
-	print("shuffling dataloaders")
-	for epoch in range(10):
-		for i, c in enumerate(classes):
-			train_datasets[i].shuffle()
-			train_data_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
-		pickle.dump(train_datasets[0][0], open("shuffled.p", "wb"))
-	print("shuffled all c dataloaders! time: ", time.time() - start)
+
+	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=min([len(train_loader) for train_loader in train_data_loaders]), eta_min=0,
+                                                           last_epoch=-1)
+	#print("shuffling dataloaders")
+	#for epoch in range(10):
+	#	for i, c in enumerate(classes):
+	#		train_datasets[i].shuffle()
+	#		train_data_loaders[i] = torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True)
+	#	pickle.dump(train_datasets[0][0], open("shuffled.p", "wb"))
+	#print("shuffled all c dataloaders! time: ", time.time() - start)
+	with torch.cuda.device(args.gpu_index):
+        permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+        permclr.train(train_loader)
 
 
 
