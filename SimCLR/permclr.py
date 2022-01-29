@@ -137,7 +137,8 @@ class PermCLR(object):
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					#Apply bmm
 					#torch.cuda.empty_cache()
-					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float().to(self.args.device) #Now shape is 128x8x8
+					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()#.to(self.args.device) #Now shape is 128x8x8
+					print("P mat ", P_mat_128)
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
