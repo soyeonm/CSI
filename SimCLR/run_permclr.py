@@ -17,7 +17,7 @@ from models.resnet_simclr import ResNetSimCLR
 #Import default parser from run.py
 
 parser.add_argument('--permclr_views', type=int, default=4)
-
+parser.add_argument('--usual_nll', action='store_true')
 
 def main_permclr():
 	args = parser.parse_args()
