@@ -106,6 +106,7 @@ class PermCLR(object):
 				#1. Put all of the images into a model and get features
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
+					pickle.dump(features, open("features.p", "wb"))
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
 					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
