@@ -178,11 +178,11 @@ class PermCLR(object):
 					#2. Get score matrix
 						#Normalize before the elementwise multiplication, for cosine similarity
 						#Normalize across 128
-						features[:, :, 0] = F.normalize(features[:, :, 0], dim=0); features[:, :, 1] = F.normalize(features[:, :, 1], dim=0)
+						features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
 						#Multiple among the dimension of "2"
 						#Shape should be 128 x 36
 						#torch.mul for elementwise multiplication of matrices
-						features = torch.mul(features[:, :, 0], features[:,:,1]) #Shape is torch.Size([128, 36])
+						features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36])
 						#Now sum across the 128 dimensions
 						logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
 
