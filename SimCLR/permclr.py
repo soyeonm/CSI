@@ -182,6 +182,7 @@ class PermCLR(object):
 				#Schedule
 			if epoch_counter >= 10:
 				self.scheduler.step()
+			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
 
 
