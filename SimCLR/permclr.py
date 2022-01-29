@@ -138,7 +138,7 @@ class PermCLR(object):
 					#Apply bmm
 					#torch.cuda.empty_cache()
 					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()#.to(self.args.device) #Now shape is 128x8x8
-					print("P mat ", P_mat_128)
+					print("P mat ", P_mat_128.shape)
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
@@ -146,7 +146,7 @@ class PermCLR(object):
 				#PART2
 				#1. Get average features
 					avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
-					avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
+					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
 					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0) #torch.Size([128, 8, 2])
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 
