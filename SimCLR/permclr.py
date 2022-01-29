@@ -248,6 +248,7 @@ class PermCLR(object):
 			if epoch_counter >= 10:
 				self.scheduler.step()
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(mean_loss/ (batch_i+1)))
+			pickle.dump(batch_dict_tuple, open(str(epoch_counter)+ "_batch_tuple.p", "wb"))
 
 
 
