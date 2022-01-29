@@ -81,7 +81,7 @@ def main_permclr():
 	#    simclr.train(train_loader)
 
 	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=min([len(train_loader) for train_loader in train_data_loaders]), eta_min=0,
-                                                           last_epoch=-1)
+														   last_epoch=-1)
 	#print("shuffling dataloaders")
 	#for epoch in range(10):
 	#	for i, c in enumerate(classes):
@@ -90,8 +90,8 @@ def main_permclr():
 	#	pickle.dump(train_datasets[0][0], open("shuffled.p", "wb"))
 	#print("shuffled all c dataloaders! time: ", time.time() - start)
 	with torch.cuda.device(args.gpu_index):
-        permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-        permclr.train(train_loader)
+		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+		permclr.train(train_loader)
 
 
 
