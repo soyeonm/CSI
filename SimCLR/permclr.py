@@ -84,7 +84,7 @@ class PermCLR(object):
 				for batch_dict in batch_dict_tuple:
 					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
 					object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
-					category = args.classes_to_idx[batch_dict['category_label'][0]]
+					category = self.args.classes_to_idx[batch_dict['category_label'][0]]
 					category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
 					#class_labels = torch.cat([args.classes_to_idx[batch_dict['category_label']] for i in range(self.args.permclr_views)]) 
 					catted_imgs_tup.append(catted_imgs); object_labels_tup.append(object_labels)
