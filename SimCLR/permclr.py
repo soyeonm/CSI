@@ -106,7 +106,6 @@ class PermCLR(object):
 				#1. Put all of the images into a model and get features
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
-					pickle.dump(features, open("features.p", "wb"))
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
 					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
@@ -132,15 +131,13 @@ class PermCLR(object):
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
 					#P_mat = torch.zeros(self.args.permclr_views*self.args.batch_size, self.args.permclr_views*self.args.batch_size).cuda()
-					print("perm clr views is ", self.args.permclr_views)
 					P_mat = get_perm_matrix(self.args.permclr_views) #has shape 8x8 
-					print("P_mat shape ", P_mat.shape)
 					#torch.cat([torch.cat([batch_category_labels]*6, axis = 1).reshape(-1,4), torch.cat([batch_category_labels]*6)], axis=1).shape
 					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					#Apply bmm
 					#torch.cuda.empty_cache()
-					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()#.to(self.args.device) #Now shape is 128x8x8
+					P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float().to(self.args.device) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
@@ -150,7 +147,7 @@ class PermCLR(object):
 				#1. Get average features
 					avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
-					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0) #torch.Size([128, 8, 2])
+					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device) #torch.Size([128, 8, 2])
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 
 				#2. Get score matrix
@@ -172,7 +169,7 @@ class PermCLR(object):
 					logits = torch.cat([logits.T]*self.args.batch_size, axis=0).T.reshape(2*M, M) #torch.Size([12, 6])
 					#Get labels for logits
 					labels = torch.zeros(logits.shape[0], dtype=torch.long)	
-					labels = put_labels(batch_size, labels)
+					labels = put_labels(self.args.batch_size, labels)
 					#Mask logits so that the positives are not counted (e.g. for row 0, 1 is the mask)
 					mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1)	
 					#Code NLL loss with ignore indices
