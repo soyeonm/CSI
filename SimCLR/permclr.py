@@ -55,7 +55,8 @@ def put_mask(batch_size, zero_mat):
 def nll(logits, mask_logits, labels):
 	summed = torch.sum(torch.exp(logits * mask_logits), axis=1)
 	label_logits = logits[range(logits.shape[0]), labels.tolist()]
-	softmaxed = torch.exp(label_logits - torch.log(summed))
+	#softmaxed = torch.exp(label_logits - torch.log(summed))
+	log_softmaxed = label_logits - torch.log(summed)
 	return torch.mean(softmaxed)
 
 import subprocess as sp
