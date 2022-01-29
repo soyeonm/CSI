@@ -52,10 +52,10 @@ def put_mask(batch_size, zero_mat):
 		zero_tensor[i] = i % batch_size
 	return zero_tensor
 
-def nll(logits, mask_logits, labels):
+def nll(logits, mask_logits, labels, usual_nll=False):
 	summed = torch.sum(torch.exp(logits * mask_logits), axis=1) 
 	label_logits = logits[range(logits.shape[0]), labels.tolist()]
-	if self.args.usual_nll:
+	if usual_nll:
 		summed = summed + torch.exp(label_logits)
 	#softmaxed = torch.exp(label_logits - torch.log(summed))
 	log_softmaxed = -(label_logits - torch.log(summed))
@@ -228,7 +228,7 @@ class PermCLR(object):
 					mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1).to(self.args.device)	
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
-					loss = nll(logits, mask_logits, labels)
+					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
 					#print("part 2 3 ", time.time()- start)
 					start = time.time()
 
