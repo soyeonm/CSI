@@ -155,6 +155,7 @@ class PermCLR(object):
 					P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
 					pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
+					pickle.dump(features, open("features4.p", "wb"))
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
