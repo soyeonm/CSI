@@ -116,7 +116,7 @@ class PermCLR(object):
 				pickle.dump(batch_imgs, open("batch_imgs.p", "wb"))
 				pickle.dump(batch_object_labels, open("batch_object_labels.p", "wb"))
 				pickle.dump(batch_category_labels, open("batch_category_labels.p", "wb"))
-				pickle.dump(args, open("args.p", "wb"))
+				pickle.dump(self.args, open("args.p", "wb"))
 				#PART1
 				#1. Put all of the images into a model and get features
 				with autocast(enabled=self.args.fp16_precision):
