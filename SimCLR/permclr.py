@@ -88,6 +88,9 @@ class PermCLR(object):
 		num_classes = len(train_loaders)
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 
+		A_mat = get_A_matrix(self.args.permclr_views) #8*8
+		A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
+
 		P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
@@ -145,8 +148,8 @@ class PermCLR(object):
 					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
 					#TODO: check if this is correct
 					#Copy this matrix diagonally and apply it to batch_object_labels
-					A_mat = get_A_matrix(self.args.permclr_views) #8*8
-					A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
+					#A_mat = get_A_matrix(self.args.permclr_views) #8*8
+					#A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
 					#print("A_mat shape is ", A_mat.shape)
 					#print("feature shape is ", features.shape)
 					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
@@ -235,6 +238,7 @@ class PermCLR(object):
 					mean_loss += loss.detach().cpu().item()
 					#print("part 2 3 ", time.time()- start)
 					start = time.time()
+					print(" Step Loss: " + str(loss))
 
 				#Optimizer zero grad
 					self.optimizer.zero_grad()
