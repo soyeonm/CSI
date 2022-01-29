@@ -95,6 +95,7 @@ class PermCLR(object):
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
 		for epoch_counter in range(self.args.epochs):
+			mean_loss = 0.0
 			for batch_i, batch_dict_tuple in enumerate(zip(*train_loaders)): 
 				if batch_i % 20==0:
 					print("batch i is ", batch_i)
@@ -231,6 +232,7 @@ class PermCLR(object):
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
+					mean_loss += loss.detach().cpu().item()
 					#print("part 2 3 ", time.time()- start)
 					start = time.time()
 
@@ -245,7 +247,7 @@ class PermCLR(object):
 				#Schedule
 			if epoch_counter >= 10:
 				self.scheduler.step()
-			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
+			print("Epoch: " + str(epoch_counter) +"Loss: " + str(mean_loss/ (batch_i+1)))
 
 
 
