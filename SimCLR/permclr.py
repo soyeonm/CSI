@@ -70,6 +70,7 @@ class PermCLR(object):
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
 	def train(self, train_datasets, train_loaders):
+		torch.cuda.set_device(0)
 		classes = len(train_loaders)
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 
