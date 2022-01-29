@@ -59,7 +59,7 @@ def main_permclr():
 	print("preparing dataloaders")
 	start = time.time()
 	for i, c in enumerate(classes):
-		train_data_loaders.append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+		train_data_loaders.append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True, drop_last=True))
 		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 	print("preepared all c dataloaders! time: ", time.time() - start)
 
