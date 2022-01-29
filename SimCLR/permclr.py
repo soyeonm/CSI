@@ -10,7 +10,7 @@ from tqdm import tqdm
 from utils import save_config_file, accuracy, save_checkpoint
 
 import pickle
-
+import time
 torch.manual_seed(0)
 
 #Multiply this matrix to make the feature matrix into A
@@ -88,6 +88,7 @@ class PermCLR(object):
 
 		for epoch_counter in range(self.args.epochs):
 			for batch_dict_tuple in zip(*train_loaders): 
+				start = time.time()
 				#batch_dict_tuple is a tuple of batch_dict's
 				#batch_dict_tuple[0]['image_0'] has shape torch.Size([2, 3, 32, 32]) if batch_size is 2
 				catted_imgs_tup = []
@@ -108,6 +109,8 @@ class PermCLR(object):
 				batch_object_labels = torch.cat(object_labels_tup) #Shape should be like torch.Size([24])
 				del object_labels_tup, object_labels
 				batch_category_labels = torch.cat(category_labels_tup) #Shape should be like torch.Size([24])
+				print("data processing time ", time.time()- start)
+				start = time.time()
 
 				#send to device
 				batch_imgs = batch_imgs.to(self.args.device)
@@ -125,6 +128,7 @@ class PermCLR(object):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
 					#print("gpu memory after features: ", get_gpu_memory())
 					#pickle.dump(features, open("features.p", "wb"))
+					start = time.time()
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
 					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
@@ -141,6 +145,8 @@ class PermCLR(object):
 					features =features.reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views, -1)  #THIS is A
 					batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
+					print("block 2 ", time.time()- start)
+					start = time.time()
 					#print("gpu memory after A: ", get_gpu_memory())
 					
 				#3. Concatenate (B)
@@ -150,6 +156,8 @@ class PermCLR(object):
 					batch_category_labels = torch.cat([torch.cat([batch_category_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_category_labels]*M)], axis=1)
 					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
 					#print("gpu memory after B: ", get_gpu_memory())
+					print("block 3 ", time.time()- start)
+					start = time.time()
 
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
@@ -167,6 +175,8 @@ class PermCLR(object):
 					#pickle.dump(features, open("features4.p", "wb"))
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
+					print("block 4 ", time.time()- start)
+					start = time.time()
 
 				#PART2
 				#1. Get average features
@@ -174,6 +184,8 @@ class PermCLR(object):
 					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
 					avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)#torch.Size([128, 8, 2])
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
+					print("part 2 1 ", time.time()- start)
+					start = time.time()
 
 				#2. Get score matrix
 					#Normalize before the elementwise multiplication, for cosine similarity
@@ -185,6 +197,8 @@ class PermCLR(object):
 					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36])
 					#Now sum across the 128 dimensions
 					logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
+					print("part 2 2 ", time.time()- start)
+					start = time.time()
 
 				#3. Put this into NLL loss
 					#Make logits into torch.Size([M x M]) (e.g. 6x6)
@@ -200,6 +214,8 @@ class PermCLR(object):
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					loss = nll(logits, mask_logits, labels)
+					print("part 2 3 ", time.time()- start)
+					start = time.time()
 
 				#Optimizer zero grad
 					self.optimizer.zero_grad()
