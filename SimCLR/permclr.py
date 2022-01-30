@@ -262,8 +262,6 @@ class PermCLR(object):
 			#pickle.dump(batch_dict_tuple, open(str(epoch_counter)+ "_batch_tuple.p", "wb"))
 
 
-
-
 			#shuffle
 			for i in range(num_classes):
 				train_datasets[i].shuffle()
