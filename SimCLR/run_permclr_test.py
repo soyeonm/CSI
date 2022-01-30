@@ -72,8 +72,8 @@ def main_permclr_test():
 
 	#Load pretrained
 	checkpoint = torch.load('saved_models/first_permclr_broccoli_epoch_199', map_location=torch.device('cpu'))
-	state_dict = checkpoint['state_dict']
-	model.load_state_dict(state_dict)
+	#state_dict = checkpoint['state_dict']
+	model.load_state_dict(checkpoint)
 
 	#Run inference once
 	with torch.cuda.device(args.gpu_index):
