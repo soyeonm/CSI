@@ -242,7 +242,7 @@ class PermCLR(object):
 					mean_loss += loss.detach().cpu().item()
 					#print("part 2 3 ", time.time()- start)
 					start = time.time()
-					print(" Step Loss: " + str(loss))
+					#print(" Step Loss: " + str(loss))
 
 				#Optimizer zero grad
 					self.optimizer.zero_grad()
