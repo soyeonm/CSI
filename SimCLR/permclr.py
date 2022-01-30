@@ -88,7 +88,7 @@ class PermCLR(object):
 	#def inference(self, train_datasets, train_loaders, test_datasets, test_loaders):
 	def inference(self, train_datasets, test_datasets, test_loaders):
 		torch.cuda.set_device(0)
-		num_classes = len(train_loaders)
+		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
 
 		class_lens = [len(td) for td in train_datasets]
