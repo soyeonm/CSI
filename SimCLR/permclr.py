@@ -153,8 +153,8 @@ class PermCLR(object):
 					#print("A_mat shape is ", A_mat.shape)
 					#print("feature shape is ", features.shape)
 					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
-					pickle.dump(A_mat, open("A_mat1.p", "wb"))
-					pickle.dump(features, open("features1.p", "wb"))
+					#pickle.dump(A_mat, open("A_mat1.p", "wb"))
+					#pickle.dump(features, open("features1.p", "wb"))
 					batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
 					batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
 
