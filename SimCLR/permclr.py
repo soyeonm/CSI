@@ -84,6 +84,7 @@ class PermCLR(object):
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
 	def train(self, train_datasets, train_loaders):
+		
 		torch.cuda.set_device(0)
 		num_classes = len(train_loaders)
 		scaler = GradScaler(enabled=self.args.fp16_precision)
@@ -130,6 +131,9 @@ class PermCLR(object):
 				batch_imgs = batch_imgs.to(self.args.device)
 				batch_object_labels = batch_object_labels.to(self.args.device)
 				batch_category_labels = batch_category_labels.to(self.args.device)
+				f = open('log.txt', 'a')
+				f.write('batch_object_labels: ' + str(batch_object_labels) + '\n')
+				f.close()
 
 				#pickle.dump(batch_imgs, open("batch_imgs.p", "wb"))
 				#pickle.dump(batch_object_labels, open("batch_object_labels.p", "wb"))
