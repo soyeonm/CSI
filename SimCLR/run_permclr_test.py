@@ -39,7 +39,7 @@ def main_permclr_test():
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 	if args.ood:
-		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one/ood'
+		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
 	train_datasets = []
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
