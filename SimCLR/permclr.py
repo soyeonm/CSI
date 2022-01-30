@@ -105,7 +105,7 @@ class PermCLR(object):
 				if batch_i % 20==0:
 					print("batch i is ", batch_i)
 				start = time.time()
-				#batch_dict_tuple is a tuple of batch_dict's
+				#batch_dict_tuple is a tuple of batch_dict's 
 				#batch_dict_tuple[0]['image_0'] has shape torch.Size([2, 3, 32, 32]) if batch_size is 2
 				catted_imgs_tup = []
 				object_labels_tup = []
