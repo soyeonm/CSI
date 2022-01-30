@@ -64,6 +64,7 @@ def main_permclr():
 		train_data_loaders.append(torch.utils.data.DataLoader(train_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True, drop_last=True))
 		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 	print("preepared all c dataloaders! time: ", time.time() - start)
+	pickle.dump(train_datasets, open("train_datasets.p", "wb"))
 
 	#Model
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
