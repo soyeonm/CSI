@@ -42,7 +42,7 @@ def main_permclr_test():
 	if args.ood:
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
 		if args.hydrant_ood:
-			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/new_ood_apple_hydrant_toilet/ood'
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/new_ood_apple_hydrant_toilet/ood'
 	train_datasets = []
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
