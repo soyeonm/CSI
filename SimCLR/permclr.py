@@ -84,6 +84,104 @@ class PermCLR(object):
 		logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
+	#For test and ood
+	#def inference(self, train_datasets, train_loaders, test_datasets, test_loaders):
+	def inference(self, train_datasets, test_datasets, test_loaders):
+		torch.cuda.set_device(0)
+		num_classes = len(train_loaders)
+		scaler = GradScaler(enabled=self.args.fp16_precision) 
+
+		class_lens = [len(td) for td in train_datasets]
+
+		P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+
+		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
+		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
+
+		for batch_i, batch_dict_tuple in enumerate(zip(*test_loaders)): 
+			#Just know how many objects per class there are in this batch
+			cur_batch_size = batch_dict_tuple[0]['image_0'].shape[0]
+			#Get a random object from each category of train_dataset
+			chosens = []
+			for ci, c in enumerate(class_lens):
+				np.random.seed(batch_i+ 1000*ci)
+				#Just choose one
+				chosens.append(np.random.choice(c))
+			#chosen training
+			chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))]
+
+			#catted_img_tups of train dataset
+			train_category_labels_tup =[]
+			for batch_dict in batch_dict_tuple:
+				catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) 
+				train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])
+
+			#catted_img_tups of test dataset
+			catted_imgs_tup = []
+			object_labels_tup = []
+			category_labels_tup =[]
+			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
+			for batch_dict in batch_dict_tuple:
+				catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+				object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
+				category = self.args.classes_to_idx[batch_dict['category_label'][0]]
+				category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
+				catted_imgs_tup.append(catted_imgs); object_labels_tup.append(object_labels)
+
+			#Concatenate everything into batch_imgs
+			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
+
+			#Put into model and get features
+			with autocast(enabled=self.args.fp16_precision):
+				features = self.model(batch_imgs) #shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 128])
+
+			#Now separate into two
+			features_train = features[:self.args.permclr_views*num_classes, :].clone() #shape  torch.Size([self.args.permclr_views*  num_classes, 128])
+			features_test = features[self.args.permclr_views*num_classes:, :].clone() #shape torch.Size([self.args.permclr_views* (batch_size * num_classes), 128])
+			del features
+
+			#Stack and concatenate
+			#Stack features_train first
+			features_train = features_train.reshape(num_classes, self.args.permclr_views, -1)
+			features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2, self.args.permclr_views, 128 )
+
+			#Stack features_test
+			features_test = features_test.reshape(num_classes, self.args.permclr_views, -1) #ASSUME BATCH_SIZE=1
+			features_test = features_test.transpose(0,1) #(self.args.permclr_views, num_classes, 128)
+			features_test = torch.cat([features_test]*num_classes) #(self.args.permclr_views*num_classes, num_classes, 128)
+			features_test = features_test.transpose(0,1)
+			features_test = features_test.reshape(num_classes**2, self.args.permclr_views, -1) #shape is (num_classes**2, self.args.permclr_views, 128 ) WITH batch size 1
+
+			#Concatenate feature_test and features_train 
+			features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2, self.args.permclr_views*2, 128 ) WITH batch size 1
+
+			#Permute
+			#Reshape features for permuting
+			#Reshaped into (128, num_classes**2,  self.args.permclr_views*2)
+			features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
+			features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
+			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
+
+			#Get average
+			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2])
+
+			#Take dot product
+			#Normalize across 128
+			features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
+			#Multiply elementwise among the dimension of "2"
+			features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9])
+			#Now sum across the 128 dimensions
+			logits = torch.sum(features, axis=0) #Shape is torch.Size([9])
+
+			#Print logits into file
+			f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
+			f.write("logits for batch :" + str(batch_i) + '\n')
+			f.write(str(logits.item().detach().cpu()) + '\n')
+			f.close()
+
+
+
 	def train(self, train_datasets, train_loaders):
 		
 		torch.cuda.set_device(0)
