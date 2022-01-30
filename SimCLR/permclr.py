@@ -131,9 +131,9 @@ class PermCLR(object):
 				batch_imgs = batch_imgs.to(self.args.device)
 				batch_object_labels = batch_object_labels.to(self.args.device)
 				batch_category_labels = batch_category_labels.to(self.args.device)
-				f = open('log.txt', 'a')
-				f.write('batch_object_labels: ' + str(batch_object_labels) + '\n')
-				f.close()
+				#f = open('log.txt', 'a')
+				#f.write('batch_object_labels: ' + str(batch_object_labels) + '\n')
+				#f.close()
 
 				#pickle.dump(batch_imgs, open("batch_imgs.p", "wb"))
 				#pickle.dump(batch_object_labels, open("batch_object_labels.p", "wb"))
@@ -145,7 +145,7 @@ class PermCLR(object):
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
 					#print("gpu memory after features: ", get_gpu_memory())
-					#pickle.dump(features, open("features.p", "wb"))
+					pickle.dump(features, open("features.p", "wb"))
 					start = time.time()
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
