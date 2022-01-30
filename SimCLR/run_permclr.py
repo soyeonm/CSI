@@ -93,6 +93,8 @@ def main_permclr():
 		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 		permclr.train(train_datasets, train_data_loaders)
 
+	save_checkpoint(199, model, 'first_permclr_broccoli', 'saved_models')
+
 
 
 
