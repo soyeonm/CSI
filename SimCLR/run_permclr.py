@@ -52,7 +52,7 @@ def main_permclr():
 		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
 		print("done test for ", c)
 	print("preepared all c! time: ", time.time() - start)
-	pickle.dump(train_datasets[0][0], open("original.p", "wb"))
+	pickle.dump(train_datasets, open("original.p", "wb"))
 
 
 	train_data_loaders = []
