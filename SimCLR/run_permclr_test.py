@@ -54,7 +54,7 @@ def main_permclr_test():
 	f = open('test_logs/' + args.text_file_name +'.txt', 'w')
 	f.write("classes are " + str(classes) + '\n')
 	if args.ood:
-		f.write("ood classes are " + str(classes) + '\n')
+		f.write("ood classes are " + str(test_classes) + '\n')
 	f.close()
 
 	print("preparing datasets")
