@@ -141,7 +141,7 @@ class PermCLR(object):
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
 					#print("gpu memory after features: ", get_gpu_memory())
-					#pickle.dump(features, open("features.p", "wb"))
+					pickle.dump(features, open("features.p", "wb"))
 					start = time.time()
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
