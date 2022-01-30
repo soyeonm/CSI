@@ -24,6 +24,7 @@ parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--text_file_name', type=str, required=True)
 parser.add_argument('--ood', action='store_true')
 parser.add_argument('--hydrant_ood', action='store_true')
+parser.add_argument('--model_name', action='store_true')
 
 
 def main_permclr_test():
@@ -82,7 +83,7 @@ def main_permclr_test():
 	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
 	#Load pretrained
-	checkpoint = torch.load('saved_models/first_permclr_broccoli_epoch_199', map_location=torch.device('cpu'))
+	checkpoint = torch.load('saved_models/' + args.model_name, map_location=torch.device('cpu'))
 	#state_dict = checkpoint['state_dict']
 	model.load_state_dict(checkpoint)
 
