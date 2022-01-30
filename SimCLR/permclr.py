@@ -53,7 +53,8 @@ def put_mask(batch_size, zero_mat):
 	return zero_tensor
 
 def nll(logits, mask_logits, labels, usual_nll=False):
-	summed = torch.sum(torch.exp(logits * (1-mask_logits)), axis=1) 
+	#summed = torch.sum(torch.exp(logits * (1-mask_logits)), axis=1) 
+	summed = torch.sum(torch.exp(logits ), axis=1) 
 	label_logits = logits[range(logits.shape[0]), labels.tolist()]
 	if usual_nll:
 		summed = summed + torch.exp(label_logits)
