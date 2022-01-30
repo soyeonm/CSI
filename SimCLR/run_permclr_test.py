@@ -71,15 +71,23 @@ def main_permclr_test():
 	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
 	#Load pretrained
-	checkpoint = torch.load('', map_location=torch.device('cpu'))
+	checkpoint = torch.load('saved_models/first_permclr_broccoli_epoch_199', map_location=torch.device('cpu'))
 	state_dict = checkpoint['state_dict']
 	model.load_state_dict(state_dict)
 
 	#Run inference once
+	with torch.cuda.device(args.gpu_index):
+		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+		permclr.inference(train_datasets, test_datasets, test_loaders)
 
 
 
 def main_permclr_ood():
+	pass
+
+if __name__ == "__main__":
+	
+	main_permclr_test()
 
 
 
