@@ -101,7 +101,7 @@ class PermCLR(object):
 
 		for batch_i, batch_dict_tuple in enumerate(zip(*test_loaders)): 
 			#Just know how many objects per class there are in this batch
-			cur_batch_size = batch_dict_tuple[0]['image_0'].shape[0]
+			#cur_batch_size = batch_dict_tuple[0]['image_0'].shape[0] #TODO later
 			#Get a random object from each category of train_dataset
 			chosens = []
 			for ci, c in enumerate(class_lens):
@@ -132,7 +132,7 @@ class PermCLR(object):
 			#Concatenate everything into batch_imgs
 			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
 			batch_imgs = batch_imgs.to(self.args.device)
-			
+
 			#Put into model and get features
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs) #shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 128])
