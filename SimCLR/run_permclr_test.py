@@ -49,6 +49,7 @@ def main_permclr_test():
 		for c in classes:
 			assert c in test_classes
 		assert len(classes) == len(test_classes)
+		test_classes = classes
 	print("classes are ", classes)
 	f = open('test_logs/' + args.text_file_name +'.txt', 'w')
 	f.write("classes are " + str(classes) + '\n')
@@ -60,6 +61,7 @@ def main_permclr_test():
 	start = time.time()
 	for c in classes:
 		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+	for c in test_classes:
 		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
 		print("done test for ", c)
 	print("preepared all c! time: ", time.time() - start)
