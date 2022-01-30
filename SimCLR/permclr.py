@@ -11,6 +11,7 @@ from utils import save_config_file, accuracy, save_checkpoint
 
 import pickle
 import time
+import numpy as np
 torch.manual_seed(0)
 
 #Multiply this matrix to make the feature matrix into A
