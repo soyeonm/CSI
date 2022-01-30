@@ -13,6 +13,8 @@ import torch.backends.cudnn as cudnn
 from torchvision import models
 from models.resnet_simclr import ResNetSimCLR
 
+import os
+
 
 #Import default parser from run.py
 
