@@ -125,11 +125,12 @@ class PermCLR(object):
 			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
 			for batch_dict in batch_dict_tuple:
 				catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
-				object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
-				category = self.args.classes_to_idx[batch_dict['category_label'][0]]
-				category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
-				catted_imgs_tup.append(catted_imgs); object_labels_tup.append(object_labels)
-
+				if not(self.args.ood):
+					object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
+					category = self.args.classes_to_idx[batch_dict['category_label'][0]]
+					category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
+					object_labels_tup.append(object_labels)
+				catted_imgs_tup.append(catted_imgs)
 			#Concatenate everything into batch_imgs
 			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
 			batch_imgs = batch_imgs.to(self.args.device)
