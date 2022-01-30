@@ -179,7 +179,7 @@ class PermCLR(object):
 			#Print logits into file
 			f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
 			f.write("logits for batch :" + str(batch_i) + '\n')
-			f.write(str(logits.item().detach().cpu()) + '\n')
+			f.write(str(logits) + '\n')
 			f.close()
 
 
