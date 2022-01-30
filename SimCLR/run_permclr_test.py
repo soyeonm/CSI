@@ -23,6 +23,7 @@ parser.add_argument('--permclr_views', type=int, default=4)
 parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--text_file_name', type=str, required=True)
 parser.add_argument('--ood', action='store_true')
+parser.add_argument('--hydrant_ood', action='store_true')
 
 
 def main_permclr_test():
@@ -40,6 +41,8 @@ def main_permclr_test():
 	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 	if args.ood:
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
+		if args.hydrant_ood:
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/new_ood_apple_hydrant_toilet/ood'
 	train_datasets = []
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
