@@ -20,6 +20,8 @@ import os
 
 parser.add_argument('--permclr_views', type=int, default=4)
 parser.add_argument('--usual_nll', action='store_true')
+parser.add_argument('--model_name', type=str, required=True)
+
 
 def main_permclr():
 	args = parser.parse_args()
@@ -96,7 +98,7 @@ def main_permclr():
 		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 		permclr.train(train_datasets, train_data_loaders)
 
-	save_checkpoint(199, model, 'first_permclr_broccoli', 'saved_models')
+	save_checkpoint(args.epochs, model, args.model_name, 'saved_models')
 
 
 
