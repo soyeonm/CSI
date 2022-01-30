@@ -77,7 +77,7 @@ def main_permclr_test():
 
 	#Run inference once
 	with torch.cuda.device(args.gpu_index):
-		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
 		permclr.inference(train_datasets, test_datasets, test_loaders)
 
 
