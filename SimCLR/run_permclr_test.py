@@ -24,7 +24,7 @@ parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--text_file_name', type=str, required=True)
 parser.add_argument('--ood', action='store_true')
 parser.add_argument('--hydrant_ood', action='store_true')
-parser.add_argument('--model_name', action='store_true')
+parser.add_argument('--model_name', type=str, required=True)
 
 
 def main_permclr_test():
