@@ -25,7 +25,7 @@ def get_A_matrix(num_perspectives, num_batch=2):
 
 #TODO: code this 
 def get_perm_matrix(num_perspectives):
-	mat = torch.zeros(2*num_perspectives, 2*num_perspectives)
+	mat = torch.zeros(2*num_perspectives, 2*num_perspectives) 
 	for i in range(2*num_perspectives):
 		if i< num_perspectives:
 			mat[2*i, i] = 1
