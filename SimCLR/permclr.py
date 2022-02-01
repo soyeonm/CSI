@@ -33,6 +33,10 @@ def get_perm_matrix(num_perspectives):
 			mat[2*(i-num_perspectives)+1, i]=1
 	return mat
 
+def get_perm_matrix_identity(num_perspectives):
+	mat = torch.eye(2*num_perspectives, 2*num_perspectives) 
+	return mat
+
 def get_avg_matrix(num_perspectives):
 	mat = torch.zeros(2*num_perspectives, 2)
 	for i in range(num_perspectives):
@@ -94,7 +98,7 @@ class PermCLR(object):
 
 		class_lens = [len(td) for td in train_datasets]
 
-		P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
