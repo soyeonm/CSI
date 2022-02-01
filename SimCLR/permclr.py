@@ -356,9 +356,9 @@ class PermCLR(object):
 					#Multiple among the dimension of "2"
 					#Shape should be 128 x 36
 					#torch.mul for elementwise multiplication of matrices
-					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36])
+					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36*17])
 					#Now sum across the 128 dimensions
-					logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
+					logits = torch.sum(features, axis=0) #Shape is torch.Size([36*17])
 					#print("part 2 2 ", time.time()- start)
 					start = time.time()
 
