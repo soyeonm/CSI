@@ -50,12 +50,32 @@ def put_labels(batch_size, zero_tensor):
 		zero_tensor[i] = i % batch_size
 	return zero_tensor
 
+
 def put_mask(batch_size, zero_mat):
 	#Put mask for the first "batch_size" elements always
 	assert len(zero_tensor) %batch_size ==0
 	for i in range(len(zero_tensor)):
 		zero_tensor[i] = i % batch_size
 	return zero_tensor
+
+#Make sure that the input tensor is 1d and has shape e.g. torch.Size([6])
+def shift(input_1d_tensor, shift_by):
+	output_tensor = torch.zeros(input_1d_tensor.shape, dtype=input_1d_tensor.dtype)
+	where = torch.where(input_1d_tensor)[0]
+	output_tensor[where+shift_by] = input_1d_tensor[where]
+	return output_tensor
+
+
+def get_mask_logits(M, batch_size):
+	mask = torch.zeros(2*M, M)
+	default_1d_tensor = torch.zeros(M).long()
+	default_1d_tensor[:batch_size] = 1
+	assert M %2 ==0
+	for i in range(int(M/2)):
+		mask[i*4:(i+1)*4,:] =  shift(default_1d_tensor, batch_size*i)
+	return mask
+
+
 
 def nll(logits, mask_logits, labels, usual_nll=False):
 	summed = torch.sum(torch.exp(logits * (1-mask_logits)), axis=1) - 2 #mask logits 0 되는 곳 exp 하면 1 되는게 문제임
@@ -339,10 +359,13 @@ class PermCLR(object):
 					logits = torch.cat([logits.T]*self.args.batch_size, axis=0).T.reshape(2*M, M) #torch.Size([12, 6])
 					pickle.dump(logits, open("logits.p", "wb"))
 					#Get labels for logits
-					labels = torch.zeros(logits.shape[0], dtype=torch.long)	
-					labels = put_labels(self.args.batch_size, labels)
+					#labels = torch.zeros(logits.shape[0], dtype=torch.long)	
+					#Change this later if batchsize, # classes or anything is changed!
+					labels = torch.tensor([0,1,0,1,2,3,2,3,4,5,4,5]).to(self.args.device)
+					#labels = put_labels(self.args.batch_size, labels)
 					#Mask logits so that the positives are not counted (e.g. for row 0, 1 is the mask)
-					mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1).to(self.args.device)	
+					#mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1).to(self.args.device)	
+					mask_logits = get_mask_logits(M, batch_size).to(self.args.device)
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
