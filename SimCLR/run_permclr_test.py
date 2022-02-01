@@ -55,7 +55,7 @@ def main_permclr_test():
 		assert len(classes) == len(test_classes)
 		#test_classes = classes
 	#Deliberately change test classes
-	test_classes = classes[1:] + classes[0]
+	test_classes = classes[1:] + classes[0:1]
 	print("test classes are ", test_classes)
 	print("classes are ", classes)
 	f = open('test_logs/' + args.text_file_name +'.txt', 'w')
