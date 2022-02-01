@@ -63,7 +63,7 @@ def main_permclr_test():
 	if args.ood:
 		f.write("ood classes are " + str(test_classes) + '\n')
 	else:
-		f.write("test classes are " + str(classes) + '\n')
+		f.write("test classes are " + str(test_classes) + '\n')
 	f.close()
 
 	print("preparing datasets")
