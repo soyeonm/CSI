@@ -53,12 +53,15 @@ def main_permclr_test():
 		for c in classes:
 			assert c in test_classes
 		assert len(classes) == len(test_classes)
-		test_classes = classes
+		#test_classes = classes
+	print("test classes are ", test_classes)
 	print("classes are ", classes)
 	f = open('test_logs/' + args.text_file_name +'.txt', 'w')
 	f.write("classes are " + str(classes) + '\n')
 	if args.ood:
 		f.write("ood classes are " + str(test_classes) + '\n')
+	else:
+		f.write("test classes are " + str(classes) + '\n')
 	f.close()
 
 	print("preparing datasets")
@@ -74,7 +77,7 @@ def main_permclr_test():
 	#dataloaders
 	print("preparing dataloaders")
 	start = time.time()
-	for i, c in enumerate(classes):
+	for i, c in enumerate(test_classes):
 		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 	print("preepared all c dataloaders! time: ", time.time() - start)
 
