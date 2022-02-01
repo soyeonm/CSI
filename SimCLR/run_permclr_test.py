@@ -25,6 +25,8 @@ parser.add_argument('--text_file_name', type=str, required=True)
 parser.add_argument('--ood', action='store_true')
 parser.add_argument('--hydrant_ood', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
+parser.add_argument('-itc', '--intentionally_change_test_classes', action='store_true')
+
 
 
 def main_permclr_test():
@@ -53,9 +55,9 @@ def main_permclr_test():
 		for c in classes:
 			assert c in test_classes
 		assert len(classes) == len(test_classes)
-		#test_classes = classes
+		test_classes = classes
 	#Deliberately change test classes
-	if not(args.ood):
+	if not(args.ood) and args.itc:
 		test_classes = classes[1:] + classes[0:1]
 	print("test classes are ", test_classes)
 	print("classes are ", classes)
