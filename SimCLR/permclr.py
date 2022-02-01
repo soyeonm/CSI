@@ -198,7 +198,7 @@ class PermCLR(object):
 		A_mat = get_A_matrix(self.args.permclr_views) #8*8
 		A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
 
-		P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
