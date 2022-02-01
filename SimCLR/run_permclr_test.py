@@ -47,8 +47,7 @@ def main_permclr_test():
 	train_datasets = []
 	test_datasets = []
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
-	if not(args.ood):
-		test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+	test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
 	args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
 	if not(args.ood):
 		for c in classes:
@@ -56,7 +55,8 @@ def main_permclr_test():
 		assert len(classes) == len(test_classes)
 		#test_classes = classes
 	#Deliberately change test classes
-	test_classes = classes[1:] + classes[0:1]
+	if not(args.ood):
+		test_classes = classes[1:] + classes[0:1]
 	print("test classes are ", test_classes)
 	print("classes are ", classes)
 	f = open('test_logs/' + args.text_file_name +'.txt', 'w')
