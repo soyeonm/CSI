@@ -365,7 +365,7 @@ class PermCLR(object):
 					#labels = put_labels(self.args.batch_size, labels)
 					#Mask logits so that the positives are not counted (e.g. for row 0, 1 is the mask)
 					#mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1).to(self.args.device)	
-					mask_logits = get_mask_logits(M, batch_size).to(self.args.device)
+					mask_logits = get_mask_logits(M, self.args.batch_size).to(self.args.device)
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
