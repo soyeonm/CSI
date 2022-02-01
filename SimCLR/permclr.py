@@ -75,6 +75,11 @@ def get_mask_logits(M, batch_size):
 		mask[i*4:(i+1)*4,:] =  shift(default_1d_tensor, batch_size*i)
 	return mask
 
+def shuffle(logits, labels, mask_logits, M, seed):
+	#Shuffle over 2*M
+	np.random.seed(seed)
+	permuted = np.random.permutation(2*M).tolist()
+	return logits[permuted], labels[permuted], mask_logits[permuted]
 
 
 def nll(logits, mask_logits, labels, usual_nll=False):
@@ -368,6 +373,8 @@ class PermCLR(object):
 					mask_logits = get_mask_logits(M, self.args.batch_size).to(self.args.device)
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
+					#Shuffle everything before putting into nll
+					logits, labels, mask_logits = shuffle(logits, labels, mask_logits, M, batch_i + 100*epoch_counter)
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
 					mean_loss += loss.detach().cpu().item()
 					#print("part 2 3 ", time.time()- start)
