@@ -143,11 +143,11 @@ class PermCLR(object):
 
 			#catted_img_tups of train dataset
 			train_category_labels_tup =[]
-			for batch_dict in batch_dict_tuple:
+			for batch_dict in chosen_train_dataset_tuples:
 				catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) 
 				train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])
-			pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuples.p', 'wb'))
-			pickle.dump(train_category_labels_tup, open('train_category_labels_tup.p', 'wb'))
+			#pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuples.p', 'wb'))
+			#pickle.dump(train_category_labels_tup, open('train_category_labels_tup.p', 'wb'))
 
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
