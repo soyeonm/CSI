@@ -224,7 +224,7 @@ class PermCLR(object):
 			#f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
 			assert logits.shape[0] %3 ==0
 			auroc_max_logits += get_max_logit(logits)
-			if not(args.ood):
+			if not(self.args.ood):
 				auroc_labels+= [1] * int(logits.shape[0]/3)
 			else:
 				auroc_labels+= [0] * int(logits.shape[0]/3)
