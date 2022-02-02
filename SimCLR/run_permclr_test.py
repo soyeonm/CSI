@@ -76,7 +76,7 @@ def main_permclr_test():
 	for c in test_classes:
 		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
 		print("done test for ", c)
-	print("preepared all c! time: ", time.time() - start)
+	print("preepared all c! time: ", time.time() - start) 
 
 	test_data_loaders = []
 	#dataloaders
