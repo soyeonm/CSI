@@ -15,6 +15,7 @@ import torch.backends.cudnn as cudnn
 from torchvision import models
 from models.resnet_simclr import ResNetSimCLR
 from sklearn.metrics import roc_auc_score
+import numpy as np
 
 import os
 
