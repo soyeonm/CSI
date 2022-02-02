@@ -57,7 +57,7 @@ def main_permclr_test():
 		assert len(classes) == len(test_classes)
 		test_classes = classes
 	#Deliberately change test classes
-	if not(args.ood) and args.itc:
+	if not(args.ood) and args.intentionally_change_test_classes:
 		test_classes = classes[1:] + classes[0:1]
 	print("test classes are ", test_classes)
 	print("classes are ", classes)
