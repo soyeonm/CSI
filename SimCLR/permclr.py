@@ -96,7 +96,7 @@ def get_max_logit(logits):
 	#logits should be 1 d
 	assert logits.shape[0] %3 ==0
 	max_logits = []
-	for i in range(int(logits/3)):
+	for i in range(int(logits.shape[0]/3)):
 		max_logits.append(max(logits[3*i:3*(i+1)]))
 	return max_logits
 
