@@ -113,8 +113,8 @@ def main_permclr_test():
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
 		auroc_max_logits_ood, auroc_labels_ood = permclr.inference(train_datasets, ood_datasets, ood_data_loaders, of)
 
-	pickle.dump((auroc_max_logits_test, auroc_labels_test),open("logits/test_" + text_file_name + ".p", "wb"))
-	pickle.dump((auroc_max_logits_ood, auroc_labels_ood),open("logits/test_" + text_file_name + ".p", "wb"))
+	pickle.dump((auroc_max_logits_test, auroc_labels_test),open("logits/test_" + args.text_file_name + ".p", "wb"))
+	pickle.dump((auroc_max_logits_ood, auroc_labels_ood),open("logits/ood_" + args.text_file_name + ".p", "wb"))
 
 def main_permclr_ood():
 	pass
