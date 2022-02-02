@@ -14,6 +14,7 @@ import torch
 import torch.backends.cudnn as cudnn
 from torchvision import models
 from models.resnet_simclr import ResNetSimCLR
+from sklearn.metrics import roc_auc_score
 
 import os
 
@@ -115,6 +116,18 @@ def main_permclr_test():
 
 	pickle.dump((auroc_max_logits_test, auroc_labels_test),open("logits/test_" + args.text_file_name + ".p", "wb"))
 	pickle.dump((auroc_max_logits_ood, auroc_labels_ood),open("logits/ood_" + args.text_file_name + ".p", "wb"))
+
+	#imbalanced auroc
+	imbalanced_auroc = roc_auc_score(np.array(auroc_labels_test+auroc_labels_ood), np.array(auroc_max_logits_test+auroc_max_logits_ood))
+	print("Imbalanced auroc is ", imbalanced_auroc)
+
+	#balanced auroc
+	np.random.seed(0)
+	balanced_chosen = np.random.permutation(len(auroc_max_logits_ood))
+	auroc_max_logits_test = np.array(auroc_max_logits_test)[balanced_chosen].tolist()
+	auroc_labels_test = np.array(auroc_labels_test)[balanced_chosen].tolist()
+	balanced_auroc = roc_auc_score(np.array(auroc_labels_test+auroc_labels_ood), np.array(auroc_max_logits_test+auroc_max_logits_ood))
+	print("Balanced auroc is ", balanced_auroc)
 
 def main_permclr_ood():
 	pass

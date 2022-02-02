@@ -12,6 +12,7 @@ from utils import save_config_file, accuracy, save_checkpoint
 import pickle
 import time
 import numpy as np
+
 torch.manual_seed(0)
 
 #Multiply this matrix to make the feature matrix into A
@@ -97,7 +98,7 @@ def get_max_logit(logits):
 	assert logits.shape[0] %3 ==0
 	max_logits = []
 	for i in range(int(logits.shape[0]/3)):
-		max_logits.append(max(logits[3*i:3*(i+1)]))
+		max_logits.append(max(logits[3*i:3*(i+1)]).detach().cpu().item())
 	return max_logits
 
 import subprocess as sp
