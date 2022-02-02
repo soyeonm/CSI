@@ -92,6 +92,14 @@ def nll(logits, mask_logits, labels, usual_nll=False):
 	log_softmaxed = -(label_logits - torch.log(summed))
 	return torch.mean(log_softmaxed)
 
+def get_max_logit(logits):
+	#logits should be 1 d
+	assert logits.shape[0] %3 ==0
+	max_logits = []
+	for i in range(int(logits/3)):
+		max_logits.append(max(logits[3*i:3*(i+1)]))
+	return max_logits
+
 import subprocess as sp
 import os
 
@@ -116,11 +124,13 @@ class PermCLR(object):
 
 	#For test and ood
 	#def inference(self, train_datasets, train_loaders, test_datasets, test_loaders):
-	def inference(self, train_datasets, test_datasets, test_loaders):
+	def inference(self, train_datasets, test_datasets, test_loaders, f):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
 
+		auroc_max_logits = []
+		auroc_labels = []
 		class_lens = [len(td) for td in train_datasets]
 
 		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
@@ -208,12 +218,20 @@ class PermCLR(object):
 			#Now sum across the 128 dimensions
 			logits = torch.sum(features, axis=0) #Shape is torch.Size([9])
 
+			#Save the max of logits for each example 
+
 			#Print logits into file
-			f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
+			#f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
+			assert logits.shape[0] %3 ==0
+			auroc_max_logits += get_max_logit(logits)
+			if not(args.ood):
+				auroc_labels+= [1] * int(logits.shape[0]/3)
+			else:
+				auroc_labels+= [0] * int(logits.shape[0]/3)
 			f.write("logits for batch :" + str(batch_i) + '\n')
 			f.write(str(logits) + '\n')
-			f.close()
-
+		f.close()
+		return auroc_max_logits, auroc_labels
 
 
 	def train(self, train_datasets, train_loaders):
@@ -299,7 +317,6 @@ class PermCLR(object):
 					batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					#print("block 2 ", time.time()- start)
-					start = time.time()
 					#print("gpu memory after A: ", get_gpu_memory())
 					
 				#3. Concatenate (B)
@@ -310,7 +327,6 @@ class PermCLR(object):
 					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
 					#print("gpu memory after B: ", get_gpu_memory())
 					#print("block 3 ", time.time()- start)
-					start = time.time()
 
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
@@ -324,7 +340,6 @@ class PermCLR(object):
 					start = time.time()
 					#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 					#print("P matrix 128 ", time.time()- start)
-					start = time.time()
 					#P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
 					#pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
@@ -341,7 +356,6 @@ class PermCLR(object):
 					start = time.time()
 					#avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)#torch.Size([128, 8, 2])
 					#print("avg matrix 128 ", time.time()- start)
-					start = time.time()
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 					
 
@@ -356,7 +370,6 @@ class PermCLR(object):
 					#Now sum across the 128 dimensions
 					logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
 					#print("part 2 2 ", time.time()- start)
-					start = time.time()
 
 				#3. Put this into NLL loss
 					#Make logits into torch.Size([M x M]) (e.g. 6x6)
@@ -380,7 +393,6 @@ class PermCLR(object):
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
 					mean_loss += loss.detach().cpu().item()
 					#print("part 2 3 ", time.time()- start)
-					start = time.time()
 					#print(" Step Loss: " + str(loss))
 
 				#Optimizer zero grad
