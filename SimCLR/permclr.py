@@ -162,9 +162,7 @@ class PermCLR(object):
 			for batch_dict in chosen_train_dataset_tuples:
 				catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]) 
 				train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])
-			#pickle.dump(batch_dict_tuple, open('batch_dict_tuple.p', 'wb'))
-			#pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuples.p', 'wb'))
-			#pickle.dump(train_category_labels_tup, open('train_category_labels_tup.p', 'wb'))
+
 
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
@@ -228,7 +226,6 @@ class PermCLR(object):
 			#Save the max of logits for each example 
 
 			#Print logits into file
-			#f = open('test_logs/' + self.args.text_file_name +'.txt', 'a')
 			assert logits.shape[0] %3 ==0
 			auroc_max_logits += get_max_logit(logits)
 			if not(self.args.ood):
@@ -261,122 +258,69 @@ class PermCLR(object):
 			for batch_i, batch_dict_tuple in enumerate(zip(*train_loaders)): 
 				if batch_i % 20==0:
 					print("batch i is ", batch_i)
-				start = time.time()
-				#batch_dict_tuple is a tuple of batch_dict's 
-				#batch_dict_tuple[0]['image_0'] has shape torch.Size([2, 3, 32, 32]) if batch_size is 2
+
 				catted_imgs_tup = []
 				object_labels_tup = []
 				category_labels_tup =[]
-				#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
 				for batch_dict in batch_dict_tuple:
 					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
 					object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
 					category = self.args.classes_to_idx[batch_dict['category_label'][0]]
 					category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
-					#class_labels = torch.cat([args.classes_to_idx[batch_dict['category_label']] for i in range(self.args.permclr_views)]) 
 					catted_imgs_tup.append(catted_imgs); object_labels_tup.append(object_labels)
 				
-				#collapse all the "i"'s together in another direction
 				batch_imgs = torch.cat(catted_imgs_tup) #Shape should be like torch.Size([24, 3, 32, 32])
 				del batch_dict, catted_imgs_tup, catted_imgs
 				batch_object_labels = torch.cat(object_labels_tup) #Shape should be like torch.Size([24])
 				del object_labels_tup, object_labels
 				batch_category_labels = torch.cat(category_labels_tup) #Shape should be like torch.Size([24])
-				#print("data processing time ", time.time()- start)
-				start = time.time()
 
 				#send to device
 				batch_imgs = batch_imgs.to(self.args.device)
 				batch_object_labels = batch_object_labels.to(self.args.device)
 				batch_category_labels = batch_category_labels.to(self.args.device)
-				#f = open('log.txt', 'a')
-				#f.write('batch_object_labels: ' + str(batch_object_labels) + '\n')
-				#f.close()
 
-				#pickle.dump(batch_imgs, open("batch_imgs.p", "wb"))
-				#pickle.dump(batch_object_labels, open("batch_object_labels.p", "wb"))
-				#pickle.dump(batch_category_labels, open("batch_category_labels.p", "wb"))
-				#pickle.dump(self.args, open("args.p", "wb"))
 				#PART1
 				#1. Put all of the images into a model and get features
-				#with torch.autograd.set_detect_anomaly(True):
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(batch_imgs) #Shape should be like torch.Size([24, 128])
-					#print("gpu memory after features: ", get_gpu_memory())
-					#pickle.dump(features, open("features.p", "wb"))
-					start = time.time()
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
-					#features = features.reshape(self.args.batch_size * len(self.args.classes_to_idx), self.args.permclr_views, -1)
-					#TODO: check if this is correct
-					#Copy this matrix diagonally and apply it to batch_object_labels
-					#A_mat = get_A_matrix(self.args.permclr_views) #8*8
-					#A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
-					#print("A_mat shape is ", A_mat.shape)
-					#print("feature shape is ", features.shape)
-					features = torch.mm(A_mat, features) #Now we are ready to reshape this and make "A". Reshaping this is "A".
-					#pickle.dump(A_mat, open("A_mat1.p", "wb"))
-					#pickle.dump(features, open("features1.p", "wb"))
+					features = torch.mm(A_mat, features) 
 					batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
 					batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
 
 					features =features.reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views, -1)  #THIS is A
 					batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
-					#print("block 2 ", time.time()- start)
 					#print("gpu memory after A: ", get_gpu_memory())
 					
 				#3. Concatenate (B)
 					M = self.args.batch_size*len(self.args.classes_to_idx)
-					#features = torch.cat([torch.cat([features]*6, axis = 1).reshape(36,4,-1), torch.cat([features]*6)], axis=1)
 					features = torch.cat([torch.cat([features]*M, axis = 1).reshape(M**2,self.args.permclr_views,-1), torch.cat([features]*M)], axis=1)
 					batch_category_labels = torch.cat([torch.cat([batch_category_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_category_labels]*M)], axis=1)
 					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
 					#print("gpu memory after B: ", get_gpu_memory())
-					#print("block 3 ", time.time()- start)
 
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
-					#P_mat = torch.zeros(self.args.permclr_views*self.args.batch_size, self.args.permclr_views*self.args.batch_size).cuda()
-					#P_mat = get_perm_matrix(self.args.permclr_views).to(self.args.device) #has shape 8x8 
-					#torch.cat([torch.cat([batch_category_labels]*6, axis = 1).reshape(-1,4), torch.cat([batch_category_labels]*6)], axis=1).shape
 					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
-					#Apply bmm
-					#torch.cuda.empty_cache()
-					start = time.time()
-					#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
-					#print("P matrix 128 ", time.time()- start)
-					#P_mat_128 = P_mat_128.to(torch.device("cuda:1")) #Now shape is 128x8x8
-					#pickle.dump(P_mat_128, open("P_mat_128.p", "wb"))
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
-					#pickle.dump(features, open("features4.p", "wb"))
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
-					#print("block 4 ", time.time()- start)
-					start = time.time()
 
 				#PART2
 				#1. Get average features
-					#avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
-					#avg_matrix_128 = torch.zeros(128, self.args.permclr_views*self.args.batch_size, self.args.batch_size).float().to(self.args.device)
-					start = time.time()
-					#avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)#torch.Size([128, 8, 2])
-					#print("avg matrix 128 ", time.time()- start)
 					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
 					
 
 				#2. Get score matrix
-					#Normalize before the elementwise multiplication, for cosine similarity
-					#Normalize across 128
 					features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
-					#Multiple among the dimension of "2"
-					#Shape should be 128 x 36
 					#torch.mul for elementwise multiplication of matrices
 					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36])
 					#Now sum across the 128 dimensions
 					logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
-					#print("part 2 2 ", time.time()- start)
 
 				#3. Put this into NLL loss
 					#Make logits into torch.Size([M x M]) (e.g. 6x6)
@@ -386,12 +330,9 @@ class PermCLR(object):
 					logits = torch.cat([logits.T]*self.args.batch_size, axis=0).T.reshape(2*M, M) #torch.Size([12, 6])
 					pickle.dump(logits, open("logits.p", "wb"))
 					#Get labels for logits
-					#labels = torch.zeros(logits.shape[0], dtype=torch.long)	
 					#Change this later if batchsize, # classes or anything is changed!
 					labels = torch.tensor([0,1,0,1,2,3,2,3,4,5,4,5]).to(self.args.device)
-					#labels = put_labels(self.args.batch_size, labels)
 					#Mask logits so that the positives are not counted (e.g. for row 0, 1 is the mask)
-					#mask_logits = torch.cat([torch.ones(logits.shape[0], self.args.batch_size), torch.zeros(logits.shape[0], logits.shape[1] - self.args.batch_size)], axis=1).to(self.args.device)	
 					mask_logits = get_mask_logits(M, self.args.batch_size).to(self.args.device)
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
@@ -399,8 +340,6 @@ class PermCLR(object):
 					logits, labels, mask_logits = shuffle(logits, labels, mask_logits, M, batch_i + 100*epoch_counter)
 					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
 					mean_loss += loss.detach().cpu().item()
-					#print("part 2 3 ", time.time()- start)
-					#print(" Step Loss: " + str(loss))
 
 				#Optimizer zero grad
 					self.optimizer.zero_grad()
@@ -415,7 +354,6 @@ class PermCLR(object):
 				self.scheduler.step()
 			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
-			#pickle.dump(batch_dict_tuple, open(str(epoch_counter)+ "_batch_tuple.p", "wb"))
 
 
 			#shuffle
