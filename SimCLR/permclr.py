@@ -38,6 +38,12 @@ def get_perm_matrix_identity(num_perspectives):
 	mat = torch.eye(2*num_perspectives, 2*num_perspectives) 
 	return mat
 
+def get_perm_matrix_one(num_perspectives, swap_1st, swap_2nd):
+	mat = torch.eye(2*num_perspectives, 2*num_perspectives) 
+	new_mat = mat.clone()
+	new_mat[swap_1st, :] = mat[swap_2nd, :]; new_mat[swap_2nd, :] = mat[swap_1st, :]
+	return new_mat
+
 def get_avg_matrix(num_perspectives):
 	mat = torch.zeros(2*num_perspectives, 2)
 	for i in range(num_perspectives):
