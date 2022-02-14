@@ -140,8 +140,17 @@ class PermCLR(object):
 		auroc_labels = []
 		class_lens = [len(td) for td in train_datasets]
 
-		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
-		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+		#ORIGINAL OF JUST AVG BRANCH
+		#P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+
+		P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
+		for i in range(self.args.permclr_views):
+			for j in range(self.args.permclr_views):
+				P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+		P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
+		del P_mats
+		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape 
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
@@ -247,8 +256,17 @@ class PermCLR(object):
 		A_mat = get_A_matrix(self.args.permclr_views) #8*8
 		A_mat = torch.block_diag(*[A_mat]*len(self.args.classes_to_idx)).to(self.args.device) #24x24 with Car1, Car2, Cat1, Cat2, ...
 
-		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
-		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+		#ORIGINAL OF JUST AVG BRANCH
+		#P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+
+		P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
+		for i in range(self.args.permclr_views):
+			for j in range(self.args.permclr_views):
+				P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+		P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
+		del P_mats
+		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape (128 x 136 x 136) 
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
@@ -302,13 +320,20 @@ class PermCLR(object):
 					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
 					#print("gpu memory after B: ", get_gpu_memory())
 
+					#Concatenate B horizontally args.permclr_views **2 + 1 (Page 5 beginning)
+					features = torch.cat([features]*(self.args.permclr_views**2+1), axis=1)#Shape is 36 x (8*17) x 128
+					#Shape becomes 128 x (8*17) x 36 with features = features.permute(2, 1, 0) below.
+
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
 					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
 					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
-					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
+					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x (8*17). THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
+					features = features.reshape(self.args.out_dim, (M**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*args.batch_size) #shape (128, 36*17, 8)
+					#features = features.transpose(1,2) #shape is (128, 8, 36*17) #IS THIS THE RIGHT SHAPE? THIS is not needed.
+
 
 				#PART2
 				#1. Get average features
