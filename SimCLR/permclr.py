@@ -170,7 +170,7 @@ class PermCLR(object):
 
 		chosens = []
 		for ci, c in enumerate(class_lens):
-			np.random.seed(batch_i+ 1000*ci)
+			np.random.seed(1000*ci)
 			#Just choose one
 			chosens.append(np.random.choice(c, train_batch_size).tolist())
 
