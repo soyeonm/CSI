@@ -176,13 +176,22 @@ class PermCLR(object):
 				#Just choose one
 				chosens.append(np.random.choice(c, train_batch_size).tolist())
 			#chosen training
-			chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))] 
-			pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuple_b1.p', 'wb'))
-			#catted_img_tups of train dataset
+			# chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))] 
+			# pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuple_b1.p', 'wb'))
+			# #catted_img_tups of train dataset
+			# train_category_labels_tup =[]
+			# for batch_dict in chosen_train_dataset_tuples:
+			# 	catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]) 
+			# 	train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])]
+
 			train_category_labels_tup =[]
-			for batch_dict in chosen_train_dataset_tuples:
-				catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]) 
-				train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])]
+			for ci, chosen in enumerate(chosens):
+				cat_by_category = []
+				for c in chosen:
+					batch_dict = train_datasets[i][c] 
+					cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]
+				catted_imgs = torch.cat(cat_by_category)
+				train_category_labels_tup.append(catted_imgs)
 
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
