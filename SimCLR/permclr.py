@@ -342,7 +342,7 @@ class PermCLR(object):
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x (8*17). THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
-					features = features.reshape(self.args.out_dim, (M**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*args.batch_size) #shape (128, 36*17, 8)
+					features = features.reshape(self.args.out_dim, (M**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*self.args.batch_size) #shape (128, 36*17, 8)
 					#features = features.transpose(1,2) #shape is (128, 8, 36*17) #IS THIS THE RIGHT SHAPE? THIS is not needed.
 
 
