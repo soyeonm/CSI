@@ -126,6 +126,43 @@ def get_gpu_memory():
     return memory_free_values
 
 
+def p_value(subset_logits):
+	p = 
+	return p
+
+#Takes in logits of shape (num_classes**2,train_batch_size)  or (num_classes**2, (self.args.permclr_views**2+1)*train_batch_size))
+#and outputs
+#p-values (new logits) of shape
+#num_classes**2 
+def classifier(logits, train_batch_size):
+	#Define original and permutation
+	#In the 0th axis, 0, 3, 9 are the same class
+	#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
+	
+	#Get the T of the originals (identity permutation) <- We already have these
+
+	#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
+	total_minus = torch.zeros(logits.shape[0], train_batch_size)
+	for i in range(self.args.permclr_views**2):
+		#Count instances larger than the original
+		minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
+		minus = minus >0 
+		total_minus += minus
+
+	total_minus = total_minus/ (self.args.permclr_views**2)
+
+	#Maybe - Average over train_batch_size
+	new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
+
+	#Maybe filter what to take in later
+
+	#Or use the fact that p-value itself is uniform?
+
+	return new_logits #large is bad
+
+	
+
+
 
 
 class PermCLR(object):
@@ -140,7 +177,7 @@ class PermCLR(object):
 
 	#For test and ood
 	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
-	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1):
+	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1, p_classifier):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
@@ -275,8 +312,11 @@ class PermCLR(object):
 			#If not just_average, reshape logits and get avg
 			if not(just_average):
 				logits = logits.reshape(num_classes**2, (self.args.permclr_views**2+1)*train_batch_size) # The firsr 17*train_batch_size is car_test*car_train, the 2nd 17*train_batch_size is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
-				#Average across axis 1 (across the 17)
-				logits = torch.mean(logits, axis=1)
+				if not(p_classifier):
+					#Average across axis 1 (across the 17)
+					logits = torch.mean(logits, axis=1)
+				else:
+					logits = 1 - classifier(logits, train_batch_size)
 
 
 			#Save the max of logits for each example 
