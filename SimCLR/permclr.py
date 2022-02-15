@@ -152,7 +152,7 @@ class PermCLR(object):
 		logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
-	def classifier(self, logits, train_batch_size, permclr_views):
+	def classifier(self, logits, train_batch_size, permclr_views, indicator=False):
 		#Define original and permutation
 		#In the 0th axis, 0, 4, 8 (which are 0, middle in 2nd row, last) are the same class
 		#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
@@ -171,7 +171,24 @@ class PermCLR(object):
 		#print("total_minus is ", total_minus)
 
 		#Maybe - Average over train_batch_size
-		new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
+		if not(indicator):
+			new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
+		else:
+			#Count indicator across column (smallest among 0,1,2/3,4,5/6,7,8)
+			new_logits = torch.ones(logits.shape[0])
+			#new_logits = torch.zeros(total_minus.shape)
+			#argmins = torch.argmin(total_minus, axis=0)
+			#for a in argmins.cpu().tolist():
+			#convert to numpy and try
+			total_minus = total_minus.cpu().numpy()
+			b = np.zeros_like(total_minus)
+			#Get argmin and set zero to each 3 chunk
+
+			b[np.arange(len(a)), a.argmax(1)] = 1
+			pass
+
+			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
+			#new_logits[wheres] = 1
 
 		#Maybe filter what to take in later
 
@@ -338,7 +355,7 @@ class PermCLR(object):
 		return auroc_max_logits, auroc_labels
 
 
-	def train(self, train_datasets, train_loaders):
+	def train(self, train_datasets, train_loaders, debug_with_identity=False):
 		
 		torch.cuda.set_device(0)
 		num_classes = len(train_loaders)
@@ -354,7 +371,10 @@ class PermCLR(object):
 		P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
 		for i in range(self.args.permclr_views):
 			for j in range(self.args.permclr_views):
-				P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+				if not(debug_with_identity):
+					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+				else:
+					P_mats.append(get_perm_matrix_identity(self.args.permclr_views).to(self.args.device))
 		P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
 		del P_mats
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape (128 x 136 x 136) 
