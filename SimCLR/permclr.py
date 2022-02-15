@@ -154,7 +154,7 @@ class PermCLR(object):
 
 	def classifier(self, logits, train_batch_size, permclr_views):
 		#Define original and permutation
-		#In the 0th axis, 0, 3, 9 are the same class
+		#In the 0th axis, 0, 4, 8 (which are 0, middle in 2nd row, last) are the same class
 		#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
 		
 		#Get the T of the originals (identity permutation) <- We already have these
@@ -168,7 +168,7 @@ class PermCLR(object):
 			total_minus += minus
 
 		total_minus = total_minus/ (permclr_views**2)
-		print("total_minus is ", total_minus)
+		#print("total_minus is ", total_minus)
 
 		#Maybe - Average over train_batch_size
 		new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
