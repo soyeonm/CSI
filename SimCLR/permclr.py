@@ -316,19 +316,19 @@ class PermCLR(object):
 
 				#2. Rearrange these features (A) #M=  batch_size * num_categories (e.g. 6 in this case where there are 3 classes)
 					features = torch.mm(A_mat, features) 
-					batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
-					batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
+					#batch_category_labels = torch.mm(A_mat, batch_category_labels.view(1,-1).T.float()).long()
+					#batch_object_labels = torch.mm(A_mat, batch_object_labels.view(1,-1).T.float()).long()
 
 					features =features.reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views, -1)  #THIS is A
-					batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
-					batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
+					#batch_category_labels = batch_category_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
+					#batch_object_labels = batch_object_labels.squeeze().reshape(self.args.batch_size*len(self.args.classes_to_idx), self.args.permclr_views)
 					#print("gpu memory after A: ", get_gpu_memory())
 					
 				#3. Concatenate (B)
 					M = self.args.batch_size*len(self.args.classes_to_idx)
 					features = torch.cat([torch.cat([features]*M, axis = 1).reshape(M**2,self.args.permclr_views,-1), torch.cat([features]*M)], axis=1)
-					batch_category_labels = torch.cat([torch.cat([batch_category_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_category_labels]*M)], axis=1)
-					batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
+					#batch_category_labels = torch.cat([torch.cat([batch_category_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_category_labels]*M)], axis=1)
+					#batch_object_labels = torch.cat([torch.cat([batch_object_labels]*M, axis = 1).reshape(M**2,self.args.permclr_views), torch.cat([batch_object_labels]*M)], axis=1)
 					#print("gpu memory after B: ", get_gpu_memory())
 
 					#Concatenate B horizontally args.permclr_views **2 + 1 (Page 5 beginning)
@@ -337,8 +337,8 @@ class PermCLR(object):
 
 				#4. Permute (B P^T)
 					#Multiply by a permutation matrix for each row
-					batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
-					batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
+					#batch_category_labels = torch.mm(batch_category_labels.float(),P_mat.T) #Shape is 36x8
+					#batch_object_labels = torch.mm(batch_object_labels.float(),P_mat.T)
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x (8*17). THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
