@@ -139,8 +139,8 @@ class PermCLR(object):
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
 	#For test and ood
-	#def inference(self, train_datasets, train_loaders, test_datasets, test_loaders):
-	def inference(self, train_datasets, test_datasets, test_loaders, f):
+	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
+	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
@@ -150,16 +150,18 @@ class PermCLR(object):
 		class_lens = [len(td) for td in train_datasets]
 
 		#ORIGINAL OF JUST AVG BRANCH
-		#P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
-		#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+		if just_average:
+			P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+			P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
-		P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
-		for i in range(self.args.permclr_views):
-			for j in range(self.args.permclr_views):
-				P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
-		P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
-		del P_mats
-		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape 
+		else:
+			P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
+			for i in range(self.args.permclr_views):
+				for j in range(self.args.permclr_views):
+					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+			P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
+			del P_mats
+			P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape 
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
@@ -226,20 +228,34 @@ class PermCLR(object):
 			#Permute
 			#Reshape features for permuting
 			#Reshaped into (128, num_classes**2,  self.args.permclr_views*2)
+
+			if not(just_average):
+				features = torch.cat([features]*(self.args.permclr_views**2+1), axis=1)#Shape is 9 x (8*17) x 128
 			features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
 			features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
 			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
+			if not(just_average):
+				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*args.batch_size)  #shape (128, 9*17, 8)
+
 			#Get average
-			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2])
+			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2]) or torch.Size([128, 9*17, 2])
+
 
 			#Take dot product
 			#Normalize across 128
 			features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
 			#Multiply elementwise among the dimension of "2"
-			features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9])
+			features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9]) or torch.Size([128, 9*17])
 			#Now sum across the 128 dimensions
-			logits = torch.sum(features, axis=0) #Shape is torch.Size([9])
+			logits = torch.sum(features, axis=0) #Shape is torch.Size([9]) or torch.Size([9*17])
+
+			#If not just_average, reshape logits and get avg
+			if not(just_average):
+				logits = logits.reshape(num_classes**2, self.args.permclr_views**2+1) # The firsr 17 is car_test*car_train, the 2nd 17 is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
+				#Average across axis 1 (across the 17)
+				logits = torch.mean(logits, axis=1)
+
 
 			#Save the max of logits for each example 
 
