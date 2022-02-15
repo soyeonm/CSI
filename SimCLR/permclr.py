@@ -188,7 +188,7 @@ class PermCLR(object):
 			for ci, chosen in enumerate(chosens):
 				cat_by_category = []
 				for c in chosen:
-					batch_dict = train_datasets[i][c] 
+					batch_dict = train_datasets[ci][c] 
 					cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]
 				catted_imgs = torch.cat(cat_by_category)
 				train_category_labels_tup.append(catted_imgs)
