@@ -22,6 +22,7 @@ parser.add_argument('--permclr_views', type=int, default=4)
 parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
 parser.add_argument('--smaller_data', action='store_true')
+parser.add_argument('--debug_with_identity', action='store_true')
 
 
 def main_permclr():
@@ -100,7 +101,7 @@ def main_permclr():
 	#print("shuffled all c dataloaders! time: ", time.time() - start)
 	with torch.cuda.device(args.gpu_index):
 		permclr = PermCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		permclr.train(train_datasets, train_data_loaders)
+		permclr.train(train_datasets, train_data_loaders, args.debug_with_identity)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'saved_models')
 
