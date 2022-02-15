@@ -208,7 +208,7 @@ class PermCLR(object):
 				catted_imgs_tup.append(catted_imgs)
 
 			#Concatenate everything into batch_imgs
-			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
+			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes*train_batch_size), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
 			batch_imgs = batch_imgs.to(self.args.device)
 
 			#Put into model and get features
@@ -216,24 +216,24 @@ class PermCLR(object):
 				features = self.model(batch_imgs) #shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 128])
 
 			#Now separate into two
-			features_train = features[:self.args.permclr_views*num_classes, :].clone() #shape  torch.Size([self.args.permclr_views*  num_classes, 128])
-			features_test = features[self.args.permclr_views*num_classes:, :].clone() #shape torch.Size([self.args.permclr_views* (batch_size * num_classes), 128])
+			features_train = features[:self.args.permclr_views*num_classes*train_batch_size, :].clone() #shape  torch.Size([self.args.permclr_views*  num_classes, 128])
+			features_test = features[self.args.permclr_views*num_classes*train_batch_size:, :].clone() #shape torch.Size([self.args.permclr_views* (batch_size * num_classes), 128])
 			del features
 
 			#Stack and concatenate
 			#Stack features_train first
-			features_train = features_train.reshape(num_classes, self.args.permclr_views, -1)
-			features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2, self.args.permclr_views, 128 )
+			features_train = features_train.reshape(num_classes*train_batch_size, self.args.permclr_views, -1)
+			features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2*train_batch_size, self.args.permclr_views, 128 )
 
 			#Stack features_test
 			features_test = features_test.reshape(num_classes, self.args.permclr_views, -1) #ASSUME BATCH_SIZE=1
 			features_test = features_test.transpose(0,1) #(self.args.permclr_views, num_classes, 128)
-			features_test = torch.cat([features_test]*num_classes) #(self.args.permclr_views*num_classes, num_classes, 128)
+			features_test = torch.cat([features_test]*num_classes*train_batch_size) #(self.args.permclr_views*num_classes, num_classes, 128)
 			features_test = features_test.transpose(0,1)
-			features_test = features_test.reshape(num_classes**2, self.args.permclr_views, -1) #shape is (num_classes**2, self.args.permclr_views, 128 ) WITH batch size 1
+			features_test = features_test.reshape(num_classes**2*train_batch_size, self.args.permclr_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views, 128 ) WITH batch size 1
 
 			#Concatenate feature_test and features_train 
-			features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2, self.args.permclr_views*2, 128 ) WITH batch size 1
+			features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views*2, 128 ) WITH batch size 1
 
 			#Permute
 			#Reshape features for permuting
@@ -246,7 +246,7 @@ class PermCLR(object):
 			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
 			if not(just_average):
-				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*2)  #shape (128, 9*17, 8)
+				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1)*train_batch_size, self.args.permclr_views*2)  #shape (128, 9*17, 8)
 
 			#Get average
 			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2]) or torch.Size([128, 9*17, 2])
@@ -258,11 +258,17 @@ class PermCLR(object):
 			#Multiply elementwise among the dimension of "2"
 			features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9]) or torch.Size([128, 9*17])
 			#Now sum across the 128 dimensions
-			logits = torch.sum(features, axis=0) #Shape is torch.Size([9]) or torch.Size([9*17])
+			logits = torch.sum(features, axis=0) #Shape is torch.Size([9*train_batch_size]) or torch.Size([9*train_batch_size*17])
+
+			#For sanity check just average over train_batch_size
+			if (just_average):
+				logits = logits.reshape(num_classes**2,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
+				logits = torch.mean(logits, axis=1)
+
 
 			#If not just_average, reshape logits and get avg
 			if not(just_average):
-				logits = logits.reshape(num_classes**2, self.args.permclr_views**2+1) # The firsr 17 is car_test*car_train, the 2nd 17 is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
+				logits = logits.reshape(num_classes**2, (self.args.permclr_views**2+1)*train_batch_size) # The firsr 17*train_batch_size is car_test*car_train, the 2nd 17*train_batch_size is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
 				#Average across axis 1 (across the 17)
 				logits = torch.mean(logits, axis=1)
 
