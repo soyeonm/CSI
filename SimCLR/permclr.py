@@ -236,7 +236,7 @@ class PermCLR(object):
 			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
 			if not(just_average):
-				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*args.batch_size)  #shape (128, 9*17, 8)
+				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*self.args.batch_size)  #shape (128, 9*17, 8)
 
 			#Get average
 			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2]) or torch.Size([128, 9*17, 2])
