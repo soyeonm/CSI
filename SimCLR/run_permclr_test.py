@@ -31,6 +31,7 @@ parser.add_argument('-itc', '--intentionally_change_test_classes', action='store
 parser.add_argument('--smaller_data', action='store_true')
 
 parser.add_argument('--not_just_average', action='store_true')
+parser.add_argument('--train_batch_size', type=int, default=1)
 
 
 def main_permclr_test():
@@ -116,13 +117,13 @@ def main_permclr_test():
 	with torch.cuda.device(args.gpu_index):
 		args.ood = False
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
-		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average)
+		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average, args.train_batch_size)
 
 	#Run inference for ood
 	with torch.cuda.device(args.gpu_index):
 		args.ood = True
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
-		auroc_max_logits_ood, auroc_labels_ood = permclr.inference(train_datasets, ood_datasets, ood_data_loaders, of, just_average)
+		auroc_max_logits_ood, auroc_labels_ood = permclr.inference(train_datasets, ood_datasets, ood_data_loaders, of, just_average, args.train_batch_size)
 
 	pickle.dump((auroc_max_logits_test, auroc_labels_test),open("logits/test_" + args.text_file_name + ".p", "wb"))
 	pickle.dump((auroc_max_logits_ood, auroc_labels_ood),open("logits/ood_" + args.text_file_name + ".p", "wb"))
