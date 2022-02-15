@@ -135,7 +135,7 @@ def p_value(subset_logits):
 #and outputs
 #p-values (new logits) of shape
 #num_classes**2 
-def classifier(logits, train_batch_size):
+def classifier(logits, train_batch_size, permclr_views):
 	#Define original and permutation
 	#In the 0th axis, 0, 3, 9 are the same class
 	#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
@@ -144,13 +144,13 @@ def classifier(logits, train_batch_size):
 
 	#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
 	total_minus = torch.zeros(logits.shape[0], train_batch_size)
-	for i in range(self.args.permclr_views**2):
+	for i in range(permclr_views**2):
 		#Count instances larger than the original
 		minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
 		minus = minus >0 
 		total_minus += minus
 
-	total_minus = total_minus/ (self.args.permclr_views**2)
+	total_minus = total_minus/ (permclr_views**2)
 
 	#Maybe - Average over train_batch_size
 	new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
@@ -317,7 +317,7 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits = 1 - classifier(logits, train_batch_size)
+					logits = 1 - classifier(logits, train_batch_size, self.args.permclr_views)
 
 
 			#Save the max of logits for each example 

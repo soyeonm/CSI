@@ -32,7 +32,7 @@ parser.add_argument('--smaller_data', action='store_true')
 
 parser.add_argument('--not_just_average', action='store_true')
 parser.add_argument('--train_batch_size', type=int, default=1)
-parser.add_argument('--p_classifer', action='store_true')
+parser.add_argument('-pc', '--p_classifer', action='store_true')
 
 
 
