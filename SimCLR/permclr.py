@@ -135,31 +135,7 @@ def p_value(subset_logits):
 #and outputs
 #p-values (new logits) of shape
 #num_classes**2 
-def classifier(logits, train_batch_size, permclr_views):
-	#Define original and permutation
-	#In the 0th axis, 0, 3, 9 are the same class
-	#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
-	
-	#Get the T of the originals (identity permutation) <- We already have these
 
-	#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
-	total_minus = torch.zeros(logits.shape[0], train_batch_size)
-	for i in range(permclr_views**2):
-		#Count instances larger than the original
-		minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
-		minus = minus >0 
-		total_minus += minus
-
-	total_minus = total_minus/ (permclr_views**2)
-
-	#Maybe - Average over train_batch_size
-	new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
-
-	#Maybe filter what to take in later
-
-	#Or use the fact that p-value itself is uniform?
-
-	return new_logits #large is bad
 
 	
 
@@ -175,6 +151,32 @@ class PermCLR(object):
 		self.writer = SummaryWriter()
 		logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
+
+	def classifier(logits, train_batch_size, permclr_views):
+		#Define original and permutation
+		#In the 0th axis, 0, 3, 9 are the same class
+		#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
+		
+		#Get the T of the originals (identity permutation) <- We already have these
+
+		#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
+		total_minus = torch.zeros(logits.shape[0], train_batch_size).to(self.args.device)
+		for i in range(permclr_views**2):
+			#Count instances larger than the original
+			minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
+			minus = minus >0 
+			total_minus += minus
+
+		total_minus = total_minus/ (permclr_views**2)
+
+		#Maybe - Average over train_batch_size
+		new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
+
+		#Maybe filter what to take in later
+
+		#Or use the fact that p-value itself is uniform?
+
+		return new_logits #large is bad
 
 	#For test and ood
 	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
