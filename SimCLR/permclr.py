@@ -177,7 +177,7 @@ class PermCLR(object):
 
 	#For test and ood
 	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
-	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1, p_classifier):
+	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1, p_classifier=False):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
