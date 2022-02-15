@@ -140,7 +140,7 @@ class PermCLR(object):
 
 	#For test and ood
 	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
-	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True):
+	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
@@ -174,17 +174,15 @@ class PermCLR(object):
 			for ci, c in enumerate(class_lens):
 				np.random.seed(batch_i+ 1000*ci)
 				#Just choose one
-				chosens.append(np.random.choice(c))
+				chosens.append(np.random.choice(c, train_batch_size))
 			#chosen training
 			chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))] 
+			pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuple_b1.p', 'wb'))
 			#catted_img_tups of train dataset
 			train_category_labels_tup =[]
 			for batch_dict in chosen_train_dataset_tuples:
 				catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]) 
 				train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])]
-			pickle.dump(catted_imgs, open("temp_pickles/catted_imgs_2_15.p", "wb"))
-			pickle.dump(train_category_labels_tup, open("temp_pickles/train_category_labels_tup_2_15.p", "wb"))
-
 
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
@@ -199,11 +197,7 @@ class PermCLR(object):
 					category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
 					object_labels_tup.append(object_labels)
 				catted_imgs_tup.append(catted_imgs)
-				pickle.dump(object_labels_tup, open("temp_pickles/object_labels_tup_batch2_2_15.p", "wb"))
-				pickle.dump(category_labels_tup, open("temp_pickles/category_labels_tup_batch2_2_15.p", "wb"))
-				pickle.dump(catted_imgs, open("temp_pickles/batc_dict_catted_imgs_batch2_2_15.p", "wb"))
-				pickle.dump(catted_imgs_tup, open("temp_pickles/catted_imgs__batch2_tup_2_15.p", "wb"))
-				break
+
 			#Concatenate everything into batch_imgs
 			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup) # shape is torch.Size([self.args.permclr_views* (batch_size * num_classes + num_classes), 3, 32, 32]) #The first self.args.permclr_views * num_classes are train imags
 			batch_imgs = batch_imgs.to(self.args.device)
