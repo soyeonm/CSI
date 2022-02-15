@@ -166,15 +166,28 @@ class PermCLR(object):
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
+		#Sample train examples once before the loop
+
+		chosens = []
+		for ci, c in enumerate(class_lens):
+			np.random.seed(batch_i+ 1000*ci)
+			#Just choose one
+			chosens.append(np.random.choice(c, train_batch_size).tolist())
+
+		train_category_labels_tup =[]
+		for ci, chosen in enumerate(chosens):
+			cat_by_category = []
+			for c in chosen:
+				batch_dict = train_datasets[ci][c] 
+				cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]
+			catted_imgs = torch.cat(cat_by_category)
+			train_category_labels_tup.append(catted_imgs)
+
 		for batch_i, batch_dict_tuple in enumerate(zip(*test_loaders)): 
 			#Just know how many objects per class there are in this batch
 			#cur_batch_size = batch_dict_tuple[0]['image_0'].shape[0] #TODO later
 			#Get a random object from each category of train_dataset
-			chosens = []
-			for ci, c in enumerate(class_lens):
-				np.random.seed(batch_i+ 1000*ci)
-				#Just choose one
-				chosens.append(np.random.choice(c, train_batch_size).tolist())
+			
 			#chosen training
 			# chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))] 
 			# pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuple_b1.p', 'wb'))
@@ -184,14 +197,7 @@ class PermCLR(object):
 			# 	catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]) 
 			# 	train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])]
 
-			train_category_labels_tup =[]
-			for ci, chosen in enumerate(chosens):
-				cat_by_category = []
-				for c in chosen:
-					batch_dict = train_datasets[ci][c] 
-					cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.permclr_views)]
-				catted_imgs = torch.cat(cat_by_category)
-				train_category_labels_tup.append(catted_imgs)
+			
 
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
