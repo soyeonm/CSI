@@ -127,8 +127,9 @@ def get_gpu_memory():
 
 
 def p_value(subset_logits):
-	p = 
-	return p
+	#p = 
+	#return p
+	pass
 
 #Takes in logits of shape (num_classes**2,train_batch_size)  or (num_classes**2, (self.args.permclr_views**2+1)*train_batch_size))
 #and outputs
