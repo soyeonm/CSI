@@ -73,13 +73,13 @@ def shift(input_1d_tensor, shift_by):
 	return output_tensor
 
 
-def get_mask_logits(M, batch_size):
-	mask = torch.zeros(2*M, M)
-	default_1d_tensor = torch.zeros(M).long()
-	default_1d_tensor[:batch_size] = 1
-	assert M %2 ==0
-	for i in range(int(M/2)):
-		mask[i*4:(i+1)*4,:] =  shift(default_1d_tensor, batch_size*i)
+def get_mask_logits(M, batch_size, num_permutations=1):
+	mask = torch.zeros(2*M*num_permutations, M*num_permutations)
+	default_1d_tensor = torch.zeros(M*num_permutations).long()
+	default_1d_tensor[:batch_size*num_permutations] = 1
+	assert M*num_permutations % (2*num_permutations) ==0
+	for i in range(int(M/(2))):
+		mask[i*4*num_permutations:(i+1)*4*num_permutations,:] =  shift(default_1d_tensor, batch_size*num_permutations*i)
 	return mask
 
 def shuffle(logits, labels, mask_logits, M, seed):
@@ -106,6 +106,15 @@ def get_max_logit(logits):
 	for i in range(int(logits.shape[0]/3)):
 		max_logits.append(max(logits[3*i:3*(i+1)]).detach().cpu().item())
 	return max_logits
+
+def get_labels(batch_size, num_classes, num_permutations=1):
+	labels = []
+	for i in range(num_classes):
+		for j in range(batch_size):
+			nrange = np.arange(num_permutations*batch_size) + i*num_permutations*batch_size
+			labels += nrange.tolist()
+	return labels
+
 
 import subprocess as sp
 import os
@@ -271,6 +280,8 @@ class PermCLR(object):
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
+		num_permutations = self.args.permclr_views**2 + 1
+
 		for epoch_counter in range(self.args.epochs):
 			mean_loss = 0.0
 			for batch_i, batch_dict_tuple in enumerate(zip(*train_loaders)): 
@@ -337,28 +348,29 @@ class PermCLR(object):
 
 				#PART2
 				#1. Get average features
-					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36, 2])
+					features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 36*17, 2])
 					
 
 				#2. Get score matrix
 					features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
 					#torch.mul for elementwise multiplication of matrices
-					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36])
+					features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 36*17])
 					#Now sum across the 128 dimensions
-					logits = torch.sum(features, axis=0) #Shape is torch.Size([36])
+					logits = torch.sum(features, axis=0) #Shape is torch.Size([36*17])
 
 				#3. Put this into NLL loss
 					#Make logits into torch.Size([M x M]) (e.g. 6x6)
-					logits = logits.reshape(M, M)
+					logits = logits.reshape(M, (self.args.permclr_views**2 + 1)*M)
 					#Positives are the first "batch_size" of each row in the [6x6] above (which has size batch_size * num_classes(M))
 					#copy into (batch_size * M) x M
-					logits = torch.cat([logits.T]*self.args.batch_size, axis=0).T.reshape(2*M, M) #torch.Size([12, 6])
+					logits = torch.cat([logits.T]*(self.args.batch_size*num_permutations), axis=0).T.reshape((self.args.batch_size*num_permutations)*M, M) #torch.Size([12, 6])
 					pickle.dump(logits, open("logits.p", "wb"))
 					#Get labels for logits
 					#Change this later if batchsize, # classes or anything is changed!
-					labels = torch.tensor([0,1,0,1,2,3,2,3,4,5,4,5]).to(self.args.device)
+					#labels = torch.tensor([0,1,0,1,2,3,2,3,4,5,4,5]).to(self.args.device)
+					labels = torch.tensor(get_labels(self.args.batch_size, num_classes, num_permutations)).to(self.args.device)
 					#Mask logits so that the positives are not counted (e.g. for row 0, 1 is the mask)
-					mask_logits = get_mask_logits(M, self.args.batch_size).to(self.args.device)
+					mask_logits = get_mask_logits(M, self.args.batch_size, num_permutations).to(self.args.device)
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					#Shuffle everything before putting into nll
