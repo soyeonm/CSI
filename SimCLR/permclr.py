@@ -363,7 +363,7 @@ class PermCLR(object):
 					logits = logits.reshape(M, (self.args.permclr_views**2 + 1)*M)
 					#Positives are the first "batch_size" of each row in the [6x6] above (which has size batch_size * num_classes(M))
 					#copy into (batch_size * M) x M
-					logits = torch.cat([logits.T]*(self.args.batch_size*num_permutations), axis=0).T.reshape((self.args.batch_size*num_permutations)*M, M) #torch.Size([12, 6])
+					logits = torch.cat([logits.T]*(self.args.batch_size*num_permutations), axis=0).T.reshape((self.args.batch_size*num_permutations)*M, M*num_permutations) #torch.Size([12, 6])
 					pickle.dump(logits, open("logits.p", "wb"))
 					#Get labels for logits
 					#Change this later if batchsize, # classes or anything is changed!
