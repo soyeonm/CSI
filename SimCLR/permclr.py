@@ -174,7 +174,7 @@ class PermCLR(object):
 			for ci, c in enumerate(class_lens):
 				np.random.seed(batch_i+ 1000*ci)
 				#Just choose one
-				chosens.append(np.random.choice(c, train_batch_size))
+				chosens.append(np.random.choice(c, train_batch_size).tolist())
 			#chosen training
 			chosen_train_dataset_tuples = [train_datasets[i][chosens[i]] for i in range(len(train_datasets))] 
 			pickle.dump(chosen_train_dataset_tuples, open('chosen_train_dataset_tuple_b1.p', 'wb'))
