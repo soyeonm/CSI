@@ -86,7 +86,7 @@ def shuffle(logits, labels, mask_logits, M, seed):
 	#Shuffle over 2*M
 	np.random.seed(seed)
 	permuted = np.random.permutation(2*M).tolist()
-	return logits[permuted], labels[permuted], mask_logits[permuted]
+	return logits[permuted], labels[permuted], mask_logits[permuted] 
 
 
 def nll(logits, mask_logits, labels, usual_nll=False):
