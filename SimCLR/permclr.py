@@ -195,7 +195,7 @@ class PermCLR(object):
 				indices = indices[:train_batch_size]
 				for j in range(num_classes):
 					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1))).float()/train_batch_size
-
+			print("new logits are ", new_logits)
 
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
