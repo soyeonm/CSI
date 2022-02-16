@@ -183,7 +183,7 @@ class PermCLR(object):
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
 			total_minus = total_minus.detach().cpu().numpy()
-			pickle.dump(total_minus, open("temp_pickle/total_minus.p", "wb"))
+			pickle.dump(total_minus, open("temp_pickles/total_minus.p", "wb"))
 			#print("total minus is ", total_minus)
 			#print("total minus shape is ", total_minus.shape)
 			b = np.zeros_like(total_minus)
@@ -194,11 +194,11 @@ class PermCLR(object):
 				#print('i is ', i)
 				#b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmin(1)] = 1
 				b[i*num_classes:(i+1)*num_classes][total_minus[i*num_classes: (i+1)*num_classes].argmin(0), np.arange(train_batch_size)]=1
-			pickle.dump(b, open("temp_pickle/b.p", "wb"))
+			pickle.dump(b, open("temp_pickles/b.p", "wb"))
 			#print("b is ", b)
 			#Now average b across train_batch_size
 			b = np.mean(b, axis=1)
-			pickle.dump(b, open("temp_pickle/meaned_b.p", "wb"))
+			pickle.dump(b, open("temp_pickles/meaned_b.p", "wb"))
 			#break
 			assert 1==2
 			print("meaned b is ", b)
