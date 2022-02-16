@@ -180,7 +180,7 @@ class PermCLR(object):
 			#argmins = torch.argmin(total_minus, axis=0)
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
-			total_minus = total_minus.cpu().numpy()
+			total_minus = total_minus.detach().cpu().numpy()
 			b = np.zeros_like(total_minus)
 			#Get argmin and set zero to each 3 chunk
 			for i in range(num_classes):
