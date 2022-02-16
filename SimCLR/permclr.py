@@ -175,6 +175,7 @@ class PermCLR(object):
 			print("total_minus is ", total_minus)
 			new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
 		else:
+			print("total_minus is ", total_minus)
 			#Count indicator across column (smallest among 0,1,2/3,4,5/6,7,8)
 			new_logits = torch.ones(logits.shape[0])
 			#new_logits = torch.zeros(total_minus.shape)
@@ -192,7 +193,7 @@ class PermCLR(object):
 				#print('i is ', i)
 				#b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmin(1)] = 1
 				b[i*num_classes:(i+1)*num_classes][total_minus[i*num_classes: (i+1)*num_classes].argmin(0), np.arange(train_batch_size)]=1
-
+			print("b is ", b)
 			#Now average b across train_batch_size
 			b = np.mean(b, axis=1)
 			print("meaned b is ", b)
