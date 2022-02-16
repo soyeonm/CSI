@@ -189,7 +189,7 @@ class PermCLR(object):
 
 			#Get the 1/3 threshold for each of  0,1,2/3,4,5/6,7,8
 			for i in range(num_classes):
-				sorted, indices = sorted(total_minus.view(-1)[i*(num_classes*train_batch_size):(i+1)*(num_classes*train_batch_size)])
+				sorted, indices = torch.sort(total_minus.view(-1)[i*(num_classes*train_batch_size):(i+1)*(num_classes*train_batch_size)])
 				threshold = sorted[train_batch_size-1] #The 1/3th smallest
 				#Count how many of the indices before 10 belongs to each of the three classes
 				indices = indices[:train_batch_size]
