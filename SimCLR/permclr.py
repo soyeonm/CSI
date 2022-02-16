@@ -82,10 +82,12 @@ def get_mask_logits(M, batch_size, num_permutations=1):
 		mask[i*4*num_permutations:(i+1)*4*num_permutations,:] =  shift(default_1d_tensor, batch_size*num_permutations*i)
 	return mask
 
-def shuffle(logits, labels, mask_logits, M, seed):
+def shuffle(logits, labels, mask_logits, seed):
 	#Shuffle over 2*M
 	np.random.seed(seed)
-	permuted = np.random.permutation(2*M).tolist()
+	assert logits.shape[0] == labels.shape[0]
+	assert mask_logits.shape[0] == labels.shape[0]
+	permuted = np.random.permutation(logits.shape[0]).tolist()
 	return logits[permuted], labels[permuted], mask_logits[permuted] 
 
 
