@@ -168,7 +168,7 @@ class PermCLR(object):
 			total_minus += minus
 
 		total_minus = total_minus/ (permclr_views**2)
-		#print("total_minus is ", total_minus)
+		print("total_minus is ", total_minus)
 
 		#Maybe - Average over train_batch_size
 		if not(indicator):
@@ -181,18 +181,19 @@ class PermCLR(object):
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
 			total_minus = total_minus.detach().cpu().numpy()
-			print("total minus is ", total_minus)
-			print("total minus shape is ", total_minus.shape)
+			#print("total minus is ", total_minus)
+			#print("total minus shape is ", total_minus.shape)
 			b = np.zeros_like(total_minus)
-			print("b shape is ", b)
+			#print("b shape is ", b)
 			#Get argmin and set zero to each 3 chunk
-			print("num classes is ", num_classes)
+			#print("num classes is ", num_classes)
 			for i in range(num_classes):
-				print('i is ', i)
+				#print('i is ', i)
 				b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmax(1)] = 1
 
 			#Now average b across train_batch_size
 			b = np.mean(b, axis=1)
+			print("meaned b is ", b)
 			logits = torch.tensor(b).to(self.args.device)
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
@@ -345,7 +346,7 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits = 1 - self.classifier(logits, train_batch_size,  num_classes, self.args.permclr_views, self.args.indicator_classifier)
+					logits = 1 - self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
 
 
 			#Save the max of logits for each example 
