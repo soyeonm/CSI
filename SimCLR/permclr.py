@@ -496,7 +496,7 @@ class PermCLR(object):
 					#Code NLL loss with ignore indices
 					logits = logits / self.args.temperature
 					#Shuffle everything before putting into nll
-					logits, labels, mask_logits = shuffle(logits, labels, mask_logits, M, batch_i + 100*epoch_counter)
+					logits, labels, mask_logits = shuffle(logits, labels, mask_logits, batch_i + 100*epoch_counter)
 					loss = nll(logits, mask_logits, labels, self.args.batch_size*num_permutations, self.args.usual_nll)
 					mean_loss += loss.detach().cpu().item()
 
