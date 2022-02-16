@@ -186,6 +186,7 @@ class PermCLR(object):
 			b = np.zeros_like(total_minus)
 			print("b shape is ", b)
 			#Get argmin and set zero to each 3 chunk
+			print("num classes is ", num_classes)
 			for i in range(num_classes):
 				print('i is ', i)
 				b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmax(1)] = 1
