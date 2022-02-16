@@ -199,7 +199,7 @@ class PermCLR(object):
 			#Now average b across train_batch_size
 			b = np.mean(b, axis=1)
 			pickle.dump(b, open("temp_pickle/meaned_b.p", "wb"))
-			break
+			#break
 			assert 1==2
 			print("meaned b is ", b)
 			logits = torch.tensor(b).to(self.args.device)
