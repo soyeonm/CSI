@@ -168,7 +168,7 @@ class PermCLR(object):
 			total_minus += minus
 
 		total_minus = total_minus/ (permclr_views**2)
-		#print("total_minus is ", total_minus)
+		print("total_minus is ", total_minus)
 
 		#Maybe - Average over train_batch_size
 		if not(indicator):
