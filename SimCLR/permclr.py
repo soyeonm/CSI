@@ -340,7 +340,7 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits = 1 - self.classifier(logits, train_batch_size, self.args.permclr_views)
+					logits = 1 - self.classifier(logits, train_batch_size,  num_classes, self.args.permclr_views, self.args.indicator_classifier)
 
 
 			#Save the max of logits for each example 
