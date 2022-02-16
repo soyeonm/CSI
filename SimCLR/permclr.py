@@ -385,9 +385,12 @@ class PermCLR(object):
 		#P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
 		#P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
+		num_permutations = self.args.num_perms**2 + 1
+
+		#Control here with num_permutations
 		P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
-		for i in range(self.args.permclr_views):
-			for j in range(self.args.permclr_views):
+		for i in range(self.args.num_perms):
+			for j in range(self.args.num_perms):
 				if not(debug_with_identity):
 					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
 				else:
@@ -398,8 +401,6 @@ class PermCLR(object):
 
 		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
-
-		num_permutations = self.args.permclr_views**2 + 1
 
 		for epoch_counter in range(self.args.epochs):
 			mean_loss = 0.0
@@ -451,7 +452,7 @@ class PermCLR(object):
 					#print("gpu memory after B: ", get_gpu_memory())
 
 					#Concatenate B horizontally args.permclr_views **2 + 1 (Page 5 beginning)
-					features = torch.cat([features]*(self.args.permclr_views**2+1), axis=1)#Shape is 36 x (8*17) x 128
+					features = torch.cat([features]*(num_permutations), axis=1)#Shape is 36 x (8*17) x 128
 					#Shape becomes 128 x (8*17) x 36 with features = features.permute(2, 1, 0) below.
 
 				#4. Permute (B P^T)
@@ -461,7 +462,7 @@ class PermCLR(object):
 					features = features.permute(2, 1, 0) #Now shape is 128 x 8x 36 (used to be 36 x 8x 128)
 					features = torch.bmm(P_mat_128, features) #shape is 128, 8, 36 
 					features = features.permute(0, 2, 1) #Shape is now 128 x 36 x (8*17). THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
-					features = features.reshape(self.args.out_dim, (M**2) * (self.args.permclr_views**2 + 1), self.args.permclr_views*self.args.batch_size) #shape (128, 36*17, 8)
+					features = features.reshape(self.args.out_dim, (M**2) * (num_permutations), self.args.permclr_views*self.args.batch_size) #shape (128, 36*17, 8)
 					#features = features.transpose(1,2) #shape is (128, 8, 36*17) #IS THIS THE RIGHT SHAPE? THIS is not needed.
 
 
@@ -479,7 +480,7 @@ class PermCLR(object):
 
 				#3. Put this into NLL loss
 					#Make logits into torch.Size([M x M]) (e.g. 6x6)
-					logits = logits.reshape(M, (self.args.permclr_views**2 + 1)*M)
+					logits = logits.reshape(M, (num_permutations)*M)
 					#Positives are the first "batch_size" of each row in the [6x6] above (which has size batch_size * num_classes(M))
 					#copy into (batch_size * M) x M
 					logits = torch.cat([logits.T]*(self.args.batch_size*num_permutations), axis=0).T.reshape((self.args.batch_size*num_permutations)*M, M*num_permutations) #torch.Size([12, 6])

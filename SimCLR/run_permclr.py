@@ -23,6 +23,7 @@ parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
 parser.add_argument('--smaller_data', action='store_true')
 parser.add_argument('--debug_with_identity', action='store_true')
+parser.add_argument('--num_perms', type=int, default=4)
 
 
 def main_permclr():
