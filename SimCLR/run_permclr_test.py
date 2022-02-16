@@ -34,6 +34,7 @@ parser.add_argument('--not_just_average', action='store_true')
 parser.add_argument('--train_batch_size', type=int, default=1)
 parser.add_argument('-pc', '--p_classifer', action='store_true')
 parser.add_argument('-ic', '--indicator_classifier', action='store_true')
+parser.add_argument('-s', '--sanity', action='store_true')
 
 
 
@@ -49,7 +50,8 @@ def main_permclr_test():
 
 	#Define the dataset
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
-	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
+	if args.sanity:
+		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 	ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
 	if args.smaller_data:
 		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
