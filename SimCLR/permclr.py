@@ -89,8 +89,8 @@ def shuffle(logits, labels, mask_logits, M, seed):
 	return logits[permuted], labels[permuted], mask_logits[permuted] 
 
 
-def nll(logits, mask_logits, labels, usual_nll=False):
-	summed = torch.sum(torch.exp(logits * (1-mask_logits)), axis=1) - 2 #mask logits 0 되는 곳 exp 하면 1 되는게 문제임
+def nll(logits, mask_logits, labels, minus_no, usual_nll=False):
+	summed = torch.sum(torch.exp(logits * (1-mask_logits)), axis=1) - minus_no #2 #mask logits 0 되는 곳 exp 하면 1 되는게 문제임
 	#summed = torch.sum(torch.exp(logits ), axis=1) 
 	label_logits = logits[range(logits.shape[0]), labels.tolist()]
 	if usual_nll:
@@ -488,7 +488,7 @@ class PermCLR(object):
 					logits = logits / self.args.temperature
 					#Shuffle everything before putting into nll
 					logits, labels, mask_logits = shuffle(logits, labels, mask_logits, M, batch_i + 100*epoch_counter)
-					loss = nll(logits, mask_logits, labels, self.args.usual_nll)
+					loss = nll(logits, mask_logits, labels, self.args.batch_size*num_permutations, self.args.usual_nll)
 					mean_loss += loss.detach().cpu().item()
 
 				#Optimizer zero grad
