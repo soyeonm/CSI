@@ -175,36 +175,28 @@ class PermCLR(object):
 		#Maybe - Average over train_batch_size
 		if not(indicator):
 			#print("total_minus is ", total_minus)
-			new_logits = torch.mean(total_minus, axis=1) #shape is logits.shape[0]
+			new_logits = torch.mean(torch.abs(total_minus), axis=1) #shape is logits.shape[0]
 		else:
 			#print("total_minus is ", total_minus)
 			#Count indicator across column (smallest among 0,1,2/3,4,5/6,7,8)
-			new_logits = torch.ones(logits.shape[0])
+			new_logits = torch.zeros(logits.shape[0])
 			#new_logits = torch.zeros(total_minus.shape)
 			#argmins = torch.argmin(total_minus, axis=0)
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
-			total_minus = total_minus.detach().cpu().numpy()
-			#pickle.dump(total_minus, open("temp_pickles/total_minus.p", "wb"))
-			#print("total minus is ", total_minus)
-			#print("total minus shape is ", total_minus.shape)
-			b = np.zeros_like(total_minus)
-			#print("b shape is ", b)
-			#Get argmin and set zero to each 3 chunk
-			#print("num classes is ", num_classes)
+			#total_minus = total_minus.detach().cpu().numpy()
+			total_minus = torch.abs(total_minus)
+
+			#Get the 1/3 threshold for each of  0,1,2/3,4,5/6,7,8
 			for i in range(num_classes):
-				#print('i is ', i)
-				#b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmin(1)] = 1
-				b[i*num_classes:(i+1)*num_classes][total_minus[i*num_classes: (i+1)*num_classes].argmin(0), np.arange(train_batch_size)]=1
-			#pickle.dump(b, open("temp_pickles/b.p", "wb"))
-			#print("b is ", b)
-			#Now average b across train_batch_size
-			b = np.mean(b, axis=1)
-			#pickle.dump(b, open("temp_pickles/meaned_b.p", "wb"))
-			#break
-			assert 1==2
-			print("meaned b is ", b)
-			logits = torch.tensor(b).to(self.args.device)
+				sorted, indices = sorted(total_minus.view(-1)[i*(num_classes*train_batch_size):(i+1)*(num_classes*train_batch_size)])
+				threshold = sorted[train_batch_size-1] #The 1/3th smallest
+				#Count how many of the indices before 10 belongs to each of the three classes
+				indices = indices[:train_batch_size]
+				for j in range(num_classes):
+					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1)))/train_batch_size
+
+
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
 			#new_logits[wheres] = 1
