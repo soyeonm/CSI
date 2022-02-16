@@ -190,7 +190,7 @@ class PermCLR(object):
 			for i in range(num_classes):
 				#print('i is ', i)
 				#b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmin(1)] = 1
-				b[i*num_classes:(i+1)*num_classes][total_minus[i*num_classes: (i+1)*num_classes].argmin(0), np.arange(2)]=1
+				b[i*num_classes:(i+1)*num_classes][total_minus[i*num_classes: (i+1)*num_classes].argmin(0), np.arange(train_batch_size)]=1
 
 			#Now average b across train_batch_size
 			b = np.mean(b, axis=1)
