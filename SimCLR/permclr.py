@@ -152,7 +152,7 @@ class PermCLR(object):
 		logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
-	def classifier(self, logits, train_batch_size, permclr_views, indicator=False):
+	def classifier(self, logits, train_batch_size, permclr_views, num_classes, indicator=False):
 		#Define original and permutation
 		#In the 0th axis, 0, 4, 8 (which are 0, middle in 2nd row, last) are the same class
 		#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
@@ -183,9 +183,12 @@ class PermCLR(object):
 			total_minus = total_minus.cpu().numpy()
 			b = np.zeros_like(total_minus)
 			#Get argmin and set zero to each 3 chunk
+			for i in range(num_classes):
+				b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmax(1)] = 1
 
-			b[np.arange(len(a)), a.argmax(1)] = 1
-			pass
+			#Now average b across train_batch_size
+			b = np.mean(b, axis=1)
+			logits = torch.tensor(b).to(self.args.device)
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
 			#new_logits[wheres] = 1
