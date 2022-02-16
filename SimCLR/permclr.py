@@ -176,6 +176,7 @@ class PermCLR(object):
 		if not(indicator):
 			#print("total_minus is ", total_minus)
 			new_logits = torch.mean(torch.abs(total_minus), axis=1) #shape is logits.shape[0]
+			new_logits = 1 - new_logits
 		else:
 			#print("total_minus is ", total_minus)
 			#Count indicator across column (smallest among 0,1,2/3,4,5/6,7,8)
@@ -195,7 +196,7 @@ class PermCLR(object):
 				indices = indices[:train_batch_size]
 				for j in range(num_classes):
 					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1))).float()/train_batch_size
-			print("new logits are ", new_logits)
+			#print("new logits are ", new_logits)
 
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
@@ -348,7 +349,7 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits = 1 - self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
+					logits = self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
 
 
 			#Save the max of logits for each example 
