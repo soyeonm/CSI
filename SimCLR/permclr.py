@@ -181,9 +181,13 @@ class PermCLR(object):
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
 			total_minus = total_minus.detach().cpu().numpy()
+			print("total minus is ", total_minus)
+			print("total minus shape is ", total_minus.shape)
 			b = np.zeros_like(total_minus)
+			print("b shape is ", b)
 			#Get argmin and set zero to each 3 chunk
 			for i in range(num_classes):
+				print('i is ', i)
 				b[np.arange(i*num_classes, (i+1)*num_classes), total_minus[i*num_classes: (i+1)*num_classes].argmax(1)] = 1
 
 			#Now average b across train_batch_size
