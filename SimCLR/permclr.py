@@ -375,7 +375,8 @@ class PermCLR(object):
 				else:
 					logits = self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
 
-
+			logits= logits.detach().cpu().numpy()
+			logits = logits.tolist()
 			#Save the max of logits for each example 
 
 			#Print logits into file
