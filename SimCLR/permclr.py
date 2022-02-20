@@ -240,12 +240,12 @@ class PermCLR(object):
 		else:
 			P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
 			#list of combinations
-			comb = itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2)
-			for subset in comb:
-				for subset_two in comb:
+			#comb = itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2)
+			for subset in itertools.combinations(np.arange(4).tolist(), 2):
+				for subset_two in itertools.combinations(np.arange(4).tolist(), 2):
 					subset_two_new = tuple([i+self.args.permclr_views for i in subset_two])
 					P_mats.append(get_perm_matrix_swap(self.args.permclr_views, subset, subset_two_new).to(self.args.device))
-			print("len Pmats is ", len(P_mats))
+			#print("len Pmats is ", len(P_mats))
 			P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
 			del P_mats
 			P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape 
@@ -335,8 +335,8 @@ class PermCLR(object):
 			if not(just_average):
 				features = torch.cat([features]*(num_perms), axis=1)#Shape is 9 x (8*17) x 128
 			features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
-			print("P mat 128 shape", P_mat_128.shape)
-			print("features shape", features.shape)
+			#print("P mat 128 shape", P_mat_128.shape)
+			#print("features shape", features.shape)
 			features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
 			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
