@@ -174,10 +174,12 @@ class PermCLR(object):
 
 		#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
 		total_minus = torch.zeros(logits.shape[0], train_batch_size).to(self.args.device)
+		total_minus_save = torch.cat([total_minus] * (permclr_views**2), axis=1)
 		for i in range(permclr_views**2):
 			#Count instances larger than the original
 			minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
 			#minus = minus >0 
+			total_minus_save[:, (1+i)*train_batch_size : (2+i)*train_batch_size] = minus
 			total_minus += minus
 
 		total_minus = total_minus/ (permclr_views**2)
@@ -211,7 +213,7 @@ class PermCLR(object):
 				for j in range(num_classes):
 					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1))).float()/train_batch_size
 			#print("new new_logitts are ", new_logits)
-			new_logits = total_minus_no_abs
+			new_logits = total_minus_save
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
 			#new_logits[wheres] = 1
