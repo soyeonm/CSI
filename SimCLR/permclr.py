@@ -12,6 +12,7 @@ from utils import save_config_file, accuracy, save_checkpoint
 import pickle
 import time
 import numpy as np
+import copy
 
 import itertools
 
@@ -197,7 +198,8 @@ class PermCLR(object):
 			#convert to numpy and try
 			#total_minus = total_minus.detach().cpu().numpy()
 			#total_minus = torch.abs(total_minus)
-			print("total minus is ", total_minus)
+			#print("total minus is ", total_minus)
+			total_minus_no_abs = copy.deepcopy(total_minus)
 			total_minus = torch.abs(total_minus)
 
 			#Get the 1/3 threshold for each of  0,1,2/3,4,5/6,7,8
@@ -208,8 +210,8 @@ class PermCLR(object):
 				indices = indices[:train_batch_size]
 				for j in range(num_classes):
 					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1))).float()/train_batch_size
-			#print("new logits are ", new_logits)
-
+			#print("new new_logitts are ", new_logits)
+			new_logits = total_minus_no_abs
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
 			#new_logits[wheres] = 1
