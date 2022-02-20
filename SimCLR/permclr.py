@@ -377,12 +377,12 @@ class PermCLR(object):
 			#Save the max of logits for each example 
 
 			#Print logits into file
-			assert logits.shape[0] %3 ==0
-			auroc_max_logits += get_max_logit(logits)
-			if not(self.args.ood):
-				auroc_labels+= [1] * int(logits.shape[0]/3)
-			else:
-				auroc_labels+= [0] * int(logits.shape[0]/3)
+			# assert logits.shape[0] %3 ==0
+			# auroc_max_logits += get_max_logit(logits)
+			# if not(self.args.ood):
+			# 	auroc_labels+= [1] * int(logits.shape[0]/3)
+			# else:
+			# 	auroc_labels+= [0] * int(logits.shape[0]/3)
 			f.write("logits for batch :" + str(batch_i) + '\n')
 			f.write(str(logits) + '\n')
 		f.close()
