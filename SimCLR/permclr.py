@@ -197,6 +197,7 @@ class PermCLR(object):
 			#convert to numpy and try
 			#total_minus = total_minus.detach().cpu().numpy()
 			total_minus = torch.abs(total_minus)
+			print("total minus is ", total_minus)
 
 			#Get the 1/3 threshold for each of  0,1,2/3,4,5/6,7,8
 			for i in range(num_classes):
