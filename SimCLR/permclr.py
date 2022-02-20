@@ -13,6 +13,8 @@ import pickle
 import time
 import numpy as np
 
+import itertools
+
 torch.manual_seed(0)
 
 #Multiply this matrix to make the feature matrix into A
@@ -42,6 +44,14 @@ def get_perm_matrix_one(num_perspectives, swap_1st, swap_2nd):
 	mat = torch.eye(2*num_perspectives, 2*num_perspectives) 
 	new_mat = mat.clone()
 	new_mat[swap_1st, :] = mat[swap_2nd, :]; new_mat[swap_2nd, :] = mat[swap_1st, :]
+	return new_mat
+
+
+def get_perm_matrix_swap(num_perspectives, first_half_list, second_half_list):
+	mat = torch.eye(2*num_perspectives, 2*num_perspectives) 
+	new_mat = mat.clone()
+	for f, s in zip(first_half_list, second_half_list):
+		new_mat[f, :] = mat[s, :]; new_mat[s, :] = mat[f, :]
 	return new_mat
 
 def get_avg_matrix(num_perspectives):
@@ -215,6 +225,8 @@ class PermCLR(object):
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
 
+		num_perms = 6*6 + 1 #4c2 * 4c2  +1 
+
 		auroc_max_logits = []
 		auroc_labels = []
 		class_lens = [len(td) for td in train_datasets]
@@ -226,9 +238,12 @@ class PermCLR(object):
 
 		else:
 			P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
-			for i in range(self.args.permclr_views):
-				for j in range(self.args.permclr_views):
-					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+			#list of combinations
+			comb = itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2)
+			for subset in comb:
+				for subset_two in comb:
+					subset_two_new = tuple([i+self.args.permclr_views for i in subset_two])
+					P_mats.append(get_perm_matrix_swap(self.args.permclr_views, subset, subset_two_new).to(self.args.device))
 			P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
 			del P_mats
 			P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float() #Has shape 
@@ -316,13 +331,13 @@ class PermCLR(object):
 			#Reshaped into (128, num_classes**2,  self.args.permclr_views*2)
 
 			if not(just_average):
-				features = torch.cat([features]*(self.args.permclr_views**2+1), axis=1)#Shape is 9 x (8*17) x 128
+				features = torch.cat([features]*(num_perms), axis=1)#Shape is 9 x (8*17) x 128
 			features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
 			features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
 			features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
 			if not(just_average):
-				features = features.reshape(self.args.out_dim, (num_classes**2) * (self.args.permclr_views**2 + 1)*train_batch_size, self.args.permclr_views*2)  #shape (128, 9*17, 8)
+				features = features.reshape(self.args.out_dim, (num_classes**2) * (num_perms)*train_batch_size, self.args.permclr_views*2)  #shape (128, 9*17, 8)
 
 			#Get average
 			features = torch.bmm(features, avg_matrix_128) #This is the average features in Part2-2 #Shape is torch.Size([128, 9, 2]) or torch.Size([128, 9*17, 2])
@@ -344,7 +359,7 @@ class PermCLR(object):
 
 			#If not just_average, reshape logits and get avg
 			if not(just_average):
-				logits = logits.reshape(num_classes**2, (self.args.permclr_views**2+1)*train_batch_size) # The firsr 17*train_batch_size is car_test*car_train, the 2nd 17*train_batch_size is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
+				logits = logits.reshape(num_classes**2, (num_perms)*train_batch_size) # The firsr 17*train_batch_size is car_test*car_train, the 2nd 17*train_batch_size is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
 				if not(p_classifier):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
@@ -387,7 +402,7 @@ class PermCLR(object):
 		for i in range(self.args.num_perms):
 			for j in range(self.args.num_perms):
 				if not(debug_with_identity):
-					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, 4+j).to(self.args.device))
+					P_mats.append(get_perm_matrix_one(self.args.permclr_views, i, self.args.permclr_views+j).to(self.args.device))
 				else:
 					P_mats.append(get_perm_matrix_identity(self.args.permclr_views).to(self.args.device))
 		P_mat = torch.block_diag(*P_mats) #Has shape torch.Size([136, 136]) (4*2) * (4**2+1) or (args.permclr_views * batch_size) * (args.permclr_views**2 + 1)
