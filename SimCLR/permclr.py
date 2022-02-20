@@ -179,7 +179,7 @@ class PermCLR(object):
 			#Count instances larger than the original
 			minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
 			#minus = minus >0 
-			total_minus_save[:, (1+i)*train_batch_size : (2+i)*train_batch_size] = minus
+			total_minus_save[:, (i)*train_batch_size : (1+i)*train_batch_size] = minus
 			total_minus += minus
 
 		total_minus = total_minus/ (permclr_views**2)
