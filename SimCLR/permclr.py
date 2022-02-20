@@ -196,8 +196,9 @@ class PermCLR(object):
 			#for a in argmins.cpu().tolist():
 			#convert to numpy and try
 			#total_minus = total_minus.detach().cpu().numpy()
-			total_minus = torch.abs(total_minus)
+			#total_minus = torch.abs(total_minus)
 			print("total minus is ", total_minus)
+			total_minus = torch.abs(total_minus)
 
 			#Get the 1/3 threshold for each of  0,1,2/3,4,5/6,7,8
 			for i in range(num_classes):
@@ -241,8 +242,8 @@ class PermCLR(object):
 			P_mats = [torch.eye(2*self.args.permclr_views).to(self.args.device)]
 			#list of combinations
 			#comb = itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2)
-			for subset in itertools.combinations(np.arange(4).tolist(), 2):
-				for subset_two in itertools.combinations(np.arange(4).tolist(), 2):
+			for subset in itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2):
+				for subset_two in itertools.combinations(np.arange(self.args.permclr_views).tolist(), 2):
 					subset_two_new = tuple([i+self.args.permclr_views for i in subset_two])
 					P_mats.append(get_perm_matrix_swap(self.args.permclr_views, subset, subset_two_new).to(self.args.device))
 			#print("len Pmats is ", len(P_mats))
