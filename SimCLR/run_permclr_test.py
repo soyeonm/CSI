@@ -124,7 +124,7 @@ def main_permclr_test():
 	with torch.cuda.device(args.gpu_index):
 		args.ood = False
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
-		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average, args.train_batch_size, args.p_classifer)
+		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average, args.train_batch_size, args.p_classifer, True) #get cutoff
 
 	#Run inference for ood
 	with torch.cuda.device(args.gpu_index):

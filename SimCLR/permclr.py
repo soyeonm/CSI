@@ -150,7 +150,11 @@ def p_value(subset_logits):
 #num_classes**2 
 
 
-	
+def tpr():
+	pass
+
+def tnr():
+	pass
 
 
 
@@ -165,7 +169,7 @@ class PermCLR(object):
 		logging.basicConfig(filename=os.path.join(self.writer.log_dir, 'training.log'), level=logging.DEBUG)
 		self.criterion = torch.nn.CrossEntropyLoss().to(self.args.device)
 
-	def classifier(self, logits, train_batch_size, permclr_views, num_classes, indicator=False):
+	def classifier(self, logits, train_batch_size, num_permutations, num_classes, indicator=False):
 		#Define original and permutation
 		#In the 0th axis, 0, 4, 8 (which are 0, middle in 2nd row, last) are the same class
 		#In the 1st axis, the first train_batch_size are the "T" of the originals (identity permutation)
@@ -174,15 +178,15 @@ class PermCLR(object):
 
 		#Compute the difference of the permutations (the rest (self.args.permclr_views**2)* train_batch_size of axis 1) with these T
 		total_minus = torch.zeros(logits.shape[0], train_batch_size).to(self.args.device)
-		total_minus_save = torch.cat([total_minus] * (permclr_views**2), axis=1)
-		for i in range(permclr_views**2):
+		total_minus_save = torch.cat([total_minus] * (num_permutations-1), axis=1)
+		for i in range(num_permutations-1):
 			#Count instances larger than the original
 			minus = logits[:, (1+i)*train_batch_size : (2+i)*train_batch_size] - logits[:, 0 : train_batch_size]
 			#minus = minus >0 
 			total_minus_save[:, (i)*train_batch_size : (1+i)*train_batch_size] = minus
 			total_minus += minus
 
-		total_minus = total_minus/ (permclr_views**2)
+		total_minus = total_minus/ (num_permutations-1)
 		#print("total_minus is ", total_minus)
 
 		#Maybe - Average over train_batch_size
@@ -213,7 +217,6 @@ class PermCLR(object):
 				for j in range(num_classes):
 					new_logits[i*(num_classes) + j ] = torch.sum((train_batch_size*j<=indices) * (indices<train_batch_size*(j+1))).float()/train_batch_size
 			#print("new new_logitts are ", new_logits)
-			new_logits = total_minus_save
 
 			#wheres = torch.cat([torch.arange(logits.shape[0]).unsqueeze(0), argmins.unsqueeze(0)], axis=0).T
 			#new_logits[wheres] = 1
@@ -222,14 +225,17 @@ class PermCLR(object):
 
 		#Or use the fact that p-value itself is uniform?
 
-		return new_logits #large is bad
+		return new_logits, total_minus_save #large is bad
 
 	#For test and ood
 	#def inference(self, train_datasets, test_datasets, train_loaders, test_loaders, f, just_average=True, num_train_batch=1):
-	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1, p_classifier=False):
+	def inference(self, train_datasets, test_datasets, test_loaders, f, just_average=True, train_batch_size=1, p_classifier=False, get_cutoff=False):
 		torch.cuda.set_device(0)
 		num_classes = len(train_datasets)
 		scaler = GradScaler(enabled=self.args.fp16_precision) 
+
+		if get_cutoff:
+			logit_list = []
 
 		num_perms = 6*6 + 1 #4c2 * 4c2  +1 
 
@@ -373,22 +379,27 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits = self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
+					logits, total_minus_save = self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
+
+			total_minus_save = total_minus_save.detach().cpu()
+			if get_cutoff:
+				logit_list.append(total_minus_save)
 
 			logits= logits.detach().cpu().numpy()
 			logits = logits.tolist()
 			#Save the max of logits for each example 
 
 			#Print logits into file
-			# assert logits.shape[0] %3 ==0
-			# auroc_max_logits += get_max_logit(logits)
-			# if not(self.args.ood):
-			# 	auroc_labels+= [1] * int(logits.shape[0]/3)
-			# else:
-			# 	auroc_labels+= [0] * int(logits.shape[0]/3)
+			assert logits.shape[0] %3 ==0
+			auroc_max_logits += get_max_logit(logits)
+			if not(self.args.ood):
+				auroc_labels+= [1] * int(logits.shape[0]/3)
+			else:
+				auroc_labels+= [0] * int(logits.shape[0]/3)
 			f.write("logits for batch :" + str(batch_i) + '\n')
 			f.write(str(logits) + '\n')
 		f.close()
+		pickle.dump(logit_list, open('logits/cutoff_test.p', 'wb'))
 		return auroc_max_logits, auroc_labels
 
 
