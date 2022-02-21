@@ -401,6 +401,8 @@ class PermCLR(object):
 		f.close()
 		if self.args.ood:
 			string = 'ood'
+		elif self.args.anity:
+			string = 'train_sanity'
 		else:
 			string = 'test'
 		pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
