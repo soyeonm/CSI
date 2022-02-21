@@ -386,7 +386,7 @@ class PermCLR(object):
 				logit_list.append(total_minus_save)
 
 			logits= logits.detach().cpu().numpy()
-			logits = logits.tolist()
+			#logits = logits.tolist()
 			#Save the max of logits for each example 
 
 			#Print logits into file
