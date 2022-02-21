@@ -379,7 +379,7 @@ class PermCLR(object):
 					#Average across axis 1 (across the 17)
 					logits = torch.mean(logits, axis=1)
 				else:
-					logits, total_minus_save = self.classifier(logits, train_batch_size, self.args.permclr_views,  num_classes, self.args.indicator_classifier)
+					logits, total_minus_save = self.classifier(logits, train_batch_size, num_perms,  num_classes, self.args.indicator_classifier)
 
 			total_minus_save = total_minus_save.detach().cpu()
 			if get_cutoff:
@@ -399,7 +399,11 @@ class PermCLR(object):
 			#f.write("logits for batch :" + str(batch_i) + '\n')
 			#f.write(str(logits) + '\n')
 		f.close()
-		pickle.dump(logit_list, open('logits/cutoff_test.p', 'wb'))
+		if args.ood:
+			string = 'ood'
+		else:
+			string = 'test'
+		pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
 		return auroc_max_logits, auroc_labels
 
 
