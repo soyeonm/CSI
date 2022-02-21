@@ -399,7 +399,7 @@ class PermCLR(object):
 			#f.write("logits for batch :" + str(batch_i) + '\n')
 			#f.write(str(logits) + '\n')
 		f.close()
-		if args.ood:
+		if self.args.ood:
 			string = 'ood'
 		else:
 			string = 'test'
