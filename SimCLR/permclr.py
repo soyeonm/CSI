@@ -401,7 +401,7 @@ class PermCLR(object):
 		f.close()
 		if self.args.ood:
 			string = 'ood'
-		elif self.args.anity:
+		elif self.args.sanity:
 			string = 'train_sanity'
 		else:
 			string = 'test'
