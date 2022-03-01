@@ -82,6 +82,9 @@ for ood in P.ood_dataset:
 
     ood_test_loader[ood] = DataLoader(ood_test_set, shuffle=False, batch_size=P.test_batch_size, **kwargs)
 
+pickle.dump(ood_test_set, open("temp_pickles/csi_ood_datasets.p", "wb"))
+pickle.dump(test_set, open("temp_pickles/csi_test_datasets.p", "wb"))
+
 ### Initialize model ###
 
 simclr_aug = C.get_simclr_augmentation(P, image_size=P.image_size).to(device)

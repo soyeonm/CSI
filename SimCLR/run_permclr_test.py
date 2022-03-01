@@ -35,6 +35,7 @@ parser.add_argument('--train_batch_size', type=int, default=1)
 parser.add_argument('-pc', '--p_classifer', action='store_true')
 parser.add_argument('-ic', '--indicator_classifier', action='store_true')
 parser.add_argument('-s', '--sanity', action='store_true')
+parser.add_argument('-d', '--dump', action='store_true')
 
 
 
@@ -92,8 +93,12 @@ def main_permclr_test():
 		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
 	for c in test_classes:
 		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
+	
 	for c in ood_classes:
 		ood_datasets.append(PermDataset(ood_root_dir, c, args.permclr_views, args.resize_co3d))
+	if args.dump:
+		pickle.dump(test_datasets, open("temp_pickles/permclr_test_datasets.p", "wb"))
+		pickle.dump(ood_datasets, open("temp_pickles/permclr_ood_datasets.p", "wb"))
 	print("preepared all c! time: ", time.time() - start) 
 
 	test_data_loaders = []
