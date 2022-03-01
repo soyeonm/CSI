@@ -1,5 +1,5 @@
 from common.eval import *
-import time.time()
+import time
 model.eval()
 
 start = time.time()
