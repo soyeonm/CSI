@@ -117,20 +117,23 @@ def main_permclr_test():
 	model.load_state_dict(checkpoint)
 
 	just_average=True
+	get_cutoff = False
 	if args.not_just_average:
 		just_average=False
+		get_cutoff = True
+
 
 	#Run inference for test
 	with torch.cuda.device(args.gpu_index):
 		args.ood = False
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
-		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average, args.train_batch_size, args.p_classifer, True) #get cutoff
+		auroc_max_logits_test, auroc_labels_test = permclr.inference(train_datasets, test_datasets, test_data_loaders, tf, just_average, args.train_batch_size, args.p_classifer, get_cutoff) #get cutoff
 
 	#Run inference for ood
 	with torch.cuda.device(args.gpu_index):
 		args.ood = True
 		permclr = PermCLR(model=model, optimizer=None, scheduler=None, args=args)
-		auroc_max_logits_ood, auroc_labels_ood = permclr.inference(train_datasets, ood_datasets, ood_data_loaders, of, just_average, args.train_batch_size, args.p_classifer, True)
+		auroc_max_logits_ood, auroc_labels_ood = permclr.inference(train_datasets, ood_datasets, ood_data_loaders, of, just_average, args.train_batch_size, args.p_classifer, get_cutoff)
 
 	pickle.dump((auroc_max_logits_test, auroc_labels_test),open("logits/test_" + args.text_file_name + ".p", "wb"))
 	pickle.dump((auroc_max_logits_ood, auroc_labels_ood),open("logits/ood_" + args.text_file_name + ".p", "wb"))
