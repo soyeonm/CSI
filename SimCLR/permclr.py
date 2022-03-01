@@ -118,8 +118,8 @@ def get_max_logit(logits):
 	max_logits = []
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/3)):
-		max_logits.append(max(logits[3*i:3*(i+1)]).detach().cpu().item())
-		argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)].detach().cpu().item() == i))
+		max_logits.append(max(logits[3*i:3*(i+1)]))
+		argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)] == i))
 	return max_logits, argmax_aligns
 
 def get_labels(batch_size, num_classes, num_permutations=1):
