@@ -25,7 +25,7 @@ parser.add_argument('--permclr_views', type=int, default=4)
 parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--text_file_name', type=str, required=True)
 #parser.add_argument('--ood', action='store_true')
-#parser.add_argument('--hydrant_ood', action='store_true')
+parser.add_argument('--hydrant_ood', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
 parser.add_argument('-itc', '--intentionally_change_test_classes', action='store_true')
 parser.add_argument('--smaller_data', action='store_true')
@@ -55,7 +55,10 @@ def main_permclr_test():
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 	else:
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
-	ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
+	if not(args.hydrant_ood):
+		ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
+	else:
+		ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/new_ood_apple_hydrant_toilet'
 	if args.smaller_data:
 		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
