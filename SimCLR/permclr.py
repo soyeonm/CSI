@@ -383,8 +383,9 @@ class PermCLR(object):
 					logits = torch.mean(logits, axis=1)
 				else:
 					logits, total_minus_save = self.classifier(logits, train_batch_size, num_perms,  num_classes, self.args.indicator_classifier)
+					total_minus_save = total_minus_save.detach().cpu()
 
-			total_minus_save = total_minus_save.detach().cpu()
+			
 			if get_cutoff:
 				logit_list.append(total_minus_save)
 
