@@ -116,9 +116,11 @@ def get_max_logit(logits):
 	#logits should be 1 d
 	assert logits.shape[0] %3 ==0
 	max_logits = []
+	argmax_aligns = []
 	for i in range(int(logits.shape[0]/3)):
 		max_logits.append(max(logits[3*i:3*(i+1)]).detach().cpu().item())
-	return max_logits
+		argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)].detach().cpu().item() == i))
+	return max_logits, argmax_aligns
 
 def get_labels(batch_size, num_classes, num_permutations=1):
 	labels = []
@@ -240,6 +242,7 @@ class PermCLR(object):
 		num_perms = 6*6 + 1 #4c2 * 4c2  +1 
 
 		auroc_max_logits = []
+		class_alignment = []
 		auroc_labels = []
 		class_lens = [len(td) for td in train_datasets]
 
@@ -390,14 +393,16 @@ class PermCLR(object):
 			#Save the max of logits for each example 
 
 			#Print logits into file
-			#assert logits.shape[0] %3 ==0
-			#auroc_max_logits += get_max_logit(logits)
-			#if not(self.args.ood):
-			#	auroc_labels+= [1] * int(logits.shape[0]/3)
-			#else:
-			#	auroc_labels+= [0] * int(logits.shape[0]/3)
-			#f.write("logits for batch :" + str(batch_i) + '\n')
-			#f.write(str(logits) + '\n')
+			assert logits.shape[0] %3 ==0
+			max_logits, aligns =  get_max_logit(logits)
+			class_alignment += aligns
+			auroc_max_logits += max_logits
+			if not(self.args.ood):
+				auroc_labels+= [1] * int(logits.shape[0]/3)
+			else:
+				auroc_labels+= [0] * int(logits.shape[0]/3)
+			f.write("logits for batch :" + str(batch_i) + '\n')
+			f.write(str(logits) + '\n')
 		f.close()
 		if self.args.ood:
 			string = 'ood'
@@ -406,6 +411,8 @@ class PermCLR(object):
 		else:
 			string = 'test'
 		pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
+		if not(self.args.ood):
+			pickle.dump(class_alignment, open('class_alignment.p', 'wb'))
 		return auroc_max_logits, auroc_labels
 
 
