@@ -416,6 +416,7 @@ class PermCLR(object):
 			pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
 		if not(self.args.ood):
 			pickle.dump(class_alignment, open('class_alignment.p', 'wb'))
+			print("class alignment is ", np.mean(class_alignment))
 		return auroc_max_logits, auroc_labels
 
 
