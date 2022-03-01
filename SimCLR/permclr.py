@@ -411,7 +411,8 @@ class PermCLR(object):
 			string = 'train_sanity'
 		else:
 			string = 'test'
-		pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
+		if get_cutoff:
+			pickle.dump(logit_list, open('logits/cutoff_' + string + '.p', 'wb'))
 		if not(self.args.ood):
 			pickle.dump(class_alignment, open('class_alignment.p', 'wb'))
 		return auroc_max_logits, auroc_labels
