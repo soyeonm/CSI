@@ -121,6 +121,7 @@ def get_max_logit(logits):
 		max_logits.append(max(logits[3*i:3*(i+1)]))
 		argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)] == i))
 		print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
+		print("argmax aligns last element is ", argmax_aligns[-1])
 	return max_logits, argmax_aligns
 
 def get_labels(batch_size, num_classes, num_permutations=1):
