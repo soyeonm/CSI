@@ -58,7 +58,7 @@ def main_permclr_test():
 	if not(args.hydrant_ood):
 		ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/ood'
 	else:
-		ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/new_ood_apple_hydrant_toilet'
+		ood_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/new_ood_apple_hydrant_toilet'
 	if args.smaller_data:
 		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
