@@ -1,7 +1,8 @@
 from common.eval import *
-
+import time.time()
 model.eval()
 
+start = time.time()
 if P.mode == 'test_acc':
     from evals import test_classifier
     with torch.no_grad():
@@ -46,6 +47,7 @@ elif P.mode in ['ood', 'ood_pre']:
 
     bests = map('{:.4f}'.format, bests)
     print('\t'.join(bests))
+    print("time took in minutes: ", (time.time() - start)/ 60)
 
 else:
     raise NotImplementedError()
