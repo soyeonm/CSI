@@ -408,9 +408,9 @@ class PermCLR(object):
 			for ni, m in enumerate(none_mask):
 				if m == True:
 					logits[3*ni:3*(ni+1)]= np.nan
-			print("logits ", logits)
-			print("none mask ", none_mask)
-			print("--------")
+			#print("logits ", logits)
+			#print("none mask ", none_mask)
+			#print("--------")
 			#logits = logits.tolist()
 			#Save the max of logits for each example 
 
