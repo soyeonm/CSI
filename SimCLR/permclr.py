@@ -119,6 +119,7 @@ def get_max_logit(logits, logit_mask):
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/3)):
 		if not(logit_mask):
+			print("max is ", max(logits[3*i:3*(i+1)]))
 			max_logits.append(max(logits[3*i:3*(i+1)]))
 			argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)]) == i)
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
@@ -417,9 +418,9 @@ class PermCLR(object):
 			auroc_max_logits += max_logits
 			if not(self.args.ood):
 				#auroc_labels+= [1] * int(logits.shape[0]/3)
-				auroc_labels+= [1] * sum(none_mask)
+				auroc_labels+= [1] * sum(1-none_mask)
 			else:
-				auroc_labels+= [0] * sum(none_mask)
+				auroc_labels+= [0] * sum(1-none_mask)
 				#auroc_labels+= [0] * int(logits.shape[0]/3)
 			f.write("logits for batch :" + str(batch_i) + '\n')
 			f.write(str(logits) + '\n')
