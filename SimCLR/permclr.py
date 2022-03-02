@@ -248,6 +248,10 @@ class PermCLR(object):
 		auroc_labels = []
 		class_lens = [len(td) for td in train_datasets]
 
+		#Contain all the test sets
+		test_lens = [len(d) for d in test_datasets]
+		#get the min 
+
 		#ORIGINAL OF JUST AVG BRANCH
 		if just_average:
 			P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 

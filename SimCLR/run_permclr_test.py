@@ -103,6 +103,8 @@ def main_permclr_test():
 		pickle.dump(test_datasets, open("temp_pickles/permclr_test_datasets.p", "wb"))
 		pickle.dump(ood_datasets, open("temp_pickles/permclr_ood_datasets.p", "wb"))
 	print("preepared all c! time: ", time.time() - start) 
+	print("test set lengths: ", [len(d) for d in test_datasets])
+	print("ood set lengths: ", [len(d) for d in ood_datasets])
 
 	test_data_loaders = []
 	#dataloaders
@@ -115,7 +117,9 @@ def main_permclr_test():
 	for i, c in enumerate(ood_classes):
 		ood_data_loaders.append(torch.utils.data.DataLoader(ood_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
 	print("preepared all c dataloaders! time: ", time.time() - start)
-
+	if args.dump:
+		pickle.dump(test_data_loaders, open("temp_pickles/permclr_test_data_loaders.p", "wb"))
+		pickle.dump(ood_data_loaders, open("temp_pickles/permclr_ood_data_loaders.p", "wb"))
 	#Model
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 
