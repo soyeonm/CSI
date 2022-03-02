@@ -119,7 +119,7 @@ def get_max_logit(logits, logit_mask):
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/3)):
 		if not(logit_mask[i]):
-			print("logit is ", logits[3*i:3*(i+1)])
+			#print("logit is ", logits[3*i:3*(i+1)])
 			max_logits.append(max(logits[3*i:3*(i+1)]))
 			argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)]) == i)
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
@@ -408,6 +408,9 @@ class PermCLR(object):
 			for m in none_mask:
 				if m == True:
 					logits[3*m:3*(m+1)]= np.nan
+			print("logits ", logits)
+			print("none mask ", none_mask)
+			print("--------")
 			#logits = logits.tolist()
 			#Save the max of logits for each example 
 
