@@ -405,7 +405,7 @@ class PermCLR(object):
 				logit_list.append(total_minus_save)
 
 			logits= logits.detach().cpu().numpy()
-			for ni, m in none_mask:
+			for ni, m in enumerate(none_mask):
 				if m == True:
 					logits[3*ni:3*(ni+1)]= np.nan
 			print("logits ", logits)
