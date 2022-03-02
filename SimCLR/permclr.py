@@ -112,14 +112,15 @@ def nll(logits, mask_logits, labels, minus_no, usual_nll=False):
 	log_softmaxed = -(label_logits - torch.log(summed))
 	return torch.mean(log_softmaxed)
 
-def get_max_logit(logits):
+def get_max_logit(logits, logit_mask):
 	#logits should be 1 d
 	assert logits.shape[0] %3 ==0
 	max_logits = []
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/3)):
-		max_logits.append(max(logits[3*i:3*(i+1)]))
-		argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)]) == i)
+		if not(logit_mask):
+			max_logits.append(max(logits[3*i:3*(i+1)]))
+			argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)]) == i)
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
 		#print("argmax aligns last element is ", argmax_aligns[-1])
 	return max_logits, argmax_aligns
@@ -249,8 +250,6 @@ class PermCLR(object):
 		class_lens = [len(td) for td in train_datasets]
 
 		#Contain all the test sets
-		test_lens = [len(d) for d in test_datasets]
-		#get the min 
 
 		#ORIGINAL OF JUST AVG BRANCH
 		if just_average:
@@ -290,7 +289,7 @@ class PermCLR(object):
 			catted_imgs = torch.cat(cat_by_category)
 			train_category_labels_tup.append(catted_imgs)
 
-		for batch_i, batch_dict_tuple in enumerate(zip(*test_loaders)): 
+		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_loaders)): 
 			#Just know how many objects per class there are in this batch
 			#cur_batch_size = batch_dict_tuple[0]['image_0'].shape[0] #TODO later
 			#Get a random object from each category of train_dataset
@@ -305,19 +304,24 @@ class PermCLR(object):
 			# 	train_category_labels_tup.append(catted_imgs) #each catted_image has shape torch.Size([self.args.permclr_views, 3, 32, 32])]
 
 			
-
+			none_mask = []
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
 			object_labels_tup = []
 			category_labels_tup =[]
 			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
 			for batch_dict in batch_dict_tuple:
-				catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
-				if not(self.args.ood):
-					object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
-					category = self.args.classes_to_idx[batch_dict['category_label'][0]]
-					category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
-					object_labels_tup.append(object_labels)
+				if not(batch_dict is None):
+					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+					if not(self.args.ood):
+						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
+						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
+						category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
+						object_labels_tup.append(object_labels)
+					none_mask.append(False)
+				else:
+					#pass
+					none_mask.append(True)
 				catted_imgs_tup.append(catted_imgs)
 
 			#Concatenate everything into batch_imgs
@@ -379,8 +383,12 @@ class PermCLR(object):
 			if (just_average):
 				logits = logits.reshape(num_classes**2,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
 				logits = torch.mean(logits, axis=1)
+				#Do something with nonemask
+				#for m in logit_mask:
+				#	if m == True:
+				#		logits[3*m:3*(m+1)]= -100
 
-
+			#TODO: DO SOMETHING ABOUT LOGIT MASK HERE TOO!
 			#If not just_average, reshape logits and get avg
 			if not(just_average):
 				logits = logits.reshape(num_classes**2, (num_perms)*train_batch_size) # The firsr 17*train_batch_size is car_test*car_train, the 2nd 17*train_batch_size is car_test*bat_train, .., the fourth 17 is bat_test*car_train, ...
@@ -396,18 +404,23 @@ class PermCLR(object):
 				logit_list.append(total_minus_save)
 
 			logits= logits.detach().cpu().numpy()
+			for m in logit_mask:
+					if m == True:
+						logits[3*m:3*(m+1)]= np.nan
 			#logits = logits.tolist()
 			#Save the max of logits for each example 
 
 			#Print logits into file
 			assert logits.shape[0] %3 ==0
-			max_logits, aligns =  get_max_logit(logits)
+			max_logits, aligns =  get_max_logit(logits, none_mask)
 			class_alignment += aligns
 			auroc_max_logits += max_logits
 			if not(self.args.ood):
-				auroc_labels+= [1] * int(logits.shape[0]/3)
+				#auroc_labels+= [1] * int(logits.shape[0]/3)
+				auroc_labels+= [1] * sum(none_mask)
 			else:
-				auroc_labels+= [0] * int(logits.shape[0]/3)
+				auroc_labels+= [0] * sum(none_mask)
+				#auroc_labels+= [0] * int(logits.shape[0]/3)
 			f.write("logits for batch :" + str(batch_i) + '\n')
 			f.write(str(logits) + '\n')
 		f.close()

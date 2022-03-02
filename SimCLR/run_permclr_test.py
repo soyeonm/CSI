@@ -106,6 +106,12 @@ def main_permclr_test():
 	print("test set lengths: ", [len(d) for d in test_datasets])
 	print("ood set lengths: ", [len(d) for d in ood_datasets])
 
+	test_lens = [len(d) for d in test_datasets]
+	#get the max
+	argmax = np.argmax(test_lens); max_len = test_lens[argmax]
+	#Append 
+
+
 	test_data_loaders = []
 	#dataloaders
 	print("preparing dataloaders")
