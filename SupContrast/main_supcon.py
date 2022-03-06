@@ -210,18 +210,19 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         if torch.cuda.is_available():
             images = images.cuda(non_blocking=True)
             labels = labels.cuda(non_blocking=True)
+        print("images shape ", images.shape)
         bsz = labels.shape[0]
-        print("labels shape is ", labels.shape)
+        print("labels shape is ", labels.shape) #[100] #batchsize
 
         # warm-up learning rate
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
-        features = model(images)
-        pickle.dump(features, open("features_right_out.p", "wb"))
-        print("features right out shape is ", features.shape)
+        features = model(images) #[200, 128]
+        #pickle.dump(features, open("features_right_out.p", "wb"))
+        #print("features right out shape is ", features.shape) #
         f1, f2 = torch.split(features, [bsz, bsz], dim=0)
-        features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
+        features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1) #torch.Size([100, 2, 128])
         if opt.method == 'SupCon':
             loss = criterion(features, labels)
         elif opt.method == 'SimCLR':
