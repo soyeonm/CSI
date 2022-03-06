@@ -82,7 +82,7 @@ class ObjDataset(Dataset):
 		self.transform = transform
 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
-		del self.object_dict_p; del self.object_class_dict
+		del self.object_dict_p; del self.object_class_dict_p
 
 	def shuffle(self, seed):
 		#shuffle key
