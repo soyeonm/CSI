@@ -76,8 +76,8 @@ class ObjDataset(Dataset):
 			self.object_class_dict_p[obj_id] = class_label
 
 
-		self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict.keys()))} #object id to jpg paths
-		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict.keys()))}
+		self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths
+		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		self.views = views
 		self.transform = transform
 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
@@ -155,7 +155,7 @@ class ObjDataset(Dataset):
 # 			class_label = g.split('/')[-2]
 # 			obj_id = get_obj_num(jpg)
 # 			self.jpg_object_labels[jpg] = obj_id
-			
+
 # 			#if not(obj_id in object_ids):
 # 			self.object_dict_p[obj_id].append(g)
 # 			self.object_class_dict_p[obj_id] = class_label
