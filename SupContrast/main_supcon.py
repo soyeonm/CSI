@@ -211,12 +211,15 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
             images = images.cuda(non_blocking=True)
             labels = labels.cuda(non_blocking=True)
         bsz = labels.shape[0]
+        print("labels shape is ", labels.shape)
 
         # warm-up learning rate
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
         features = model(images)
+        pickle.dump(features, open("features_right_out.p", "wb"))
+        print("features right out shape is ", features.shape)
         f1, f2 = torch.split(features, [bsz, bsz], dim=0)
         features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
         if opt.method == 'SupCon':
