@@ -52,3 +52,18 @@ class ContrastiveLearningDataset:
             raise InvalidDatasetSelection()
         else:
             return dataset_fn()
+
+def get_simclr_pipeline_transform(size, s=1, resize_size=None):
+  """Return a set of data augmentation transformations as described in the SimCLR paper."""
+  color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
+  transform_list = [transforms.RandomResizedCrop(size=size),
+                                        transforms.RandomHorizontalFlip(),
+                                        transforms.RandomApply([color_jitter], p=0.8),
+                                        transforms.RandomGrayscale(p=0.2),
+                                        GaussianBlur(kernel_size=int(0.1 * size)),
+                                        transforms.ToTensor()]
+  if not(resize_size is None):
+    transform_list = [transforms.Resize((resize_size, resize_size))]+ transform_list
+                                          
+  data_transforms = transforms.Compose(transform_list)
+  return data_transforms
