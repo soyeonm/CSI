@@ -168,6 +168,7 @@ def set_loader(opt):
     else:
         raise ValueError(opt.dataset)
 
+    pickle.dump(train_dataset, open("cifar10dataset.p", "wb"))
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=opt.batch_size, shuffle=(train_sampler is None),
