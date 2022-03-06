@@ -22,7 +22,7 @@ class SupConLoss(nn.Module):
     def forward(self, features, labels=None, mask=None):
         pickle.dump(features, open("pickles/features.p", "wb"))
         pickle.dump(labels, open("pickles/labels.p", "wb"))
-        pickle.dump(masks, open("pickles/masks.p", "wb"))
+        pickle.dump(mask, open("pickles/masks.p", "wb"))
         """Compute loss for model. If both `labels` and `mask` are None,
         it degenerates to SimCLR unsupervised loss:
         https://arxiv.org/pdf/2002.05709.pdf
