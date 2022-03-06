@@ -210,7 +210,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         if torch.cuda.is_available():
             images = images.cuda(non_blocking=True)
             labels = labels.cuda(non_blocking=True)
-        print("images shape ", images.shape)
+        print("images shape ", images.shape) #torch.Size([200, 3, 32, 32]) Same as permclr
         bsz = labels.shape[0]
         print("labels shape is ", labels.shape) #[100] #batchsize
 
