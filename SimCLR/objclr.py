@@ -199,6 +199,7 @@ class ObjCLR(object):
 			for batch_dict in batch_dict_tuple:
 				if not(batch_dict is None):
 					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+					print("catted_imgs shape ", catted_imgs.shape)
 					if not(self.args.ood):
 						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
 						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
