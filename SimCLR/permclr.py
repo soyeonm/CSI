@@ -336,6 +336,8 @@ class PermCLR(object):
 			#Now separate into two
 			features_train = features[:self.args.permclr_views*num_classes*train_batch_size, :].clone() #shape  torch.Size([self.args.permclr_views*  num_classes, 128])
 			features_test = features[self.args.permclr_views*num_classes*train_batch_size:, :].clone() #shape torch.Size([self.args.permclr_views* (batch_size * num_classes), 128])
+			print("train shape ", features_train.shape)
+			print("test shape ", features_test.shape)
 			del features
 
 			#Stack and concatenate
