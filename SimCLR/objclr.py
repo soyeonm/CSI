@@ -218,7 +218,9 @@ class ObjCLR(object):
 
 				#Now separate into two
 				features_train = features[:self.args.object_views*num_classes*train_batch_size, :].clone() 
+				print("train shape ", features_train.shape)
 				features_test = features[self.args.object_views*num_classes*train_batch_size:, :].clone() 
+				print("test shape ", features_test.shape)
 				del features
 
 				#Stack and concatenate
