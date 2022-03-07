@@ -58,7 +58,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, resize_shape, transform=None):
+	def __init__(self, root_dir, views, transform=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -94,7 +94,7 @@ class ObjDataset(Dataset):
 		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		self.views = views
 		self.transform = transform
-		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
+		#self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
 		del self.object_dict_p; del self.object_class_dict_p
 

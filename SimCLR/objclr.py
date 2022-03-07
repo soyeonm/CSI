@@ -135,6 +135,7 @@ class ObjCLR(object):
 					features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1) #torch.Size([100, 2, 128])
 					loss = self.sup_con_loss(features, labels)
 					mean_loss += loss.detach().cpu().item()
+					print("loss is ", loss.detach().cpu().item())
 
 				# SGD
 				self.optimizer.zero_grad()
