@@ -119,9 +119,11 @@ class ObjCLR(object):
 				images = images.to(self.args.device, non_blocking=True)
 
 				if self.args.class_label:
-					labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
+					#Example: torch.cat([torch.arange(10).view(1, -1)]*5, dim=0).T.reshape(-1)
+					labels = torch.cat([batch_dict['category_label'].view(-1,1) for i in range(self.args.object_views)], dim=0).T.reshape(-1)
 				else:
 					labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)])
+				pickle.dump(labels, open("labels.p", "wb"))
 				#labels = torch.cat([images_aug0,images_aug0] , dim=0) #labels should be for labels_aug0 only.
 				labels = labels.to(self.args.device, non_blocking=True)
 
@@ -137,7 +139,7 @@ class ObjCLR(object):
 					#Now follow the protocol of SupContrast
 					f1, f2 = torch.split(features, [bsz, bsz], dim=0)
 					features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1) #torch.Size([100, 2, 128])
-					loss = self.sup_con_loss(features)
+					loss = self.sup_con_loss(features, labels)
 					mean_loss += loss.detach().cpu().item()
 					#print("loss is ", loss.detach().cpu().item())
 
