@@ -102,7 +102,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loaders, just_average=True, train_batch_size=1, class_lens = 3, eval_period = 1):
+	def train(self, train_loader, inference_train_datasets, test_loaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -159,11 +159,11 @@ class ObjCLR(object):
 			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
 				with torch.no_grad():
 					self.model.eval()
-					self.classify_inference(inference_train_datasets, test_loaders, just_average, train_batch_size, class_lens)
+					self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_datasets, test_loaders, just_average=True, train_batch_size=1, class_lens = 3):
+	def classify_inference(self, train_datasets, test_loaders, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
 
 		P_mat = get_perm_matrix_identity(self.args.object_views).to(self.args.device) #has shape 8x8 
@@ -172,6 +172,7 @@ class ObjCLR(object):
 		avg_matrix = get_avg_matrix(self.args.object_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
+		class_lens = [len(td) for td in train_datasets]
 		chosens = []
 		for ci, c in enumerate(class_lens):
 			np.random.seed(1000*ci)
