@@ -165,6 +165,7 @@ class ObjCLR(object):
 	#trin_datasets have transform "None"
 	def classify_inference(self, train_datasets, test_loaders, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
+		class_alignment = []
 
 		P_mat = get_perm_matrix_identity(self.args.object_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
