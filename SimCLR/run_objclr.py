@@ -64,6 +64,7 @@ def main_objclr():
 
 	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
 	test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+	args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
 	print("test classes are ", test_classes)
 	print("classes are ", classes)
 
