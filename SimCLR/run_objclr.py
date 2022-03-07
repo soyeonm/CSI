@@ -91,7 +91,7 @@ def main_objclr():
 		args.ood = False
 		start = time.time()
 		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 1)
+		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 5)
 		print("time taken per epoch is ", time.time() - start)
 
 

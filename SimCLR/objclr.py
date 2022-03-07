@@ -156,7 +156,7 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
-			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
+			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
 				with torch.no_grad():
 					self.model.eval()
 					self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
@@ -200,7 +200,7 @@ class ObjCLR(object):
 			for batch_dict in batch_dict_tuple:
 				if not(batch_dict is None):
 					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
-					print("catted_imgs shape ", catted_imgs.shape)
+					#print("catted_imgs shape ", catted_imgs.shape)
 					if not(self.args.ood):
 						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
 						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
@@ -220,9 +220,9 @@ class ObjCLR(object):
 
 				#Now separate into two
 				features_train = features[:self.args.object_views*num_classes*train_batch_size, :].clone() 
-				print("train shape ", features_train.shape)
+				#print("train shape ", features_train.shape)
 				features_test = features[self.args.object_views*num_classes*train_batch_size:, :].clone() 
-				print("test shape ", features_test.shape)
+				#print("test shape ", features_test.shape)
 				del features
 
 				#Stack and concatenate
