@@ -69,9 +69,9 @@ def main_objclr():
 
 	print("preparing datasets")
 	for c in classes:
-		permclr_train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+		permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d))
 	for c in test_classes:
-		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
+		test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
 	print("preepared all c! time: ", time.time() - start) 
 
 	test_data_loaders = []
