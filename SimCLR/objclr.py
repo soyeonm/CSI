@@ -138,12 +138,12 @@ class ObjCLR(object):
 					print("loss is ", loss.detach().cpu().item())
 
 				# SGD
-				self.optimizer.zero_grad()
+				#self.optimizer.zero_grad()
 
-				scaler.scale(loss).backward()
+				#scaler.scale(loss).backward()
 
-				scaler.step(self.optimizer)
-				scaler.update()
+				#scaler.step(self.optimizer)
+				#scaler.update()
 				batch_i +=1
 
 			if epoch_counter >= 10:
