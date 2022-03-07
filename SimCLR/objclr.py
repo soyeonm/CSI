@@ -107,6 +107,7 @@ class ObjCLR(object):
 
 		for epoch_counter in range(self.args.epochs):
 			print("Epoch is ", epoch_counter)
+			mean_loss = 0.0
 			for batch_dict in tqdm(train_loader):
 				images_aug0 = torch.cat([batch_dict['image_' + str(i)][0] for i in range(self.args.object_views)])
 				images_aug1 = torch.cat([batch_dict['image_' + str(i)][1] for i in range(self.args.object_views)])
@@ -132,6 +133,7 @@ class ObjCLR(object):
 					f1, f2 = torch.split(features, [bsz, bsz], dim=0)
 					features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1) #torch.Size([100, 2, 128])
 					loss = self.sup_con_loss(features, labels)
+					mean_loss += loss.detach().cpu().item()
 
 				# SGD
 				self.optimizer.zero_grad()
