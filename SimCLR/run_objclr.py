@@ -38,26 +38,26 @@ def main_objclr():
 	#Add transform later
 	train_dataset = ObjDataset(train_root_dir, args.object_views, resize_shape, transform==ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(32, 1, 32), 2)) #transform can be None too
 	train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True, drop_last=True)
+		train_dataset, batch_size=args.batch_size, shuffle=True,
+		num_workers=args.workers, pin_memory=True, drop_last=True)
 
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 	if args.load_pretrained:
-        checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
-        state_dict = checkpoint['state_dict']
-        model.load_state_dict(state_dict)
+		checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
+		state_dict = checkpoint['state_dict']
+		model.load_state_dict(state_dict)
 
-    optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
+	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
-                                                           last_epoch=-1)
+	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
+														   last_epoch=-1)
 
-    #  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
-    with torch.cuda.device(args.gpu_index):
-        start = time.time()
-        objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-        objclr.train(train_loader)
-        print("time taken per epoch is ", time.time() - start)
+	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
+	with torch.cuda.device(args.gpu_index):
+		start = time.time()
+		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+		objclr.train(train_loader)
+		print("time taken per epoch is ", time.time() - start)
 
 
 if __name__ == "__main__":
