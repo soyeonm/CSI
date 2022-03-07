@@ -68,6 +68,7 @@ def main_objclr():
 	print("classes are ", classes)
 
 	print("preparing datasets")
+	start = time.time()
 	for c in classes:
 		permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d))
 	for c in test_classes:
