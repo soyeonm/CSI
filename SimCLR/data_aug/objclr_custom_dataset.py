@@ -98,6 +98,9 @@ class ObjDataset(Dataset):
 		self.t = transforms.ToTensor()
 		del self.object_dict_p; del self.object_class_dict_p
 
+		#get the number of unique classes
+		#self.class_lens = len(set(list(self.object_class_dict.values())))
+
 	def shuffle(self, seed):
 		#shuffle key
 		new_object_dict = {}

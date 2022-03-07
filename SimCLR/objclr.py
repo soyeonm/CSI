@@ -17,6 +17,7 @@ import numpy as np
 import copy
 
 import itertools
+from permclr import get_perm_matrix_identity, get_avg_matrix, get_max_logit
 
 torch.manual_seed(0)
 
@@ -101,11 +102,12 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader):
+	def train(self, train_loader, inference_train_datasets, test_loader, just_average=True, train_batch_size=1, class_lens = 3, eval_period = 1):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
 		for epoch_counter in range(self.args.epochs):
+			self.model.train()
 			print("Epoch is ", epoch_counter)
 			mean_loss = 0.0
 			batch_i = 0
@@ -154,7 +156,112 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
+			if epoch % eval_period ==0 and epoch >0:
+				with torch.no_grad():
+					self.model.eval()
+					self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size, class_lens)
 
-	#Use permclr dataloader for inference
-	def inference(self):
-		pass
+	#use permclr datasets for train_datasets, test_loader
+	#trin_datasets have transform "None"
+	def classify_inference(self, train_datasets, test_loader, just_average=True, train_batch_size=1, class_lens = 3):
+		print("Start Inference!")
+
+		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
+
+		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
+		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
+
+		chosens = []
+		for ci, c in enumerate(class_lens):
+			np.random.seed(1000*ci)
+			#Just choose one
+			chosens.append(np.random.choice(c, train_batch_size).tolist())
+
+		train_category_labels_tup =[]
+		for ci, chosen in enumerate(chosens):
+			cat_by_category = []
+			for c in chosen:
+				batch_dict = train_datasets[ci][c] 
+				cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)]
+			catted_imgs = torch.cat(cat_by_category)
+			train_category_labels_tup.append(catted_imgs)
+
+		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_loaders)): 
+			none_mask = []
+			#catted_img_tups of test dataset
+			catted_imgs_tup = []
+			object_labels_tup = []
+			category_labels_tup =[]
+			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
+			for batch_dict in batch_dict_tuple:
+				if not(batch_dict is None):
+					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+					if not(self.args.ood):
+						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
+						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
+						category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
+						object_labels_tup.append(object_labels)
+					none_mask.append(False)
+				else:
+					#pass
+					none_mask.append(True)
+				catted_imgs_tup.append(catted_imgs)
+
+			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup)
+			batch_imgs = batch_imgs.to(self.args.device)
+
+			with autocast(enabled=self.args.fp16_precision):
+				features = self.model(batch_imgs)
+
+				#Now separate into two
+				features_train = features[:self.args.permclr_views*num_classes*train_batch_size, :].clone() 
+				features_test = features[self.args.permclr_views*num_classes*train_batch_size:, :].clone() 
+				del features
+
+				#Stack and concatenate
+				#Stack features_train first
+				features_train = features_train.reshape(num_classes*train_batch_size, self.args.permclr_views, -1)
+				features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2*train_batch_size, self.args.permclr_views, 128 )
+
+				#Stack features_test
+				features_test = features_test.reshape(num_classes, self.args.permclr_views, -1) #ASSUME BATCH_SIZE=1
+				features_test = features_test.transpose(0,1) #(self.args.permclr_views, num_classes, 128)
+				features_test = torch.cat([features_test]*num_classes*train_batch_size) #(self.args.permclr_views*num_classes, num_classes, 128)
+				features_test = features_test.transpose(0,1)
+				features_test = features_test.reshape(num_classes**2*train_batch_size, self.args.permclr_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views, 128 ) WITH batch size 1
+
+				#Concatenate feature_test and features_train 
+				features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views*2, 128 ) WITH batch size 1
+
+				features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
+				features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
+				features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
+
+				#Get average
+				features = torch.bmm(features, avg_matrix_128)
+
+				#Take dot product
+				#Normalize across 128
+				features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
+				#Multiply elementwise among the dimension of "2"
+				features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9]) or torch.Size([128, 9*17])
+				#Now sum across the 128 dimensions
+				logits = torch.sum(features, axis=0) #Shape is torch.Size([9*train_batch_size]) or torch.Size([9*train_batch_size*17])
+
+				if (just_average):
+					logits = logits.reshape(num_classes**2,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
+					logits = torch.mean(logits, axis=1)
+
+				logits= logits.detach().cpu().numpy()
+				for ni, m in enumerate(none_mask):
+					if m == True:
+						logits[3*ni:3*(ni+1)]= np.nan
+
+				assert logits.shape[0] %3 ==0
+				max_logits, aligns =  get_max_logit(logits, none_mask)
+				class_alignment += aligns
+
+		print("class alignment is ", np.mean(class_alignment))
+
+

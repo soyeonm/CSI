@@ -2,6 +2,7 @@ from supcontrast_util import TwoCropTransform
 
 from run import *
 import torch
+from data_aug.permclr_custom_dataset import PermDataset
 from data_aug.objclr_custom_dataset import ObjDataset
 from data_aug.view_generator import ContrastiveLearningViewGenerator
 from data_aug.contrastive_learning_dataset import get_simclr_pipeline_transform
@@ -55,11 +56,39 @@ def main_objclr():
 	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
 														   last_epoch=-1)
 
+	# Permclr train datasets/ test datasets for inference
+	#SANITY
+	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+	permclr_train_datasets = []
+	test_datasets = []
+
+	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
+	test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+	print("test classes are ", test_classes)
+	print("classes are ", classes)
+
+	print("preparing datasets")
+	for c in classes:
+		permclr_train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
+	for c in test_classes:
+		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
+	print("preepared all c! time: ", time.time() - start) 
+
+	test_data_loaders = []
+	print("preparing dataloaders")
+	start = time.time()
+	for i, c in enumerate(test_classes):
+		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=args.batch_size,num_workers=args.workers, pin_memory=True))
+	print("preepared all c dataloaders! time: ", time.time() - start)
+
+
+
+
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
 	with torch.cuda.device(args.gpu_index):
 		start = time.time()
 		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		objclr.train(train_loader)
+		objclr.train(train_loader, permclr_train_datasets, test_loader, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 1)
 		print("time taken per epoch is ", time.time() - start)
 
 
