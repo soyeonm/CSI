@@ -4,7 +4,7 @@ from run import *
 import torch
 from data_aug.objclr_custom_dataset import ObjDataset
 from data_aug.view_generator import ContrastiveLearningViewGenerator
-
+from data_aug.contrastive_learning_dataset import get_simclr_pipeline_transform
 from glob import glob
 import pickle
 import time
