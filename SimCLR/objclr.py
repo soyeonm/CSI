@@ -156,7 +156,7 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
-			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
 				with torch.no_grad():
 					self.model.eval()
 					self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
@@ -172,6 +172,7 @@ class ObjCLR(object):
 		avg_matrix = get_avg_matrix(self.args.object_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
+		num_classes = len(train_datasets)
 		class_lens = [len(td) for td in train_datasets]
 		chosens = []
 		for ci, c in enumerate(class_lens):
