@@ -3,6 +3,8 @@ from supcontrast_util import TwoCropTransform
 from run import *
 import torch
 from data_aug.objclr_custom_dataset import ObjDataset
+from data_aug.view_generator import ContrastiveLearningViewGenerator
+
 from glob import glob
 import pickle
 import time
