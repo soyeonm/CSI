@@ -87,6 +87,7 @@ def main_objclr():
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
 	with torch.cuda.device(args.gpu_index):
+		args.ood = False
 		start = time.time()
 		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 1)
