@@ -102,7 +102,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loader, just_average=True, train_batch_size=1, class_lens = 3, eval_period = 1):
+	def train(self, train_loader, inference_train_datasets, test_loaders, just_average=True, train_batch_size=1, class_lens = 3, eval_period = 1):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -159,11 +159,11 @@ class ObjCLR(object):
 			if epoch % eval_period ==0 and epoch >0:
 				with torch.no_grad():
 					self.model.eval()
-					self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size, class_lens)
+					self.classify_inference(inference_train_datasets, test_loaders, just_average, train_batch_size, class_lens)
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_datasets, test_loader, just_average=True, train_batch_size=1, class_lens = 3):
+	def classify_inference(self, train_datasets, test_loaders, just_average=True, train_batch_size=1, class_lens = 3):
 		print("Start Inference!")
 
 		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
