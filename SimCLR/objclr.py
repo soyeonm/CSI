@@ -166,10 +166,10 @@ class ObjCLR(object):
 	def classify_inference(self, train_datasets, test_loaders, just_average=True, train_batch_size=1, class_lens = 3):
 		print("Start Inference!")
 
-		P_mat = get_perm_matrix_identity(self.args.permclr_views).to(self.args.device) #has shape 8x8 
+		P_mat = get_perm_matrix_identity(self.args.object_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
 
-		avg_matrix = get_avg_matrix(self.args.permclr_views) #8x2
+		avg_matrix = get_avg_matrix(self.args.object_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
 		chosens = []
@@ -196,11 +196,11 @@ class ObjCLR(object):
 			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
 			for batch_dict in batch_dict_tuple:
 				if not(batch_dict is None):
-					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.permclr_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
 					if not(self.args.ood):
-						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.permclr_views)]) #shape is torch.Size([8])
+						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
 						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
-						category_labels_tup.append(torch.tensor([category]*self.args.permclr_views*self.args.batch_size))
+						category_labels_tup.append(torch.tensor([category]*self.args.object_views*self.args.batch_size))
 						object_labels_tup.append(object_labels)
 					none_mask.append(False)
 				else:
@@ -215,26 +215,26 @@ class ObjCLR(object):
 				features = self.model(batch_imgs)
 
 				#Now separate into two
-				features_train = features[:self.args.permclr_views*num_classes*train_batch_size, :].clone() 
-				features_test = features[self.args.permclr_views*num_classes*train_batch_size:, :].clone() 
+				features_train = features[:self.args.object_views*num_classes*train_batch_size, :].clone() 
+				features_test = features[self.args.object_views*num_classes*train_batch_size:, :].clone() 
 				del features
 
 				#Stack and concatenate
 				#Stack features_train first
-				features_train = features_train.reshape(num_classes*train_batch_size, self.args.permclr_views, -1)
-				features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2*train_batch_size, self.args.permclr_views, 128 )
+				features_train = features_train.reshape(num_classes*train_batch_size, self.args.object_views, -1)
+				features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2*train_batch_size, self.args.object_views, 128 )
 
 				#Stack features_test
-				features_test = features_test.reshape(num_classes, self.args.permclr_views, -1) #ASSUME BATCH_SIZE=1
-				features_test = features_test.transpose(0,1) #(self.args.permclr_views, num_classes, 128)
-				features_test = torch.cat([features_test]*num_classes*train_batch_size) #(self.args.permclr_views*num_classes, num_classes, 128)
+				features_test = features_test.reshape(num_classes, self.args.object_views, -1) #ASSUME BATCH_SIZE=1
+				features_test = features_test.transpose(0,1) #(self.args.object_views, num_classes, 128)
+				features_test = torch.cat([features_test]*num_classes*train_batch_size) #(self.args.object_views*num_classes, num_classes, 128)
 				features_test = features_test.transpose(0,1)
-				features_test = features_test.reshape(num_classes**2*train_batch_size, self.args.permclr_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views, 128 ) WITH batch size 1
+				features_test = features_test.reshape(num_classes**2*train_batch_size, self.args.object_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.object_views, 128 ) WITH batch size 1
 
 				#Concatenate feature_test and features_train 
-				features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.permclr_views*2, 128 ) WITH batch size 1
+				features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.object_views*2, 128 ) WITH batch size 1
 
-				features = features.permute(2, 1, 0) #Now shape is 128 x self.args.permclr_views*2x num_classes**2 (used to be 36 x 8x 128)
+				features = features.permute(2, 1, 0) #Now shape is 128 x self.args.object_views*2x num_classes**2 (used to be 36 x 8x 128)
 				features = torch.bmm(P_mat_128, features) #shape is still 128, 8, 9 
 				features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
