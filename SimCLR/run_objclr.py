@@ -39,6 +39,7 @@ def main_objclr():
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 	#Add transform later
 	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2)) #transform can be None too
+	pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	train_loader = torch.utils.data.DataLoader(
 		train_dataset, batch_size=args.batch_size, shuffle=True,
 		num_workers=args.workers, pin_memory=True, drop_last=True)
