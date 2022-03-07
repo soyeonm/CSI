@@ -133,17 +133,17 @@ class ObjCLR(object):
 					#Now follow the protocol of SupContrast
 					f1, f2 = torch.split(features, [bsz, bsz], dim=0)
 					features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1) #torch.Size([100, 2, 128])
-					loss = self.sup_con_loss(features, labels)
+					loss = self.sup_con_loss(features)
 					mean_loss += loss.detach().cpu().item()
 					print("loss is ", loss.detach().cpu().item())
 
 				# SGD
-				#self.optimizer.zero_grad()
+				self.optimizer.zero_grad()
 
-				#scaler.scale(loss).backward()
+				scaler.scale(loss).backward()
 
-				#scaler.step(self.optimizer)
-				#scaler.update()
+				scaler.step(self.optimizer)
+				scaler.update()
 				batch_i +=1
 
 			if epoch_counter >= 10:
