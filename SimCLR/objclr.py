@@ -107,9 +107,18 @@ class ObjCLR(object):
 
     	for epoch_counter in range(self.args.epochs):
     		print("Epoch is ", epoch_counter)
-    		for images, _ in tqdm(train_loader):
-                images = torch.cat(images, dim=0)
+    		for batch_dict in tqdm(train_loader):
+    			images_aug0 = torch.cat([batch_dict['image_' + str(i)][0] for i in range(self.args.object_views)])
+    			images_aug1 = torch.cat([batch_dict['image_' + str(i)][1] for i in range(self.args.object_views)])
+
+                images = torch.cat([images_aug0,images_aug1] , dim=0)
                 images = images.to(self.args.device, non_blocking=True)
+
+                if self.args.class_label:
+                	labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
+                else:
+                	labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)])
+                #labels = torch.cat([images_aug0,images_aug0] , dim=0) #labels should be for labels_aug0 only.
                 labels = labels.to(self.args.device, non_blocking=True)
 
                 with autocast(enabled=self.args.fp16_precision):
@@ -117,6 +126,7 @@ class ObjCLR(object):
 	                bsz = labels.shape[0] #Should be half the shape of images 
 
 	                #TODO: Check bsz is half of the shape of images
+	                assert bsz == images.shape[0]/2
 
 	                #Now follow the protocol of SupContrast
 	                f1, f2 = torch.split(features, [bsz, bsz], dim=0)

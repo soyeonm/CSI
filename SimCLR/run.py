@@ -80,7 +80,7 @@ def main():
     dataset = ContrastiveLearningDataset(args.data, args.resize_co3d, args.co3d_cropsize)
 
     train_dataset = dataset.get_dataset(args.dataset_name, args.n_views)
-    pickle.dump(train_dataset, open("train_dataset.p", "wb"))
+    #pickle.dump(train_dataset, open("train_dataset.p", "wb"))
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,

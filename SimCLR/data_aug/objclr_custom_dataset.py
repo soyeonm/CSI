@@ -69,6 +69,7 @@ class ObjDataset(Dataset):
 
 		#self.landmarks_frame = pd.read_csv(csv_file)
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
+		self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
 		globs = []
 		for c in caegory_globs:
@@ -140,7 +141,7 @@ class ObjDataset(Dataset):
 
 			return_dict['image_' + str(v)] = image
 		return_dict['object_label'] = idx
-		return_dict['category_label'] = self.object_class_dict[idx]
+		return_dict['category_label'] = self.class2idx[self.object_class_dict[idx]]
 
 		return return_dict
 
