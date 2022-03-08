@@ -72,7 +72,7 @@ class ObjCLR(object):
 		# compute logits
 		anchor_dot_contrast = torch.div(
 			torch.matmul(anchor_feature, contrast_feature.T),
-			self.temperature)
+			self.args.temperature)
 		# for numerical stability
 		logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
 		logits = anchor_dot_contrast - logits_max.detach()
