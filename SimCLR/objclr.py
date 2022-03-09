@@ -131,9 +131,11 @@ class ObjCLR(object):
 				if self.args.class_label:
 					#Example: torch.cat([torch.arange(10).view(1, -1)]*5, dim=0).T.reshape(-1)
 					#pickle.dump(batch_dict['category_label'], open("category_label.p", "wb"))
-					labels = torch.cat([batch_dict['category_label'].view(1,-1) for i in range(self.args.object_views)], dim=0).T.reshape(-1)
+					#labels = torch.cat([batch_dict['category_label'].view(1,-1) for i in range(self.args.object_views)], dim=0).T.reshape(-1)
+					labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
 				else:
-					labels = torch.cat([batch_dict['object_label'].view(1,-1) for i in range(self.args.object_views)], dim=0).T.reshape(-1)
+					#labels = torch.cat([batch_dict['object_label'].view(1,-1) for i in range(self.args.object_views)], dim=0).T.reshape(-1)
+					labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)])
 				pickle.dump(labels, open("labels.p", "wb"))
 				#labels = torch.cat([images_aug0,images_aug0] , dim=0) #labels should be for labels_aug0 only.
 				labels = labels.to(self.args.device, non_blocking=True)
