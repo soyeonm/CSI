@@ -19,6 +19,8 @@ import copy
 import itertools
 from permclr import get_perm_matrix_identity, get_avg_matrix, get_max_logit
 
+import torch.distributed as dist
+import diffdist.functional as distops
 torch.manual_seed(0)
 
 
@@ -38,25 +40,46 @@ class ObjCLR(object):
 		self.contrast_mode = contrast_mode
 		self.base_temperature = base_temperature
 
-	def sup_con_loss(self, features, labels=None, mask=None):
-		if len(features.shape) < 3:
+	def sup_con_loss(self, features, labels=None, mask=None, multi_gpu = False):
+		device = features.device #device = self.args.device
+		if len(features.shape) < 3: 
 			raise ValueError('`features` needs to be [bsz, n_views, ...],'
 							 'at least 3 dimensions are required')
 		if len(features.shape) > 3:
 			features = features.view(features.shape[0], features.shape[1], -1)
 
+		#####################Multigpu
+		if multi_gpu:
+			features_gathered = []
+			for out in features.chunk(chunk):
+				gather_t = [torch.empty_like(out) for _ in range(dist.get_world_size())]
+				gather_t = torch.cat(distops.all_gather(gather_t, out))
+				features_gathered.append(gather_t)
+			outputs = torch.cat(features_gathered)
+			print("shape of features is ", features.shape)
+
+		#What do I do about this?
+		if multi_gpu and not(labels is None):	
+			gather_t = [torch.empty_like(labels) for _ in range(dist.get_world_size())]
+			labels = torch.cat(distops.all_gather(gather_t, labels))
+		# Then what do I do about masks? -> automatically done
+		#Set every "device" to features' device -> done
+		#####################
+
+
 		batch_size = features.shape[0]
 		if labels is not None and mask is not None:
 			raise ValueError('Cannot define both `labels` and `mask`')
 		elif labels is None and mask is None:
-			mask = torch.eye(batch_size, dtype=torch.float32).to(self.args.device)
+			mask = torch.eye(batch_size, dtype=torch.float32).to(device)
 		elif labels is not None:
 			labels = labels.contiguous().view(-1, 1)
 			if labels.shape[0] != batch_size:
 				raise ValueError('Num of labels does not match num of features')
-			mask = torch.eq(labels, labels.T).float().to(self.args.device)
+			mask = torch.eq(labels, labels.T).float().to(device)
 		else:
-			mask = mask.float().to(self.args.device)
+			mask = mask.float().to(device)
+
 
 		contrast_count = features.shape[1] #2
 		contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0) #Flattens into 200, 128
@@ -84,7 +107,7 @@ class ObjCLR(object):
 		logits_mask = torch.scatter(
 			torch.ones_like(mask),
 			1, #dim is 1
-			torch.arange(batch_size * anchor_count).view(-1, 1).to(self.args.device), #index
+			torch.arange(batch_size * anchor_count).view(-1, 1).to(device), #index
 			0 #sorce
 		)
 		mask = mask * logits_mask  
@@ -93,7 +116,7 @@ class ObjCLR(object):
 		#Let's make mask for the same label
 		#This is the mask for the denominator sum
 		labels_concat = torch.cat([labels, labels], dim=0) #will have shape  200,1
-		same_labels_mask = 1 - torch.eq(labels_concat, labels_concat.T).float().to(self.args.device)
+		same_labels_mask = 1 - torch.eq(labels_concat, labels_concat.T).float().to(device)
 
 		# compute log_prob
 		if self.args.same_labels_mask:
