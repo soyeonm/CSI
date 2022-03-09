@@ -96,6 +96,7 @@ def main_objclr():
 		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 5)
 		print("time taken per epoch is ", time.time() - start)
 
+	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models')
 
 if __name__ == "__main__":
 	main_objclr()
