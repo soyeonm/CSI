@@ -57,6 +57,7 @@ if args.n_gpus > 1:
 		rank=args.local_rank,
 	)
 	print("local rank is ", args.local_rank)
+	print("args.device is ", args.device)
 else:
 	args.multi_gpu = False
 
@@ -89,6 +90,7 @@ def main_objclr():
 
 	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
 														   last_epoch=-1)
+	model = model.to(device=torch.device('cuda'))
 	############MultiGPU
 	if args.multi_gpu:
 		model = apex.parallel.convert_syncbn_model(model)
