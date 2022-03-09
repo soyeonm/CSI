@@ -35,7 +35,7 @@ parser.add_argument("--local_rank", type=int,
 args = parser.parse_args()
 
 if not args.disable_cuda and torch.cuda.is_available():
-	args.device = torch.device('cuda')
+	args.device = torch.device('cuda:' + str(args.local_rank))
 	cudnn.deterministic = True
 	cudnn.benchmark = True
 else:
