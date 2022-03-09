@@ -29,7 +29,7 @@ parser.add_argument('--same_labels_mask', action='store_true')
 parser.add_argument('--eval_train_batch_size', type=int, default=10)
 parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int,
-                        default=0, help='Local rank for distributed learning')
+						default=0, help='Local rank for distributed learning')
 
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
@@ -45,20 +45,20 @@ else:
 args.n_gpus = torch.cuda.device_count() #Use CUDA_VISIBLE_DEVICES
 
 if args.n_gpus > 1:
-    import apex
-    import torch.distributed as dist
-    from torch.utils.data.distributed import DistributedSampler
+	import apex
+	import torch.distributed as dist
+	from torch.utils.data.distributed import DistributedSampler
 
-    args.multi_gpu = True
-    torch.distributed.init_process_group(
-        'nccl',
-        init_method='env://',
-        world_size=args.n_gpus,
-        rank=args.local_rank,
-    )
-    print("local rank is ", args.local_rank)
+	args.multi_gpu = True
+	torch.distributed.init_process_group(
+		'nccl',
+		init_method='env://',
+		world_size=args.n_gpus,
+		rank=args.local_rank,
+	)
+	print("local rank is ", args.local_rank)
 else:
-    args.multi_gpu = False
+	args.multi_gpu = False
 
 
 def main_objclr():
@@ -69,8 +69,8 @@ def main_objclr():
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	
 	if args.multi_gpu:
-	    train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
-	    train_loader = DataLoader(train_set, sampler=train_sampler, batch_size=args.batch_size, shuffle=True,
+		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
+		train_loader = DataLoader(train_set, sampler=train_sampler, batch_size=args.batch_size, shuffle=True,
 			num_workers=args.workers, pin_memory=True, drop_last=True)
 	else:
 		train_sampler = None
@@ -91,8 +91,8 @@ def main_objclr():
 														   last_epoch=-1)
 	############MultiGPU
 	if args.multi_gpu:
-	    model = apex.parallel.convert_syncbn_model(model)
-	    model = apex.parallel.DistributedDataParallel(model, delay_allreduce=True)
+		model = apex.parallel.convert_syncbn_model(model)
+		model = apex.parallel.DistributedDataParallel(model, delay_allreduce=True)
 	
 
 	# Permclr train datasets/ test datasets for inference

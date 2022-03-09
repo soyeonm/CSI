@@ -142,7 +142,7 @@ class ObjCLR(object):
 		for epoch_counter in range(self.args.epochs):
 			self.model.train()
 			if self.args.multi_gpu:
-        		train_sampler.set_epoch(epoch_counter)
+				train_sampler.set_epoch(epoch_counter)
 			print("Epoch is ", epoch_counter)
 			mean_loss = 0.0
 			batch_i = 0
