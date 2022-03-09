@@ -194,7 +194,8 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
-			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+			#Evaluate only at the 0th gpu
+			if self.args.local_rank ==0 and epoch_counter  % eval_period ==0 and epoch_counter  >0:
 				with torch.no_grad():
 					self.model.eval()
 					self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)

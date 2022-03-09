@@ -29,24 +29,49 @@ parser.add_argument('--same_labels_mask', action='store_true')
 parser.add_argument('--eval_train_batch_size', type=int, default=10)
 parser.add_argument('--sanity', action='store_true')
 
+############Set torch device for MiltiGPU###
+args = parser.parse_args()
+
+if not args.disable_cuda and torch.cuda.is_available():
+	args.device = torch.device('cuda')
+	cudnn.deterministic = True
+	cudnn.benchmark = True
+else:
+	args.device = torch.device('cpu')
+	args.gpu_index = -1 #What to do about this?
+
+args.n_gpus = torch.cuda.device_count() #Use CUDA_VISIBLE_DEVICES
+
+if args.n_gpus > 1:
+    import apex
+    import torch.distributed as dist
+    from torch.utils.data.distributed import DistributedSampler
+
+    args.multi_gpu = True
+    torch.distributed.init_process_group(
+        'nccl',
+        init_method='env://',
+        world_size=args.n_gpus,
+        rank=args.local_rank,
+    )
+else:
+    args.multi_gpu = False
+
 
 def main_objclr():
-	args = parser.parse_args()
-	if not args.disable_cuda and torch.cuda.is_available():
-		args.device = torch.device('cuda')
-		cudnn.deterministic = True
-		cudnn.benchmark = True
-	else:
-		args.device = torch.device('cpu')
-		args.gpu_index = -1
 
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 	#Add transform later
 	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2)) #transform can be None too
-	pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
+	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
+	
+	if args.multi_gpu:
+	    train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
+
 	train_loader = torch.utils.data.DataLoader(
 		train_dataset, batch_size=args.batch_size, shuffle=True,
 		num_workers=args.workers, pin_memory=True, drop_last=True)
+
 
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 	if args.load_pretrained:
@@ -54,12 +79,19 @@ def main_objclr():
 		state_dict = checkpoint['state_dict']
 		model.load_state_dict(state_dict)
 
+	############MultiGPU
+	if args.multi_gpu:
+	    model = apex.parallel.convert_syncbn_model(model)
+	    model = apex.parallel.DistributedDataParallel(model, delay_allreduce=True)
+
+
 	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
 	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
 														   last_epoch=-1)
 
 	# Permclr train datasets/ test datasets for inference
+	#Do the permclr evaluation only on the 0th gpu
 	#SANITY
 	if args.sanity:
 		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
@@ -104,6 +136,7 @@ def main_objclr():
 		args.ood = False
 		start = time.time()
 		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+		#TODO for args.0th gpu
 		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5)
 		print("time taken per epoch is ", time.time() - start)
 
