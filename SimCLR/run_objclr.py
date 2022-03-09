@@ -70,8 +70,8 @@ def main_objclr():
 	
 	if args.multi_gpu:
 		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
-		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=True,
-			num_workers=args.workers, pin_memory=True, drop_last=True)
+		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
+			num_workers=args.workers, pin_memory=True, drop_last=True) #sampler option is mutually exlusive with shuffle
 	else:
 		train_sampler = None
 		train_loader = torch.utils.data.DataLoader(
