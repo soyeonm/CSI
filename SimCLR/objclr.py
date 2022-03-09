@@ -58,8 +58,8 @@ class ObjCLR(object):
 		else:
 			mask = mask.float().to(self.args.device)
 
-		contrast_count = features.shape[1]
-		contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
+		contrast_count = features.shape[1] #2
+		contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0) #Flattens into 200, 128
 		if self.contrast_mode == 'one':
 			anchor_feature = features[:, 0]
 			anchor_count = 1
@@ -71,29 +71,39 @@ class ObjCLR(object):
 
 		# compute logits
 		anchor_dot_contrast = torch.div(
-			torch.matmul(anchor_feature, contrast_feature.T),
+			torch.matmul(anchor_feature, contrast_feature.T), #this must be the dot product of all entries to each other
 			self.args.temperature)
 		# for numerical stability
 		logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
-		logits = anchor_dot_contrast - logits_max.detach()
+		logits = anchor_dot_contrast - logits_max.detach() 
 
 		# tile mask
-		mask = mask.repeat(anchor_count, contrast_count)
-		# mask-out self-contrast cases
+		mask = mask.repeat(anchor_count, contrast_count) #mask is already 100 x 100. But make it 200 x 200
+		# mask-out self-contrast cases -
+		# 가만 보니 this is just to prevent self dot product
 		logits_mask = torch.scatter(
 			torch.ones_like(mask),
-			1,
-			torch.arange(batch_size * anchor_count).view(-1, 1).to(self.args.device),
-			0
+			1, #dim is 1
+			torch.arange(batch_size * anchor_count).view(-1, 1).to(self.args.device), #index
+			0 #sorce
 		)
-		mask = mask * logits_mask
+		mask = mask * logits_mask  
+
+		###################
+		#Let's make mask for the same label
+		#This is the mask for the denominator sum
+		labels_concat = torch.cat([labels, labels], dim=0) #will have shape  200,1
+		same_labels_mask = 1 - torch.eq(labels_concat, labels_concat.T).float().to(self.args.device)
 
 		# compute log_prob
-		exp_logits = torch.exp(logits) * logits_mask
+		if self.args.same_labels_mask:
+			exp_logits = torch.exp(logits) * logits_mask * same_labels_mask  #everything itself myself dot myself
+		else:
+			exp_logits = torch.exp(logits) * logits_mask #everything itself myself dot myself
 		log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
 
 		# compute mean of log-likelihood over positive
-		mean_log_prob_pos = (mask * log_prob).sum(1) / mask.sum(1)
+		mean_log_prob_pos = (mask * log_prob).sum(1) / mask.sum(1) #True인거만 곱하기 except for myself dot myself
 
 		# loss
 		loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
