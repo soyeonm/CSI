@@ -164,7 +164,7 @@ def main_permclr_test():
 	if len(auroc_max_logits_ood) < len(auroc_max_logits_test):
 		np.random.seed(0)
 		balanced_chosen = np.random.permutation(len(auroc_max_logits_ood))
-		auroc_max_logits_test = np.array(auroc_max_logits_test)[balanced_chosen].tolist()
+		auroc_max_logits_test = np.array(auroc_max_logits_test)[balanced_chosen].tolist() 
 		auroc_labels_test = np.array(auroc_labels_test)[balanced_chosen].tolist()
 	else:
 		np.random.seed(0)
