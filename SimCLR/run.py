@@ -60,9 +60,12 @@ parser.add_argument('--co3d_cropsize', type=int, default=32)
 parser.add_argument('--load_pretrained', action='store_true')
 
 
-def save_checkpoint(epoch, model, save_name, save_dir):
+def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu):
     last_model = os.path.join(save_dir, save_name+ "_epoch_" + str(epoch))
-    torch.save(model.cpu().state_dict(), last_model)
+    if multi_gpu:
+        torch.save(model.module.cpu().state_dict(), last_model)
+    else:
+        torch.save(model.cpu().state_dict(), last_model)
     
 
 def main():

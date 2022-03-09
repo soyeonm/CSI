@@ -36,7 +36,7 @@ if P.n_gpus > 1:
         world_size=P.n_gpus,
         rank=P.local_rank,
     )
-    print("local rank is ", P.local_rank)
+    #print("local rank is ", P.local_rank) 0, 1, 2, 3, etc
 else:
     P.multi_gpu = False
 

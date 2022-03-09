@@ -135,12 +135,14 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1):
+	def train(self, train_loader, inference_train_datasets, test_loaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
 		for epoch_counter in range(self.args.epochs):
 			self.model.train()
+			if self.args.multi_gpu:
+        		train_sampler.set_epoch(epoch_counter)
 			print("Epoch is ", epoch_counter)
 			mean_loss = 0.0
 			batch_i = 0

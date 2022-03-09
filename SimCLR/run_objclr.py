@@ -28,6 +28,8 @@ parser.add_argument('--class_label', action='store_true')
 parser.add_argument('--same_labels_mask', action='store_true')
 parser.add_argument('--eval_train_batch_size', type=int, default=10)
 parser.add_argument('--sanity', action='store_true')
+parser.add_argument("--local_rank", type=int,
+                        default=0, help='Local rank for distributed learning')
 
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
@@ -54,6 +56,7 @@ if args.n_gpus > 1:
         world_size=args.n_gpus,
         rank=args.local_rank,
     )
+    print("local rank is ", args.local_rank)
 else:
     args.multi_gpu = False
 
@@ -67,10 +70,13 @@ def main_objclr():
 	
 	if args.multi_gpu:
 	    train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
-
-	train_loader = torch.utils.data.DataLoader(
-		train_dataset, batch_size=args.batch_size, shuffle=True,
-		num_workers=args.workers, pin_memory=True, drop_last=True)
+	    train_loader = DataLoader(train_set, sampler=train_sampler, batch_size=args.batch_size, shuffle=True,
+			num_workers=args.workers, pin_memory=True, drop_last=True)
+	else:
+		train_sampler = None
+		train_loader = torch.utils.data.DataLoader(
+			train_dataset, batch_size=args.batch_size, shuffle=True,
+			num_workers=args.workers, pin_memory=True, drop_last=True)
 
 
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
@@ -79,68 +85,69 @@ def main_objclr():
 		state_dict = checkpoint['state_dict']
 		model.load_state_dict(state_dict)
 
-	############MultiGPU
-	if args.multi_gpu:
-	    model = apex.parallel.convert_syncbn_model(model)
-	    model = apex.parallel.DistributedDataParallel(model, delay_allreduce=True)
-
-
 	optimizer = torch.optim.Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
 	scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
 														   last_epoch=-1)
+	############MultiGPU
+	if args.multi_gpu:
+	    model = apex.parallel.convert_syncbn_model(model)
+	    model = apex.parallel.DistributedDataParallel(model, delay_allreduce=True)
+	
 
 	# Permclr train datasets/ test datasets for inference
 	#Do the permclr evaluation only on the 0th gpu
 	#SANITY
-	if args.sanity:
-		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
-	else:
-		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
-	if args.smaller_data:
-		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+	if args.local_rank ==0:
 		if args.sanity:
-			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
 		else:
-			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
-	permclr_train_datasets = []
-	test_datasets = []
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
+		if args.smaller_data:
+			train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+			if args.sanity:
+				test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+			else:
+				test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
+		permclr_train_datasets = []
+		test_datasets = []
 
-	classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
-	#test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
-	test_classes = classes
-	args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
-	print("test classes are ", test_classes)
-	print("classes are ", classes)
+		classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
+		#test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+		test_classes = classes
+		args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
+		print("test classes are ", test_classes)
+		print("classes are ", classes)
 
-	print("preparing datasets")
-	start = time.time()
-	for c in classes:
-		permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d))
-	for c in test_classes:
-		test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
-	print("preepared all c! time: ", time.time() - start) 
+		print("preparing datasets")
+		start = time.time()
+		for c in classes:
+			permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d))
+		for c in test_classes:
+			test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
+		print("preepared all c! time: ", time.time() - start) 
 
-	test_data_loaders = []
-	print("preparing dataloaders")
-	start = time.time()
-	for i, c in enumerate(test_classes):
-		test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
-	print("preepared all c dataloaders! time: ", time.time() - start)
-
-
+		test_data_loaders = []
+		print("preparing dataloaders")
+		start = time.time()
+		for i, c in enumerate(test_classes):
+			test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
+		print("preepared all c dataloaders! time: ", time.time() - start)
+	else:
+		test_data_loaders = None
+		permclr_train_datasets = None
 
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
-	with torch.cuda.device(args.gpu_index):
-		args.ood = False
-		start = time.time()
-		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		#TODO for args.0th gpu
-		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5)
-		print("time taken per epoch is ", time.time() - start)
+	#with torch.cuda.device(args.gpu_index):
+	args.ood = False
+	start = time.time()
+	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+	#TODO for args.0th gpu
+	objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5, train_sampler=train_sampler)
+	print("time taken per epoch is ", time.time() - start)
 
-	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models')
+	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)
 
 if __name__ == "__main__":
 	main_objclr()
