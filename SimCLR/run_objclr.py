@@ -25,6 +25,7 @@ parser.add_argument('--smaller_data', action='store_true')
 #parser.add_argument('--debug_with_identity', action='store_true')
 #parser.add_argument('--num_perms', type=int, default=4)
 parser.add_argument('--class_label', action='store_true')
+parser.add_argument('--same_labels_mask', action='store_true')
 
 
 def main_objclr():
