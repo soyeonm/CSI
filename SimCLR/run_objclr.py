@@ -26,6 +26,8 @@ parser.add_argument('--smaller_data', action='store_true')
 #parser.add_argument('--num_perms', type=int, default=4)
 parser.add_argument('--class_label', action='store_true')
 parser.add_argument('--same_labels_mask', action='store_true')
+parser.add_argument('--eval_train_batch_size', type=int, default=10)
+parser.add_argument('--sanity', action='store_true')
 
 
 def main_objclr():
@@ -59,7 +61,16 @@ def main_objclr():
 
 	# Permclr train datasets/ test datasets for inference
 	#SANITY
-	test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+	if args.sanity:
+		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+	else:
+		test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
+	if args.smaller_data:
+		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+		if args.sanity:
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
+		else:
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
 	permclr_train_datasets = []
 	test_datasets = []
 
@@ -93,7 +104,7 @@ def main_objclr():
 		args.ood = False
 		start = time.time()
 		objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
-		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=10, class_lens = 3, eval_period = 5)
+		objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5)
 		print("time taken per epoch is ", time.time() - start)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models')
