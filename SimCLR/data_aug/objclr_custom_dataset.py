@@ -60,7 +60,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, transform=None):
+	def __init__(self, root_dir, views, transform=None, ood_classes=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -73,6 +73,10 @@ class ObjDataset(Dataset):
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
 		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
+		if not (ood_classes is None):
+			ood_classes_set = set(ood_classes)
+			caegory_globs = [c for c in caegory_globs if not(c in ood_classes_set)]
+		
 		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
 		#print("class2idx is ", self.class2idx)
 		globs = []
