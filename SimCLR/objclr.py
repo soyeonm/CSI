@@ -309,10 +309,10 @@ class ObjCLR(object):
 				logits= logits.detach().cpu().numpy()
 				for ni, m in enumerate(none_mask):
 					if m == True:
-						logits[3*ni:3*(ni+1)]= np.nan
+						logits[num_classes*ni:num_classes*(ni+1)]= np.nan
 
-				assert logits.shape[0] %3 ==0
-				max_logits, aligns =  get_max_logit(logits, none_mask)
+				assert logits.shape[0] %num_classes ==0
+				max_logits, aligns =  get_max_logit(logits, none_mask, num_classes)
 				class_alignment += aligns
 
 		print("class alignment is ", np.mean(class_alignment))

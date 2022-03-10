@@ -112,16 +112,16 @@ def nll(logits, mask_logits, labels, minus_no, usual_nll=False):
 	log_softmaxed = -(label_logits - torch.log(summed))
 	return torch.mean(log_softmaxed)
 
-def get_max_logit(logits, logit_mask):
+def get_max_logit(logits, logit_mask, num_classes):
 	#logits should be 1 d
-	assert logits.shape[0] %3 ==0
+	assert logits.shape[0] %num_classes ==0
 	max_logits = []
 	argmax_aligns = []
-	for i in range(int(logits.shape[0]/3)):
+	for i in range(int(logits.shape[0]/num_classes)):
 		if not(logit_mask[i]):
 			#print("logit is ", logits[3*i:3*(i+1)])
-			max_logits.append(max(logits[3*i:3*(i+1)]))
-			argmax_aligns.append(np.argmax(logits[3*i:3*(i+1)]) == i)
+			max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
+			argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == i)
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
 		#print("argmax aligns last element is ", argmax_aligns[-1])
 	return max_logits, argmax_aligns
