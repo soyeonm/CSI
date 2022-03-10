@@ -3,7 +3,7 @@ from supcontrast_util import TwoCropTransform
 from run import *
 import torch
 from data_aug.permclr_custom_dataset import PermDataset
-from data_aug.objclr_custom_dataset import ObjDataset
+from data_aug.objclr_custom_dataset import ObjDataset, ObjInferenceDataset
 from data_aug.view_generator import ContrastiveLearningViewGenerator
 from data_aug.contrastive_learning_dataset import get_simclr_pipeline_transform
 from glob import glob
@@ -118,7 +118,6 @@ def main_objclr():
 		if args.sanity:
 			test_root_dir = train_root_dir
 		else:
-			#test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 		if args.smaller_data:
 			train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
@@ -126,30 +125,36 @@ def main_objclr():
 				test_root_dir = train_root_dir
 			else:
 				test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
-		permclr_train_datasets = []
-		test_datasets = []
 
-		classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
-		#test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
-		test_classes = classes
-		args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
-		print("test classes are ", test_classes)
-		print("classes are ", classes)
+		#Replace prmclr datasets with new ObjInferenceDataset
+		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True)
+		perm_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False)
 
-		print("preparing datasets")
-		start = time.time()
-		for c in classes:
-			permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d, processed=False))
-		for c in test_classes:
-			test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
-		print("preepared all c! time: ", time.time() - start) 
+		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, num_workers=args.workers, pin_memory=True, shuffle=False)
+		# permclr_train_datasets = []
+		# test_datasets = []
 
-		test_data_loaders = []
-		print("preparing dataloaders")
-		start = time.time()
-		for i, c in enumerate(test_classes):
-			test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
-		print("preepared all c dataloaders! time: ", time.time() - start)
+		# classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
+		# #test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
+		# test_classes = classes
+		# args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
+		# print("test classes are ", test_classes)
+		# print("classes are ", classes)
+
+		# print("preparing datasets")
+		# start = time.time()
+		# for c in classes:
+		# 	permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d, processed=False))
+		# for c in test_classes:
+		# 	test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
+		# print("preepared all c! time: ", time.time() - start) 
+
+		# test_data_loaders = []
+		# print("preparing dataloaders")
+		# start = time.time()
+		# for i, c in enumerate(test_classes):
+		# 	test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
+		# print("preepared all c dataloaders! time: ", time.time() - start)
 	else:
 		test_data_loaders = None
 		permclr_train_datasets = None
@@ -166,7 +171,7 @@ def main_objclr():
 	start = time.time()
 	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#TODO for args.0th gpu
-	objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5, train_sampler=train_sampler)
+	objclr.train(train_loader, permclr_train_dataset, test_data_loader, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = 3, eval_period = 5, train_sampler=train_sampler)
 	print("time taken per epoch is ", time.time() - start)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)

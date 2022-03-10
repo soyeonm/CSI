@@ -220,7 +220,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_datasets, test_loaders, class_lens , just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loader, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
