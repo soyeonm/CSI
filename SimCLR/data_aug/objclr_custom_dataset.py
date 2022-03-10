@@ -74,7 +74,7 @@ class ObjDataset(Dataset):
 		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
 		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
-		print("class2idx is ", self.class2idx)
+		#print("class2idx is ", self.class2idx)
 		globs = []
 		for c in caegory_globs:
 			globs += glob(c + '/*.jpg')

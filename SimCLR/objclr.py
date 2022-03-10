@@ -199,7 +199,7 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
 			#Evaluate only at the 0th gpu
-			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
