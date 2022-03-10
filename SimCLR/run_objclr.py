@@ -20,7 +20,6 @@ import os
 
 import torch.distributed as dist
 import datetime
-import copy
 
 parser.add_argument('--object_views', type=int, default=4)
 #parser.add_argument('--usual_nll', action='store_true')

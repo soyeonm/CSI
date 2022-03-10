@@ -9,6 +9,7 @@ from glob import glob
 import copy
 import pickle
 
+
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
 
 
