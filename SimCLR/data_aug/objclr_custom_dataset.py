@@ -73,7 +73,7 @@ class ObjDataset(Dataset):
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
 		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
-		self.class2idx = {c.split('/')[-1]: i for i, c in enuemerate(caegory_globs)}
+		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
 		print("class2idx is ", self.class2idx)
 		globs = []
 		for c in caegory_globs:
