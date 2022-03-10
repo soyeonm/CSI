@@ -34,13 +34,17 @@ parser.add_argument("--local_rank", type=int,
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
 
+
 if not args.disable_cuda and torch.cuda.is_available():
-	args.device = torch.device('cuda:' + str(args.local_rank))
-	cudnn.deterministic = True
+    torch.cuda.set_device(args.local_rank)
+    args.device = torch.device('cuda')
+    cudnn.deterministic = True
 	cudnn.benchmark = True
 else:
 	args.device = torch.device('cpu')
 	args.gpu_index = -1 #What to do about this?
+
+#device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 
 args.n_gpus = torch.cuda.device_count() #Use CUDA_VISIBLE_DEVICES
 
