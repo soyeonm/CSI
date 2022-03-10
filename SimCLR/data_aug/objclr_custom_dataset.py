@@ -6,6 +6,7 @@ from torchvision import transforms, utils
 from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 from glob import glob
+import copy
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
 
@@ -35,14 +36,15 @@ def default_loader(path):
 		return pil_loader(path)
 
 
-def get_obj_num(string):
-	#between obj and frame 
-	#if string[:3] != 'obj':
-	#	print(string)
-	assert string[:3] == 'obj', "string is " + str(string)
-	i = string.find('frame')
-	#and string[20:25] == 'frame'
-	return string[3:i]
+def get_obj_num(string, processed):
+	if processed:
+		assert string[:3] == 'obj', "string is " + str(string)
+		i = string.find('frame')
+		#and string[20:25] == 'frame'
+		return string[3:i]
+	else:
+		return string.split('/')[1]
+
 
 def get_simclr_pipeline_transform(size, s=1, resize_size=None):
   """Return a set of data augmentation transformations as described in the SimCLR paper."""
@@ -60,7 +62,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, transform=None, ood_classes=None):
+	def __init__(self, root_dir, views, transform=None, ood_classes=None, processed=True):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -81,18 +83,30 @@ class ObjDataset(Dataset):
 		#print("class2idx is ", self.class2idx)
 		globs = []
 		for c in caegory_globs:
-			globs += glob(c + '/*.jpg')
-		jpgs = [g.split('/')[-1] for g in globs]
+			if processed:
+				globs += glob(c + '/*.jpg') #For all the rest
+			else:
+				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
+		if processed:
+			jpgs = [g.split('/')[-1] for g in globs]
+		else:
+			jpgs = copy.deepcopy(globs)
 		#class_labels = [g.split('/')[-2] for g in globs]
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
-		object_ids = set([get_obj_num(jpg) for jpg in set(jpgs)])
+		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
 		self.object_dict_p = {o:[] for o in object_ids}
 		self.object_class_dict_p = {o:None for o in object_ids}
 		for g in globs:
-			jpg = g.split('/')[-1]
-			class_label = g.split('/')[-2]
-			obj_id = get_obj_num(jpg) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
+			if processed:
+				jpg = g.split('/')[-1]
+			else:
+				jpg = g
+			if processed:
+				class_label = g.split('/')[-2]
+			else:
+				class_label = g.split('/')[-4]
+			obj_id = get_obj_num(jpg, processed) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
 			#if not(obj_id in object_ids):
 			self.object_dict_p[obj_id].append(g)
 			self.object_class_dict_p[obj_id] = class_label
@@ -104,6 +118,8 @@ class ObjDataset(Dataset):
 		self.transform = transform
 		#self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
+		pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
+		pickle.dump(self.object_class_dict, open("temp_pickles/object_class_dict.p", "wb"))
 		del self.object_dict_p; del self.object_class_dict_p
 
 		#get the number of unique classes
