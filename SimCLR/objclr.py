@@ -220,7 +220,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_dataset, test_loader, class_lens , just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loaders, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
@@ -230,22 +230,16 @@ class ObjCLR(object):
 		avg_matrix = get_avg_matrix(self.args.object_views) #8x2
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
-		num_classes = len(train_datasets)
-		class_lens = [len(td) for td in train_datasets]
-		chosens = []
-		for ci, c in enumerate(class_lens):
-			np.random.seed(1000*ci)
-			#Just choose one
-			chosens.append(np.random.choice(c, train_batch_size).tolist())
+		num_classes = len(train_dataset)
+		class_lens = [len(td) for td in train_dataset]
 
 		train_category_labels_tup =[]
-		for ci, chosen in enumerate(chosens):
-			cat_by_category = []
-			for c in chosen:
-				batch_dict = train_datasets[ci][c] 
-				cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)]
-			catted_imgs = torch.cat(cat_by_category)
-			train_category_labels_tup.append(catted_imgs)
+		cat_by_category = []
+		for c in chosen:
+			batch_dict = train_dataset[ci][c] 
+			cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)]
+		catted_imgs = torch.cat(cat_by_category)
+		train_category_labels_tup.append(catted_imgs)
 
 		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_loaders)): 
 			none_mask = []

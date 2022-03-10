@@ -178,7 +178,7 @@ class ObjDataset(Dataset):
 class ObjInferenceDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, views, shots=1, transform=None, ood_classes=None, processed=True):
+	def __init__(self, root_dir, views, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -195,7 +195,8 @@ class ObjInferenceDataset(Dataset):
 			ood_classes_set = set(ood_classes)
 			caegory_globs = [c for c in caegory_globs if not(c in ood_classes_set)]
 		
-		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
+		if not(class_idx is None): 
+			self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
 		#print("class2idx is ", self.class2idx)
 		globs = []
 		for c in caegory_globs:
@@ -235,14 +236,15 @@ class ObjInferenceDataset(Dataset):
 		self.class2_startidx = {c: None for c in self.class2idx}
 
 		#Sample shots for each class
-		chosen_shots = []
-		seed_counter = 0
-		for c, v in self.object_class_dict_p_rev.items():
-			np.random.seed(seed_counter)
-			perm = np.random.permutation(len(v)).tolist()
-			perm = perm[:shots]
-			self.object_class_dict_p_rev[c] = [v[p] for p in perm]
-			seed_counter +=1
+		if not(shots is None):
+			chosen_shots = []
+			seed_counter = 0
+			for c, v in self.object_class_dict_p_rev.items():
+				np.random.seed(seed_counter)
+				perm = np.random.permutation(len(v)).tolist()
+				perm = perm[:shots]
+				self.object_class_dict_p_rev[c] = [v[p] for p in perm]
+				seed_counter +=1
 
 		o_counter = 0
 		for c in self.object_class_dict_p_rev:

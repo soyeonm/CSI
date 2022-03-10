@@ -128,8 +128,10 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True)
 		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False)
+		train_class_idx = permclr_train_dataset.class2idx
+
+		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=None,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True, class_idx=train_class_idx)
 
 		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, num_workers=args.workers, pin_memory=True, shuffle=False)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
@@ -158,8 +160,8 @@ def main_objclr():
 		# 	test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
 		# print("preepared all c dataloaders! time: ", time.time() - start)
 	else:
-		test_data_loaders = None
-		permclr_train_datasets = None
+		test_data_loader = None
+		permclr_train_dataset = None
 
 	if args.multi_gpu:
 		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
