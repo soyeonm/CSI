@@ -69,11 +69,13 @@ class PermDataset(Dataset):
 			jpgs = [g.split('/')[-1] for g in globs]
 		else:
 			jpgs = copy.deepcopy(globs)
-		pickle.dump(jpgs, open("temp_pickles/perm_jpgs.p", "wb"))
+		if not(processed):
+			pickle.dump(jpgs, open("temp_pickles/perm_jpgs.p", "wb"))
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
 		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
-		pickle.dump(jpgs, open("temp_pickles/objectids.p", "wb"))
+		if not(processed):
+			pickle.dump(jpgs, open("temp_pickles/objectids.p", "wb"))
 		self.object_dict = {o:[] for o in object_ids}
 		for g in globs:
 			if processed:
@@ -83,7 +85,8 @@ class PermDataset(Dataset):
 			obj_id = get_obj_num(jpg, processed)
 			#if not(obj_id in object_ids):
 			self.object_dict[obj_id].append(g)
-		pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
+		if not(processed):
+			pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
 
 		self.object_dict = {i: self.object_dict[k] for i, k in enumerate(list(self.object_dict.keys()))}
 		self.views = views
