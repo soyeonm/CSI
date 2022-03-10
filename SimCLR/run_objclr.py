@@ -18,6 +18,9 @@ from models.resnet_simclr import ResNetSimCLR
 
 import os
 
+import torch.distributed as dist
+import datetime
+
 parser.add_argument('--object_views', type=int, default=4)
 #parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
@@ -142,6 +145,8 @@ def main_objclr():
 	else:
 		test_data_loaders = None
 		permclr_train_datasets = None
+	if args.multi_gpu:
+		dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
 
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.

@@ -21,6 +21,7 @@ from permclr import get_perm_matrix_identity, get_avg_matrix, get_max_logit
 
 import torch.distributed as dist
 import diffdist.functional as distops
+import datetime
 torch.manual_seed(0)
 
 
@@ -198,10 +199,13 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
 			#Evaluate only at the 0th gpu
-			if self.args.local_rank ==0 and epoch_counter  % eval_period ==0 and epoch_counter  >0:
-				with torch.no_grad():
-					self.model.eval()
-					self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+				if self.args.local_rank ==0:
+					with torch.no_grad():
+						self.model.eval()
+						self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+				if self.args.multi_gpu:
+					dist.monitored_barrier(timeout=datetime.timedelta(0, 100), wait_all_ranks=True)
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
