@@ -35,17 +35,19 @@ def default_loader(path):
 		return pil_loader(path)
 
 
-def get_obj_num(string):
-	#between obj and frame
-	assert string[:3] == 'obj', "string is " + str(string)
-	i = string.find('frame')
-	#and string[20:25] == 'frame'
-	return string[3:i]
+def get_obj_num(string, processed):
+	if processed:
+		assert string[:3] == 'obj', "string is " + str(string)
+		i = string.find('frame')
+		#and string[20:25] == 'frame'
+		return string[3:i]
+	else:
+		return string.split('/')[-3]
 
 class PermDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, category, views, resize_shape, transform=None):
+	def __init__(self, root_dir, category, views, resize_shape, transform=None, processed=True):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -57,14 +59,23 @@ class PermDataset(Dataset):
 		#self.landmarks_frame = pd.read_csv(csv_file)
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
 		self.category = category
-		globs = glob(os.path.join(self.root_dir, category, '*.jpg'))
-		jpgs = [g.split('/')[-1] for g in globs]
+		if processed:
+			globs = glob(os.path.join(self.root_dir, category, '*.jpg'))
+		else:
+			globs = glob(os.path.join(self.root_dir, category, '*/*/*.jpg'))
+		if processed:
+			jpgs = [g.split('/')[-1] for g in globs]
+		else:
+			jpgs = copy.deepcopy(globs)
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
 		object_ids = set([get_obj_num(jpg) for jpg in set(jpgs)])
 		self.object_dict = {o:[] for o in object_ids}
 		for g in globs:
-			jpg = g.split('/')[-1]
+			if processed:
+				jpg = g.split('/')[-1]
+			else:
+				jpg = g
 			obj_id = get_obj_num(jpg)
 			#if not(obj_id in object_ids):
 			self.object_dict[obj_id].append(g)

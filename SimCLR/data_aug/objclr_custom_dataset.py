@@ -88,7 +88,6 @@ class ObjDataset(Dataset):
 				globs += glob(c + '/*.jpg') #For all the rest
 			else:
 				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
-		pickle.dump(globs, open("temp_pickles/globs.p", "wb"))		
 		if processed:
 			jpgs = [g.split('/')[-1] for g in globs]
 		else:
@@ -97,7 +96,6 @@ class ObjDataset(Dataset):
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
 		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
-		pickle.dump(object_ids, open("temp_pickles/object_ids_set.p", "wb"))	
 		self.object_dict_p = {o:[] for o in object_ids}
 		self.object_class_dict_p = {o:None for o in object_ids}
 		for g in globs:
@@ -114,17 +112,12 @@ class ObjDataset(Dataset):
 			self.object_dict_p[obj_id].append(g)
 			self.object_class_dict_p[obj_id] = class_label
 
-		pickle.dump(self.object_dict_p, open("temp_pickles/object_dict_p.p", "wb"))
-		pickle.dump(self.object_class_dict_p, open("temp_pickles/object_class_dict_p.p", "wb"))
-
 		self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths
 		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		self.views = views
 		self.transform = transform
 		#self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
-		pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
-		pickle.dump(self.object_class_dict, open("temp_pickles/object_class_dict.p", "wb"))
 		del self.object_dict_p; del self.object_class_dict_p
 
 		#get the number of unique classes
