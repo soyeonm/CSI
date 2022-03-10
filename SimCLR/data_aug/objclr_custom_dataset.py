@@ -36,7 +36,7 @@ def default_loader(path):
 
 
 def get_obj_num(string):
-	#between obj and frame
+	#between obj and frame 
 	#if string[:3] != 'obj':
 	#	print(string)
 	assert string[:3] == 'obj', "string is " + str(string)
