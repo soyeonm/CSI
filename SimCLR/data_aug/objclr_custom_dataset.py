@@ -256,8 +256,8 @@ class ObjInferenceDataset(Dataset):
 		self.object_dict = {i: self.object_dict_p[v] for i, v in self.object_dict.items()} 
 		#self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		#self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths
-		pickle.dump(self.object_class_dict, open("new_object_class_dict.p", "wb"))
-		pickle.dump(self.object_dict, open("new_object_dict.p", "wb"))
+		pickle.dump(self.object_class_dict, open("temp_pickles/new_object_class_dict.p", "wb"))
+		pickle.dump(self.object_dict, open("temp_pickles/new_object_dict.p", "wb"))
 		
 		self.views = views
 		self.transform = transform

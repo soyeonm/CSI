@@ -127,10 +127,12 @@ def main_objclr():
 				test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/test'
 
 		#Replace prmclr datasets with new ObjInferenceDataset
+		#Fine when one shot. They are going to be in the same order of classes.
 		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True)
 		perm_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False)
 
 		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, num_workers=args.workers, pin_memory=True, shuffle=False)
+		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
 		# permclr_train_datasets = []
 		# test_datasets = []
 
