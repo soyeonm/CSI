@@ -36,9 +36,9 @@ args = parser.parse_args()
 
 
 if not args.disable_cuda and torch.cuda.is_available():
-    torch.cuda.set_device(args.local_rank)
-    args.device = torch.device('cuda')
-    cudnn.deterministic = True
+	torch.cuda.set_device(args.local_rank)
+	args.device = torch.device('cuda')
+	cudnn.deterministic = True
 	cudnn.benchmark = True
 else:
 	args.device = torch.device('cpu')
