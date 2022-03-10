@@ -37,7 +37,7 @@ def default_loader(path):
 
 def get_obj_num(string):
 	#between obj and frame
-	assert string[:3] == 'obj'
+	assert string[:3] == 'obj', "string is " + str(string)
 	i = string.find('frame')
 	#and string[20:25] == 'frame'
 	return string[3:i]
@@ -57,7 +57,7 @@ class PermDataset(Dataset):
 		#self.landmarks_frame = pd.read_csv(csv_file)
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
 		self.category = category
-		globs = glob(os.path.join(self.root_dir, category, '*'))
+		globs = glob(os.path.join(self.root_dir, category, '*.jpg'))
 		jpgs = [g.split('/')[-1] for g in globs]
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
