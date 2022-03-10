@@ -141,6 +141,15 @@ class ObjCLR(object):
 		print("Start Training!")
 
 		for epoch_counter in range(self.args.epochs):
+			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
+				if self.args.local_rank ==0:
+					with torch.no_grad():
+						self.model.eval()
+						self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+
+				if self.args.multi_gpu:
+					dist.barrier() 
+			
 			self.model.train()
 			if self.args.multi_gpu:
 				train_sampler.set_epoch(epoch_counter)
