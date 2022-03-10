@@ -79,7 +79,7 @@ def main_objclr():
 	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False) #transform can be None too
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
-	
+
 	if args.multi_gpu:
 		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank)
 		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
@@ -136,7 +136,7 @@ def main_objclr():
 		print("preparing datasets")
 		start = time.time()
 		for c in classes:
-			permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d))
+			permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d, processed=False))
 		for c in test_classes:
 			test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
 		print("preepared all c! time: ", time.time() - start) 

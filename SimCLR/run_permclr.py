@@ -56,7 +56,7 @@ def main_permclr():
 	print("preparing datasets")
 	start = time.time()
 	for c in classes:
-		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d, processed=False))
+		train_datasets.append(PermDataset(train_root_dir, c, args.permclr_views, args.resize_co3d))
 		print("done training for ", c)
 		test_datasets.append(PermDataset(test_root_dir, c, args.permclr_views, args.resize_co3d))
 		print("done test for ", c)
