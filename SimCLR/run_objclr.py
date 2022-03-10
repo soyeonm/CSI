@@ -21,6 +21,9 @@ import os
 import torch.distributed as dist
 import datetime
 
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 parser.add_argument('--object_views', type=int, default=4)
 #parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
