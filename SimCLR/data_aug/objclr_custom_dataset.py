@@ -88,7 +88,7 @@ class ObjDataset(Dataset):
 		for g in globs:
 			jpg = g.split('/')[-1]
 			class_label = g.split('/')[-2]
-			obj_id = class_label + '_' + get_obj_num(jpg) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
+			obj_id = get_obj_num(jpg) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
 			#if not(obj_id in object_ids):
 			self.object_dict_p[obj_id].append(g)
 			self.object_class_dict_p[obj_id] = class_label
