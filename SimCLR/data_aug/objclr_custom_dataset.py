@@ -44,7 +44,7 @@ def get_obj_num(string, processed):
 		#and string[20:25] == 'frame'
 		return string[3:i]
 	else:
-		return string.split('/')[-4]
+		return string.split('/')[-3]
 
 
 def get_simclr_pipeline_transform(size, s=1, resize_size=None):
