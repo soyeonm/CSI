@@ -145,8 +145,11 @@ def main_objclr():
 	else:
 		test_data_loaders = None
 		permclr_train_datasets = None
+
 	if args.multi_gpu:
-		dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
+		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
+		dist.barrier()
+	
 
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
