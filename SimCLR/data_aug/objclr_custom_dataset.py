@@ -73,7 +73,7 @@ class ObjDataset(Dataset):
 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
 		globs = []
 		for c in caegory_globs:
-			globs += glob(c + '/*')
+			globs += glob(c + '/*.jpg')
 		jpgs = [g.split('/')[-1] for g in globs]
 		#class_labels = [g.split('/')[-2] for g in globs]
 		#This is taking so much time
