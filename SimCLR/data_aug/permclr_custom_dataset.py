@@ -69,14 +69,14 @@ class PermDataset(Dataset):
 			jpgs = copy.deepcopy(globs)
 		#This is taking so much time
 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
-		object_ids = set([get_obj_num(jpg) for jpg in set(jpgs)])
+		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
 		self.object_dict = {o:[] for o in object_ids}
 		for g in globs:
 			if processed:
 				jpg = g.split('/')[-1]
 			else:
 				jpg = g
-			obj_id = get_obj_num(jpg)
+			obj_id = get_obj_num(jpg, processed)
 			#if not(obj_id in object_ids):
 			self.object_dict[obj_id].append(g)
 
