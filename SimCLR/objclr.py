@@ -205,7 +205,7 @@ class ObjCLR(object):
 						self.model.eval()
 						self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
 				if self.args.multi_gpu:
-					dist.monitored_barrier(timeout=datetime.timedelta(0, 100), wait_all_ranks=True)
+					dist.monitored_barrier(timeout=datetime.timedelta(0, 100), wait_all_ranks=True) 
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
