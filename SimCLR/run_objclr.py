@@ -158,7 +158,8 @@ def main_objclr():
 	if not(os.path.exists('object_logs')):
 		os.makedirs('object_logs')
 
-	tf = open('object_logs/test_' + args.model_name +'.txt', 'w')
+	args.log_name = 'object_logs/test_' + args.model_name +'.txt'
+	tf = open(args.log_name, 'w')
 	tf.write("classes are " + str(classes) + '\n')
 	tf.write("test classes are " + str(test_classes) + '\n')
 	tf.close()
@@ -169,7 +170,7 @@ def main_objclr():
 	start = time.time()
 	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#TODO for args.0th gpu
-	objclr.train(train_loader, permclr_train_dataset, test_data_loader, tf,just_average=True, train_batch_size=args.eval_train_batch_size, eval_period = 5, train_sampler=train_sampler)
+	objclr.train(train_loader, permclr_train_dataset, test_data_loader, just_average=True, train_batch_size=args.eval_train_batch_size, eval_period = 5, train_sampler=train_sampler)
 	print("time taken per epoch is ", time.time() - start)
 
 	#save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)
