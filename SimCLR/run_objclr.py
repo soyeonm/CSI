@@ -149,8 +149,8 @@ def main_objclr():
 
 		args.log_name = 'object_logs/test_' + args.model_name +'.txt'
 		tf = open(args.log_name, 'w')
-		tf.write("classes are " + str(train_class_idx ) + '\n')
-		tf.write("test classes are " + str(train_class_idx ) + '\n')
+		tf.write("classes are \n" + str(train_class_idx ) + '\n')
+		tf.write("test classes are \n" + str(train_class_idx ) + '\n')
 		tf.close()
 		
 	else:
