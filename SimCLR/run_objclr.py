@@ -28,6 +28,8 @@ parser.add_argument('--object_views', type=int, default=4)
 #parser.add_argument('--usual_nll', action='store_true')
 parser.add_argument('--model_name', type=str, required=True)
 parser.add_argument('--smaller_data', action='store_true')
+parser.add_argument('--three_classes_data', action='store_true')
+
 #parser.add_argument('--debug_with_identity', action='store_true')
 #parser.add_argument('--num_perms', type=int, default=4)
 parser.add_argument('--class_label', action='store_true')
@@ -75,12 +77,15 @@ else:
 
 def main_objclr():
 
-	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
+	procesed = False
+	if args.three_classes_data:
+		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+		procesed = True
 	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
-	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 	#Add transform later
 	start = time.time()
-	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True) #transform can be None too
+	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=processed) #transform can be None too
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 
@@ -119,8 +124,9 @@ def main_objclr():
 		if args.sanity:
 			test_root_dir = train_root_dir
 		else:
-			#test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
-			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
+			if args.three_classes_data:
+				test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 		if args.smaller_data:
 			train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
 			if args.sanity:
@@ -130,7 +136,7 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=True)
+		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=procesed)
 		pickle.dump(permclr_train_dataset, open("temp_pickles/permclr_train_dataset.p", "wb"))
 		train_class_idx = permclr_train_dataset.class2idx
 		pickle.dump(train_class_idx, open("temp_pickles/train_class_idx.p", "wb"))
@@ -149,7 +155,13 @@ def main_objclr():
 		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
 		dist.barrier()
 	
+	if not(os.path.exists('object_logs')):
+		os.makedirs('object_logs')
 
+	tf = open('object_logs/test_' + args.model_name +'.txt', 'w')
+	tf.write("classes are " + str(classes) + '\n')
+	tf.write("test classes are " + str(test_classes) + '\n')
+	tf.close()
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
 	#with torch.cuda.device(args.gpu_index):
@@ -157,7 +169,7 @@ def main_objclr():
 	start = time.time()
 	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#TODO for args.0th gpu
-	objclr.train(train_loader, permclr_train_dataset, test_data_loader, just_average=True, train_batch_size=args.eval_train_batch_size, eval_period = 5, train_sampler=train_sampler)
+	objclr.train(train_loader, permclr_train_dataset, test_data_loader, tf,just_average=True, train_batch_size=args.eval_train_batch_size, eval_period = 5, train_sampler=train_sampler)
 	print("time taken per epoch is ", time.time() - start)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)

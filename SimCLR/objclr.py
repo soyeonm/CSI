@@ -150,7 +150,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loader,just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
+	def train(self, train_loader, inference_train_datasets, test_loader, tf,just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -166,9 +166,12 @@ class ObjCLR(object):
 			# 		dist.barrier() 
 
 			self.model.train()
+			f.open()
 			if self.args.multi_gpu:
 				train_sampler.set_epoch(epoch_counter)
 			print("Epoch is ", epoch_counter)
+			f.write("=========================================================="+ '\n')
+			f.write("Epoch is "+ str(epoch_counter) + '\n')
 			mean_loss = 0.0
 			batch_i = 0
 			for batch_dict in tqdm(train_loader):
@@ -219,22 +222,27 @@ class ObjCLR(object):
 			if epoch_counter >= 10:
 				self.scheduler.step()
 
-			print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
-			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
+			if self.args.local_rank ==0:
+				print("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)))
+				print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
+				f.write("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)) + '\n')
+				f.write("Epoch: " + str(epoch_counter) +"Loss: " + str(loss) + '\n')
+
 
 			#Evaluate only at the 0th gpu
 			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
+						self.classify_inference(inference_train_datasets, test_loader, f, just_average, train_batch_size)
 
 				if self.args.multi_gpu:
 					dist.barrier() 
+			f.close()
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_dataset, test_loader, just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loader, f, just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
@@ -334,5 +342,6 @@ class ObjCLR(object):
 				class_alignment += aligns
 
 		print("class alignment is ", np.mean(class_alignment))
+		f.write("class alignment is " + str( np.mean(class_alignment)) + '\n')
 
 
