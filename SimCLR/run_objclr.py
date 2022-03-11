@@ -155,8 +155,8 @@ def main_objclr():
 		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
 		dist.barrier()
 	
-	if not(os.path.exists('object_logs')):
-		os.makedirs('object_logs')
+	#if not(os.path.exists('object_logs')):
+	#	os.makedirs('object_logs')
 
 	args.log_name = 'object_logs/test_' + args.model_name +'.txt'
 	tf = open(args.log_name, 'w')
