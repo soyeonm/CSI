@@ -146,10 +146,17 @@ def main_objclr():
 
 		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.workers, pin_memory=True, shuffle=False)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
+
+		args.log_name = 'object_logs/test_' + args.model_name +'.txt'
+		tf = open(args.log_name, 'w')
+		tf.write("classes are " + str(classes) + '\n')
+		tf.write("test classes are " + str(test_classes) + '\n')
+		tf.close()
 		
 	else:
 		test_data_loader = None
 		permclr_train_dataset = None
+		args.log_name = None
 
 	if args.multi_gpu:
 		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
@@ -158,11 +165,6 @@ def main_objclr():
 	#if not(os.path.exists('object_logs')):
 	#	os.makedirs('object_logs')
 
-	args.log_name = 'object_logs/test_' + args.model_name +'.txt'
-	tf = open(args.log_name, 'w')
-	tf.write("classes are " + str(classes) + '\n')
-	tf.write("test classes are " + str(test_classes) + '\n')
-	tf.close()
 
 	#  It’s a no-op if the 'gpu_index' argument is a negative integer or None.
 	#with torch.cuda.device(args.gpu_index):

@@ -171,15 +171,20 @@ class ObjCLR(object):
 			# 			self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
 
 			# 	if self.args.multi_gpu:
-			# 		dist.barrier() 
+			# 	
+
+			if self.args.local_rank ==0:
+				f = open(self.args.log_name, 'a')
+				print("Epoch is ", epoch_counter)
+				f.write("=========================================================="+ '\n')
+				f.write("Epoch is "+ str(epoch_counter) + '\n')
+			if self.args.multi_gpu:
+				dist.barrier() 	
 
 			self.model.train()
-			f = open(self.args.log_name, 'a')
 			if self.args.multi_gpu:
 				train_sampler.set_epoch(epoch_counter)
-			print("Epoch is ", epoch_counter)
-			f.write("=========================================================="+ '\n')
-			f.write("Epoch is "+ str(epoch_counter) + '\n')
+			
 			mean_loss = 0.0
 			batch_i = 0
 			for batch_dict in tqdm(train_loader):
