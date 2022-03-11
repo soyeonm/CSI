@@ -120,7 +120,7 @@ def main_objclr():
 			test_root_dir = train_root_dir
 		else:
 			#test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
-			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
+			test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/test'
 		if args.smaller_data:
 			train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj/train'
 			if args.sanity:
