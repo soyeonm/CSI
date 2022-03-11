@@ -156,14 +156,14 @@ class ObjCLR(object):
 
 		for epoch_counter in range(self.args.epochs):
 			#Evaluate only at the 0th gpu
-			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
-				if self.args.local_rank ==0:
-					with torch.no_grad():
-						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
+			# if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
+			# 	if self.args.local_rank ==0:
+			# 		with torch.no_grad():
+			# 			self.model.eval()
+			# 			self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
 
-				if self.args.multi_gpu:
-					dist.barrier() 
+			# 	if self.args.multi_gpu:
+			# 		dist.barrier() 
 
 			self.model.train()
 			if self.args.multi_gpu:
@@ -223,14 +223,14 @@ class ObjCLR(object):
 			print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 
 			#Evaluate only at the 0th gpu
-			# if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
-			# 	if self.args.local_rank ==0:
-			# 		with torch.no_grad():
-			# 			self.model.eval()
-			# 			self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
+				if self.args.local_rank ==0:
+					with torch.no_grad():
+						self.model.eval()
+						self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
 
-			# 	if self.args.multi_gpu:
-			# 		dist.barrier() 
+				if self.args.multi_gpu:
+					dist.barrier() 
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
