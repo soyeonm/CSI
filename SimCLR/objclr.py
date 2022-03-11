@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from utils import save_config_file, accuracy, save_checkpoint
+from utils import save_config_file, accuracy
 
 import pickle
 import time
@@ -24,6 +24,14 @@ import diffdist.functional as distops
 import datetime
 torch.manual_seed(0)
 
+
+def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu):
+    last_model = os.path.join(save_dir, save_name+ "_epoch_" + str(epoch))
+    if multi_gpu:
+        torch.save(model.module.cpu().state_dict(), last_model)
+    else:
+        torch.save(model.cpu().state_dict(), last_model)
+    
 
 def get_max_logit_refactored_march10(logits, labels, num_classes):
 	#logits should be 1 d
@@ -235,7 +243,7 @@ class ObjCLR(object):
 					with torch.no_grad():
 						self.model.eval()
 						self.classify_inference(inference_train_datasets, test_loader, f, just_average, train_batch_size)
-
+						save_checkpoint(epoch_counter, self.model, self.args.model_name, 'obj_saved_models')
 				if self.args.multi_gpu:
 					dist.barrier() 
 			f.close()
