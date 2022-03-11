@@ -257,6 +257,7 @@ class ObjCLR(object):
 
 		for batch_dict in tqdm(test_loader):
 			test_images = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #CHeck what this is exactly
+			test_labels = batch_dict['category_label'].to(self.args.device, non_blocking=True)
 			#test_labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
 			#test_images = test_images.to(self.args.device, non_blocking=True)
 			#test_labels = test_labels.to(self.args.device, non_blocking=True)
