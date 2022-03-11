@@ -231,7 +231,7 @@ class ObjCLR(object):
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
 		num_classes = len(train_datasets)
-		class_lens = [len(td) for td in train_datasets]
+		class_lens = [len(train_datasets[ti]) for ti in range(num_classes)]
 		chosens = []
 		for ci, c in enumerate(class_lens):
 			np.random.seed(1000*ci)
