@@ -157,9 +157,11 @@ def main_objclr():
 		for i, c in enumerate(test_classes):
 			test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.permclr_workers, pin_memory=True))
 		print("preepared all c dataloaders! time: ", time.time() - start)
+		class_lens = len(classes)
 	else:
 		test_data_loaders = None
 		permclr_train_datasets = None
+		class_lens = None
 
 	if args.multi_gpu:
 		#dist.monitored_barrier(timeout=datetime.timedelta(0, 30), wait_all_ranks=True)
@@ -173,7 +175,7 @@ def main_objclr():
 	start = time.time()
 	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#TODO for args.0th gpu
-	objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = len(classes), eval_period = 5, train_sampler=train_sampler)
+	objclr.train(train_loader, permclr_train_datasets, test_data_loaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = class_lens, eval_period = 5, train_sampler=train_sampler)
 	print("time taken per epoch is ", time.time() - start)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)
