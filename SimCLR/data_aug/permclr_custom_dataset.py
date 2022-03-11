@@ -86,10 +86,11 @@ class PermDataset(Dataset):
 			obj_id = get_obj_num(jpg, processed)
 			#if not(obj_id in object_ids):
 			self.object_dict[obj_id].append(g)
-		if not(processed):
-			pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
+		
 
 		self.object_dict = {i: self.object_dict[k] for i, k in enumerate(list(self.object_dict.keys()))}
+		if not(processed):
+			pickle.dump(self.object_dict, open("temp_pickles/object_dict.p", "wb"))
 		self.views = views
 		self.transform = transform
 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
