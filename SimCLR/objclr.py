@@ -237,7 +237,7 @@ class ObjCLR(object):
 		cat_by_category = []
 		for c in chosen:
 			batch_dict = train_dataset[ci][c] 
-			cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)]
+			cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)] #If we use dataloaders, we can do torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views) #Just remove unsqueeze(0) for dataloader
 		catted_imgs = torch.cat(cat_by_category)
 		train_category_labels_tup.append(catted_imgs)
 
