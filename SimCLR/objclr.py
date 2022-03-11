@@ -268,7 +268,7 @@ class ObjCLR(object):
 			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
 			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
 			print("train len is ", train_len)
-			print("test len is ", train_len)
+			print("test len is ", test_len)
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
@@ -304,6 +304,8 @@ class ObjCLR(object):
 				#test_labels = test_labels.rehspae(-1) #Has shape len(test_labels) * num_classes
 
 				#Concatenate feature_test and features_train 
+				print("features train shape is ", features_train.shape)
+				print("features test shape is ", features_test.shape)
 				features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.object_views*2, 128 ) WITH batch size 1
 
 				features = features.permute(2, 1, 0) #Now shape is 128 x self.args.object_views*2x num_classes**2 (used to be 36 x 8x 128)
