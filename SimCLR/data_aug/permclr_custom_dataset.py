@@ -121,7 +121,8 @@ class PermDataset(Dataset):
 		return_dict = {}
 		object_paths = self.object_dict[idx]
 		#Sample 4(self.views) images at random from here
-		sample_view_indices = np.random.permutation(len(object_paths))[:self.views]
+		#sample_view_indices = np.random.permutation(len(object_paths))[:self.views]
+		sample_view_indices = 1
 		#Open and concatenate
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
