@@ -31,10 +31,9 @@ def get_max_logit_refactored_march10(logits, labels, num_classes):
 	max_logits = []
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/num_classes)):
-		if not(logit_mask[i]):
-			#print("logit is ", logits[3*i:3*(i+1)])
-			max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
-			argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
+		#print("logit is ", logits[3*i:3*(i+1)])
+		max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
+		argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
 		#print("argmax aligns last element is ", argmax_aligns[-1])
 	return max_logits, argmax_aligns
@@ -267,18 +266,14 @@ class ObjCLR(object):
 
 			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
 			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
-			print("train len is ", train_len)
-			print("test len is ", test_len)
+
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
-				print("features shape ", features.shape)
 				#Now separate into two
 				features_train = features[:train_len_with_multi_views, :].clone() 
-				print("ori features train shape ", features_train.shape)
 				#print("train shape ", features_train.shape)
 				features_test = features[train_len_with_multi_views:, :].clone() 
-				print("ori features test shape ", features_test.shape)
 				#print("test shape ", features_test.shape)
 				del features; del batch_imgs
 
