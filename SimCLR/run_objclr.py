@@ -130,6 +130,7 @@ def main_objclr():
 		#Fine when one shot. They are going to be in the same order of classes.
 		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=None, processed=False)
 		train_class_idx = permclr_train_dataset.class2idx
+		pickle.dump(train_class_idx, open("temp_pickles/train_class_idx.p", "wb"))
 
 		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
 
