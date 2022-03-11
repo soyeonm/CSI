@@ -196,7 +196,7 @@ class ObjInferenceDataset(Dataset):
 			ood_classes_set = set(ood_classes)
 			caegory_globs = [c for c in caegory_globs if not(c in ood_classes_set)]
 		
-		if not(class_idx is None): 
+		if class_idx is None: 
 			self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
 		else:
 			self.class2idx = class_idx
