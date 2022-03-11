@@ -25,6 +25,20 @@ import datetime
 torch.manual_seed(0)
 
 
+def get_max_logit_refactored_march10(logits, labels, num_classes):
+	#logits should be 1 d
+	assert logits.shape[0] %num_classes ==0
+	max_logits = []
+	argmax_aligns = []
+	for i in range(int(logits.shape[0]/num_classes)):
+		if not(logit_mask[i]):
+			#print("logit is ", logits[3*i:3*(i+1)])
+			max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
+			argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
+		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
+		#print("argmax aligns last element is ", argmax_aligns[-1])
+	return max_logits, argmax_aligns
+
 class ObjCLR(object):
 	def __init__(self, temperature=0.07, contrast_mode='all',
 				 base_temperature=0.07, *args, **kwargs):
@@ -241,52 +255,49 @@ class ObjCLR(object):
 		catted_imgs = torch.cat(cat_by_category)
 		train_category_labels_tup.append(catted_imgs)
 
-		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_loaders)): 
-			none_mask = []
-			#catted_img_tups of test dataset
-			catted_imgs_tup = []
-			object_labels_tup = []
-			category_labels_tup =[]
-			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
-			for batch_dict in batch_dict_tuple:
-				if not(batch_dict is None):
-					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
-					#print("catted_imgs shape ", catted_imgs.shape)
-					if not(self.args.ood):
-						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
-						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
-						category_labels_tup.append(torch.tensor([category]*self.args.object_views*self.args.batch_size))
-						object_labels_tup.append(object_labels)
-					none_mask.append(False)
-				else:
-					#pass
-					none_mask.append(True)
-				catted_imgs_tup.append(catted_imgs)
+		for batch_dict in tqdm(test_loader):
+			test_images = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #CHeck what this is exactly
+			test_labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
+			#test_images = test_images.to(self.args.device, non_blocking=True)
+			#test_labels = test_labels.to(self.args.device, non_blocking=True)
 
-			batch_imgs = torch.cat(train_category_labels_tup + catted_imgs_tup)
-			batch_imgs = batch_imgs.to(self.args.device)
+			batch_imgs = torch.cat(train_category_labels_tup + [test_images]).to(self.args.device, non_blocking=True)
+			train_len_with_multi_views = batch_imgs.shape[0] - test_images.shape[0]
+			test_len_with_multi_views = test_images.shape[0]
+
+			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
+			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
 
 				#Now separate into two
-				features_train = features[:self.args.object_views*num_classes*train_batch_size, :].clone() 
+				features_train = features[:train_len_with_multi_views, :].clone() 
 				#print("train shape ", features_train.shape)
-				features_test = features[self.args.object_views*num_classes*train_batch_size:, :].clone() 
+				features_test = features[train_len_with_multi_views:, :].clone() 
 				#print("test shape ", features_test.shape)
-				del features
+				del features; del batch_imgs
 
 				#Stack and concatenate
 				#Stack features_train first
-				features_train = features_train.reshape(num_classes*train_batch_size, self.args.object_views, -1)
-				features_train = torch.cat([features_train]*num_classes) #ASSUME BATCH_SIZE=1 #CHANGE FROM HERE IF CHANGE BATCH SIZE #shape should be (num_classes**2*train_batch_size, self.args.object_views, 128 )
+				#assert int(train_len/self.args.object_views)*self.args.object_views == train_len
+				features_train = features_train.reshape(train_len, self.args.object_views, -1)
+				features_train = torch.cat([features_train]*test_len) #shape should be (len(test_images)*len(train object numbers), self.args.object_views, 128 )
 
+				#SHOULD work from here
 				#Stack features_test
-				features_test = features_test.reshape(num_classes, self.args.object_views, -1) #ASSUME BATCH_SIZE=1
-				features_test = features_test.transpose(0,1) #(self.args.object_views, num_classes, 128)
-				features_test = torch.cat([features_test]*num_classes*train_batch_size) #(self.args.object_views*num_classes, num_classes, 128)
+				#assert int(features_test.shape[0]/self.args.object_views) * self.args.object_views == features_test.shape[0]
+				#assert test_len == features_test.shape[0]
+				feature_test = features_test.reshape(test_len,self.args.object_views, -1)#.transpose(0,1)
+				#features_test = features_test.reshape(num_classes, self.args.object_views, -1) #ASSUME BATCH_SIZE=1
+				#features_test = features_test.transpose(0,1) #(self.args.object_views, num_classes, 128)
+				features_test = torch.cat([features_test]*train_len) #(self.args.object_views*num_classes, num_classes, 128)
 				features_test = features_test.transpose(0,1)
-				features_test = features_test.reshape(num_classes**2*train_batch_size, self.args.object_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.object_views, 128 ) WITH batch size 1
+				features_test = features_test.reshape(int(test_len_with_multi_views*train_len_with_multi_views/self.args.object_views), self.args.object_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.object_views, 128 ) WITH batch size 1
+
+				#Do the same for test labels for later (for calculating accuracy)
+				#test_labels = torch.cat([test_labels.unsqueeze(0)] *num_classes, dim=1)
+				#test_labels = test_labels.rehspae(-1) #Has shape len(test_labels) * num_classes
 
 				#Concatenate feature_test and features_train 
 				features = torch.cat([features_test, features_train], axis=1) #shape is (num_classes**2*train_batch_size,, self.args.object_views*2, 128 ) WITH batch size 1
@@ -300,6 +311,7 @@ class ObjCLR(object):
 
 				#Take dot product
 				#Normalize across 128
+				assert features.shape[2] == 2
 				features[:, :, 0] = F.normalize(features[:, :, 0].clone(), dim=0); features[:, :, 1] = F.normalize(features[:, :, 1].clone(), dim=0)
 				#Multiply elementwise among the dimension of "2"
 				features = torch.mul(features[:, :, 0].clone(), features[:,:,1].clone()) #Shape is torch.Size([128, 9]) or torch.Size([128, 9*17])
@@ -307,16 +319,14 @@ class ObjCLR(object):
 				logits = torch.sum(features, axis=0) #Shape is torch.Size([9*train_batch_size]) or torch.Size([9*train_batch_size*17])
 
 				if (just_average):
-					logits = logits.reshape(num_classes**2,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
+					#train_len == num_classes*train_batch_size
+					logits = logits.reshape(test_len*num_classes,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
 					logits = torch.mean(logits, axis=1)
 
 				logits= logits.detach().cpu().numpy()
-				for ni, m in enumerate(none_mask):
-					if m == True:
-						logits[num_classes*ni:num_classes*(ni+1)]= np.nan
 
 				assert logits.shape[0] %num_classes ==0
-				max_logits, aligns =  get_max_logit(logits, none_mask, num_classes)
+				max_logits, aligns =  get_max_logit_refactored_march10(logits, test_labels, num_classes)
 				class_alignment += aligns
 
 		print("class alignment is ", np.mean(class_alignment))
