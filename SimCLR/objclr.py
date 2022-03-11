@@ -243,7 +243,7 @@ class ObjCLR(object):
 					with torch.no_grad():
 						self.model.eval()
 						self.classify_inference(inference_train_datasets, test_loader, f, just_average, train_batch_size)
-						save_checkpoint(epoch_counter, self.model, self.args.model_name, 'obj_saved_models')
+						save_checkpoint(epoch_counter, self.model, self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu)
 				if self.args.multi_gpu:
 					dist.barrier() 
 			f.close()
