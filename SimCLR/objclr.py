@@ -28,6 +28,7 @@ torch.manual_seed(0)
 def get_max_logit_refactored_march10(logits, labels, num_classes):
 	#logits should be 1 d
 	assert logits.shape[0] %num_classes ==0
+	assert logits.shape[0]/ num_classes = labels.shape[0]
 	max_logits = []
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/num_classes)):
@@ -256,7 +257,7 @@ class ObjCLR(object):
 
 		for batch_dict in tqdm(test_loader):
 			test_images = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #CHeck what this is exactly
-			test_labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
+			#test_labels = torch.cat([batch_dict['category_label'] for i in range(self.args.object_views)])
 			#test_images = test_images.to(self.args.device, non_blocking=True)
 			#test_labels = test_labels.to(self.args.device, non_blocking=True)
 
