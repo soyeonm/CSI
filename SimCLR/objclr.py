@@ -150,7 +150,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
+	def train(self, train_loader, inference_train_datasets, test_loaders,just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -160,7 +160,7 @@ class ObjCLR(object):
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+						self.classify_inference(inference_train_datasets, test_loaders, just_average, train_batch_size)
 
 				if self.args.multi_gpu:
 					dist.barrier() 
@@ -234,7 +234,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_dataset, test_loaders, class_lens , just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loaders, just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
@@ -245,12 +245,12 @@ class ObjCLR(object):
 		avg_matrix_128 = torch.cat([avg_matrix.unsqueeze(0)]*128, axis=0).to(self.args.device)
 
 		num_classes = len(train_dataset)
-		class_lens = [len(td) for td in train_dataset]
+		#class_lens = [len(td) for td in train_dataset]
 
 		train_category_labels_tup =[]
 		cat_by_category = []
-		for c in chosen:
-			batch_dict = train_dataset[ci][c] 
+		for ci in range(num_classes):
+			batch_dict = train_dataset[ci]#[c] 
 			cat_by_category += [batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)] #If we use dataloaders, we can do torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views) #Just remove unsqueeze(0) for dataloader
 		catted_imgs = torch.cat(cat_by_category)
 		train_category_labels_tup.append(catted_imgs)
