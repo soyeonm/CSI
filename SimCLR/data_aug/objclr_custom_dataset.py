@@ -117,7 +117,7 @@ class ObjDataset(Dataset):
 		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		self.views = views
 		self.transform = transform
-		#self.resize_transform = transforms.Resize((resize_shape, resize_shape))
+		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
 		del self.object_dict_p; del self.object_class_dict_p
 
@@ -266,7 +266,7 @@ class ObjInferenceDataset(Dataset):
 		
 		self.views = views
 		self.transform = transform
-		#self.resize_transform = transforms.Resize((resize_shape, resize_shape))
+		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
 		del self.object_dict_p#; del self.object_class_dict_p
 
