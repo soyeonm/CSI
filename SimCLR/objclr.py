@@ -292,7 +292,8 @@ class ObjCLR(object):
 				#assert test_len == features_test.shape[0]
 				ori_tet_shape = features_test.shape
 				feature_test = features_test.reshape(test_len,self.args.object_views, -1).transpose(0,1).reshape(ori_tet_shape)
-				features_test = features_test.reshape(num_classes, self.args.object_views, -1) #ASSUME BATCH_SIZE=1
+				features_test = features_test.reshape(test_len, self.args.object_views, -1) #ASSUME BATCH_SIZE=1
+				assert features_test.shape[2] == self.args.out_dim
 				features_test = features_test.transpose(0,1) #(self.args.object_views, num_classes, 128)
 				features_test = torch.cat([features_test]*train_len) #(self.args.object_views*num_classes, num_classes, 128)
 				features_test = features_test.transpose(0,1)
