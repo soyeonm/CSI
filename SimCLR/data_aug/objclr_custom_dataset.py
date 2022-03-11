@@ -233,7 +233,7 @@ class ObjInferenceDataset(Dataset):
 			#self.object_class_dict_p[obj_id] = class_label
 			self.object_class_dict_p_rev[class_label].append(obj_id)
 
-		self.object_class_dict_p_rev = {c: set(v) for c, v in self.object_class_dict_p_rev.items()}
+		self.object_class_dict_p_rev = {c: list(set(v)) for c, v in self.object_class_dict_p_rev.items()}
 
 		################Do here differently from ObjDataset
 		self.object_dict = {}
