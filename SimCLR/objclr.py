@@ -136,7 +136,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
+	def train(self, train_loader, inference_train_datasets, test_datasets, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -146,7 +146,7 @@ class ObjCLR(object):
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_loaders, class_lens, just_average, train_batch_size)
+						self.classify_inference(inference_train_datasets, test_datasets, class_lens, just_average, train_batch_size)
 
 				if self.args.multi_gpu:
 					dist.barrier() 
@@ -220,7 +220,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_datasets, test_loaders, class_lens , just_average=True, train_batch_size=1):
+	def classify_inference(self, train_datasets, test_datasets, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
@@ -247,22 +247,22 @@ class ObjCLR(object):
 			catted_imgs = torch.cat(cat_by_category)
 			train_category_labels_tup.append(catted_imgs)
 
-		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_loaders)): 
+		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_datasets)): 
 			none_mask = []
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []
-			object_labels_tup = []
-			category_labels_tup =[]
+			#object_labels_tup = []
+			#category_labels_tup =[]
 			#concatente all the image_i's together in one direction(image_0: all the image_0's, image_3's: all the image_3's)
 			for batch_dict in batch_dict_tuple:
 				if not(batch_dict is None):
-					catted_imgs = torch.cat([batch_dict['image_' + str(i)] for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
+					catted_imgs = torch.cat([batch_dict['image_' + str(i)].unsqueeze(0) for i in range(self.args.object_views)]) #shape is torch.Size([8, 3, 32, 32]) #8 is batch_size * num_objects (permclr_views)
 					#print("catted_imgs shape ", catted_imgs.shape)
-					if not(self.args.ood):
-						object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
-						category = self.args.classes_to_idx[batch_dict['category_label'][0]]
-						category_labels_tup.append(torch.tensor([category]*self.args.object_views*self.args.batch_size))
-						object_labels_tup.append(object_labels)
+					#if not(self.args.ood):
+						#object_labels = torch.cat([batch_dict['object_label'] for i in range(self.args.object_views)]) #shape is torch.Size([8])
+						#category = self.args.classes_to_idx[batch_dict['category_label'][0]]
+						#category_labels_tup.append(torch.tensor([category]*self.args.object_views*self.args.batch_size))
+						#object_labels_tup.append(object_labels)
 					none_mask.append(False)
 				else:
 					#pass
