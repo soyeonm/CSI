@@ -150,7 +150,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_loaders,just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
+	def train(self, train_loader, inference_train_datasets, test_loader,just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -160,7 +160,7 @@ class ObjCLR(object):
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_loaders, just_average, train_batch_size)
+						self.classify_inference(inference_train_datasets, test_loader, just_average, train_batch_size)
 
 				if self.args.multi_gpu:
 					dist.barrier() 
@@ -234,7 +234,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_dataset, test_loaders, just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loader, just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
