@@ -33,9 +33,10 @@ parser.add_argument('--smaller_data', action='store_true')
 parser.add_argument('--class_label', action='store_true')
 parser.add_argument('--same_labels_mask', action='store_true')
 parser.add_argument('--eval_train_batch_size', type=int, default=10)
+parser.add_argument('--eval_test_batch_size', type=int, default=16)
+
 parser.add_argument('--sanity', action='store_true')
-parser.add_argument("--local_rank", type=int,
-						default=0, help='Local rank for distributed learning')
+parser.add_argument("--local_rank", type=int, default=0, help='Local rank for distributed learning')
 
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
@@ -135,7 +136,7 @@ def main_objclr():
 
 		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
 
-		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, num_workers=args.workers, pin_memory=True, shuffle=False)
+		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.workers, pin_memory=True, shuffle=False)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
 		
 	else:
