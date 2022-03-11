@@ -8,6 +8,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 from glob import glob
 import copy
 import pickle
+import time
 
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
@@ -287,15 +288,22 @@ class ObjInferenceDataset(Dataset):
 		return_dict = {}
 		object_paths = self.object_dict[idx]
 		#Sample 4(self.views) images at random from here
+		start = time.time()
 		sample_view_indices = np.random.permutation(len(object_paths))[:self.views]
+		print("permute time: ", time.time()-start)
+		start = time.time()
 		#Open and concatenate
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
+			start = time.time()
 			image = default_loader(im_path)
+			print("loading time: ", time.time()-start)
 
 			#image = self.resize_transform(image)
+			start = time.time()
 			if self.transform is not None:
 				image = self.transform(image)
+			print("transform time: ", time.time()-start)
 
 			if self.transform is None:
 				image = self.resize_transform(image)
