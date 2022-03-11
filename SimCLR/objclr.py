@@ -272,7 +272,7 @@ class ObjCLR(object):
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
-
+				print("features shape ", features.shape)
 				#Now separate into two
 				features_train = features[:train_len_with_multi_views, :].clone() 
 				print("ori features train shape ", features_train.shape)
