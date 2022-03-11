@@ -128,37 +128,14 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False)
+		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, shots=args.eval_train_batch_size,  transform=None, processed=False)
 		train_class_idx = permclr_train_dataset.class2idx
 
-		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=None,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True, class_idx=train_class_idx)
+		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
 
 		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, num_workers=args.workers, pin_memory=True, shuffle=False)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
-		# permclr_train_datasets = []
-		# test_datasets = []
-
-		# classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
-		# #test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
-		# test_classes = classes
-		# args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
-		# print("test classes are ", test_classes)
-		# print("classes are ", classes)
-
-		# print("preparing datasets")
-		# start = time.time()
-		# for c in classes:
-		# 	permclr_train_datasets.append(PermDataset(train_root_dir, c, args.object_views, args.resize_co3d, processed=False))
-		# for c in test_classes:
-		# 	test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
-		# print("preepared all c! time: ", time.time() - start) 
-
-		# test_data_loaders = []
-		# print("preparing dataloaders")
-		# start = time.time()
-		# for i, c in enumerate(test_classes):
-		# 	test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
-		# print("preepared all c dataloaders! time: ", time.time() - start)
+		
 	else:
 		test_data_loader = None
 		permclr_train_dataset = None
