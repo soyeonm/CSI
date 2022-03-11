@@ -296,6 +296,7 @@ class ObjInferenceDataset(Dataset):
 				image = self.transform(image)
 
 			if self.transform is None:
+				image = self.resize_transform(image)
 				image = self.t(image)
 
 			return_dict['image_' + str(v)] = image
