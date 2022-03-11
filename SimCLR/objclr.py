@@ -267,14 +267,18 @@ class ObjCLR(object):
 
 			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
 			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
+			print("train len is ", train_len)
+			print("test len is ", train_len)
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
 
 				#Now separate into two
 				features_train = features[:train_len_with_multi_views, :].clone() 
+				print("ori features train shape ", features_train.shape)
 				#print("train shape ", features_train.shape)
 				features_test = features[train_len_with_multi_views:, :].clone() 
+				print("ori features test shape ", features_test.shape)
 				#print("test shape ", features_test.shape)
 				del features; del batch_imgs
 
