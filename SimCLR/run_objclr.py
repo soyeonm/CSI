@@ -80,7 +80,7 @@ def main_objclr():
 	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 	#Add transform later
 	start = time.time()
-	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=False) #transform can be None too
+	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=True) #transform can be None too
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 
@@ -130,7 +130,7 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=False)
+		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=True)
 		pickle.dump(permclr_train_dataset, open("temp_pickles/permclr_train_dataset.p", "wb"))
 		train_class_idx = permclr_train_dataset.class2idx
 		pickle.dump(train_class_idx, open("temp_pickles/train_class_idx.p", "wb"))
