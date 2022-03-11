@@ -37,7 +37,7 @@ parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int,
 						default=0, help='Local rank for distributed learning')
 parser.add_argument('--permclr_workers', type=int, default=0)
-parser.add_argument('-ood','--ood_classes', nargs='+', help='<Required> Set flag', deafult=[])
+parser.add_argument('-ood','--ood_classes', nargs='*', help='<Required> Set flag', deafult=[])
 
 
 
