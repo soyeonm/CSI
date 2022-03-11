@@ -136,7 +136,7 @@ class ObjCLR(object):
 		return loss
 
 	#Use objclr dataloader for train
-	def train(self, train_loader, inference_train_datasets, test_datasets, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
+	def train(self, train_loader, inference_train_datasets, test_dataloaders, class_lens, just_average=True, train_batch_size=1, eval_period = 1, train_sampler=None):
 		scaler = GradScaler(enabled=self.args.fp16_precision)
 		print("Start Training!")
 
@@ -146,7 +146,7 @@ class ObjCLR(object):
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
-						self.classify_inference(inference_train_datasets, test_datasets, class_lens, just_average, train_batch_size)
+						self.classify_inference(inference_train_datasets, test_dataloaders, class_lens, just_average, train_batch_size)
 
 				if self.args.multi_gpu:
 					dist.barrier() 
@@ -220,7 +220,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_datasets, test_datasets, class_lens , just_average=True, train_batch_size=1):
+	def classify_inference(self, train_datasets, test_dataloaders, class_lens , just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
 
@@ -247,7 +247,7 @@ class ObjCLR(object):
 			catted_imgs = torch.cat(cat_by_category)
 			train_category_labels_tup.append(catted_imgs)
 
-		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_datasets)): 
+		for batch_i, batch_dict_tuple in enumerate(itertools.zip_longest(*test_dataloaders)): 
 			none_mask = []
 			#catted_img_tups of test dataset
 			catted_imgs_tup = []

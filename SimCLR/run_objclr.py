@@ -36,6 +36,8 @@ parser.add_argument('--eval_train_batch_size', type=int, default=10)
 parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int,
 						default=0, help='Local rank for distributed learning')
+parser.add_argument('--permclr_workers', type=int, default=0)
+
 
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
@@ -144,12 +146,12 @@ def main_objclr():
 			test_datasets.append(PermDataset(test_root_dir, c, args.object_views, args.resize_co3d))
 		print("preepared all c! time: ", time.time() - start) 
 
-		# test_data_loaders = []
-		# print("preparing dataloaders")
-		# start = time.time()
-		# for i, c in enumerate(test_classes):
-		# 	test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.workers, pin_memory=True))
-		# print("preepared all c dataloaders! time: ", time.time() - start)
+		test_data_loaders = []
+		print("preparing dataloaders")
+		start = time.time()
+		for i, c in enumerate(test_classes):
+			test_data_loaders.append(torch.utils.data.DataLoader(test_datasets[i], batch_size=1,num_workers=args.permclr_workers, pin_memory=True))
+		print("preepared all c dataloaders! time: ", time.time() - start)
 	else:
 		test_data_loaders = None
 		permclr_train_datasets = None
@@ -166,7 +168,7 @@ def main_objclr():
 	start = time.time()
 	objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
 	#TODO for args.0th gpu
-	objclr.train(train_loader, permclr_train_datasets, test_datasets, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = len(classes), eval_period = 5, train_sampler=train_sampler)
+	objclr.train(train_loader, permclr_train_datasets, test_dataloaders, just_average=True, train_batch_size=args.eval_train_batch_size, class_lens = len(classes), eval_period = 5, train_sampler=train_sampler)
 	print("time taken per epoch is ", time.time() - start)
 
 	save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)
