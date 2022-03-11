@@ -37,6 +37,8 @@ parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int,
 						default=0, help='Local rank for distributed learning')
 parser.add_argument('--permclr_workers', type=int, default=0)
+parser.add_argument('-ood','--ood_classes', nargs='+', help='<Required> Set flag', deafult=[])
+
 
 
 ############Set torch device for MiltiGPU###
@@ -131,12 +133,15 @@ def main_objclr():
 		permclr_train_datasets = []
 		test_datasets = []
 
+		ood_classes = args.ood_classes
 		classes = [g.split('/')[-1] for g in glob(train_root_dir + '/*')]
+		classes = [c for c in classes if not(c in set(ood_classes))]
 		#test_classes = set([g.split('/')[-1] for g in glob(test_root_dir + '/*')])
 		test_classes = classes
 		args.classes_to_idx = {c: i for i, c in enumerate(sorted(classes))}
 		print("test classes are ", test_classes)
 		print("classes are ", classes)
+		print("ood classes are ", ood_classes)
 
 		print("preparing datasets")
 		start = time.time()
