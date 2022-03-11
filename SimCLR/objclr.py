@@ -300,7 +300,7 @@ class ObjCLR(object):
 				features_test = features_test.reshape(test_len*train_len, self.args.object_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.object_views, 128 ) WITH batch size 1
 
 				#Do the same for test labels for later (for calculating accuracy)
-				#test_labels = torch.cat([test_labels.unsqueeze(0)] *num_classes, dim=1)
+				#test_labels = torch.cat([test_labels.unsqueeze(0)] *num_classes, dim=1) 
 				#test_labels = test_labels.rehspae(-1) #Has shape len(test_labels) * num_classes
 
 				#Concatenate feature_test and features_train 
