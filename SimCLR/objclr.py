@@ -28,7 +28,7 @@ torch.manual_seed(0)
 def get_max_logit_refactored_march10(logits, labels, num_classes):
 	#logits should be 1 d
 	assert logits.shape[0] %num_classes ==0
-	assert logits.shape[0]/ num_classes = labels.shape[0]
+	assert logits.shape[0]/ num_classes == labels.shape[0]
 	max_logits = []
 	argmax_aligns = []
 	for i in range(int(logits.shape[0]/num_classes)):
