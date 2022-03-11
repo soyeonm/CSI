@@ -198,6 +198,8 @@ class ObjInferenceDataset(Dataset):
 		
 		if not(class_idx is None): 
 			self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
+		else:
+			self.class2idx = class_idx
 		#print("class2idx is ", self.class2idx)
 		globs = []
 		for c in caegory_globs:
