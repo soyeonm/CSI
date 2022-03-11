@@ -64,7 +64,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, transform=None, ood_classes=None, processed=True):
+	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -179,7 +179,7 @@ class ObjDataset(Dataset):
 class ObjInferenceDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, views, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None):
+	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
