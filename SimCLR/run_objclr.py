@@ -78,10 +78,10 @@ else:
 def main_objclr():
 
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
-	procesed = False
+	processed = False
 	if args.three_classes_data:
 		train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/largerco3d/train'
-		procesed = True
+		processed = True
 	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 	#Add transform later
 	start = time.time()
@@ -136,7 +136,7 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=procesed)
+		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
 		pickle.dump(permclr_train_dataset, open("temp_pickles/permclr_train_dataset.p", "wb"))
 		train_class_idx = permclr_train_dataset.class2idx
 		pickle.dump(train_class_idx, open("temp_pickles/train_class_idx.p", "wb"))
