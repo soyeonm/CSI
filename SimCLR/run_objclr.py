@@ -127,7 +127,7 @@ def main_objclr():
 	else:
 		train_sampler = None
 		train_loader = MultiEpochsDataLoader(
-			train_dataset, batch_sampler = batch_size=args.batch_size, shuffle=True,
+			train_dataset, batch_size=args.batch_size, shuffle=True,
 			num_workers=args.workers, pin_memory=False, drop_last=True)
 		pickle.dump(train_dataset, open("temp_pickles/train_dataset.p", "wb"))
 
