@@ -75,6 +75,37 @@ else:
 	args.multi_gpu = False
 
 
+class MultiEpochsDataLoader(torch.utils.data.DataLoader):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._DataLoader__initialized = False
+        self.batch_sampler = _RepeatSampler(self.batch_sampler)
+        self._DataLoader__initialized = True
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield next(self.iterator)
+
+
+class _RepeatSampler(object):
+    """ Sampler that repeats forever.
+    Args:
+        sampler (Sampler)
+    """
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def __iter__(self):
+        while True:
+            yield from iter(self.sampler)
+
+
 def main_objclr():
 
 	train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
@@ -90,12 +121,12 @@ def main_objclr():
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 
 	if args.multi_gpu:
-		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=True)
+		train_sampler = MultiEpochsDataLoader(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=True)
 		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
 			num_workers=args.workers, pin_memory=False, drop_last=True) #sampler option is mutually exlusive with shuffle
 	else:
 		train_sampler = None
-		train_loader = torch.utils.data.DataLoader(
+		train_loader = MultiEpochsDataLoader(
 			train_dataset, batch_size=args.batch_size, shuffle=True,
 			num_workers=args.workers, pin_memory=False, drop_last=True)
 		pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
