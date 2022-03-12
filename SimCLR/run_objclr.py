@@ -122,14 +122,14 @@ def main_objclr():
 
 	if args.multi_gpu:
 		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=True)
-		train_loader = MultiEpochsDataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
-			num_workers=args.workers, pin_memory=False, drop_last=True) #sampler option is mutually exlusive with shuffle
+		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
+			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=True) #sampler option is mutually exlusive with shuffle
 	else:
 		train_sampler = None
-		train_loader = MultiEpochsDataLoader(
+		train_loader = torch.utils.data.DataLoader(
 			train_dataset, batch_size=args.batch_size, shuffle=True,
-			num_workers=args.workers, pin_memory=False, drop_last=True)
-		pickle.dump(train_dataset, open("temp_pickles/train_dataset.p", "wb"))
+			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=True)
+		pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
 
 
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
