@@ -243,7 +243,7 @@ class ObjCLR(object):
 				print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 				f.write("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)) + '\n')
 				f.write("Epoch: " + str(epoch_counter) +"Loss: " + str(loss) + '\n')
-				f.write("Time took: " str(time.time() - start) + '\n')
+				f.write("Time took: " + str(time.time() - start) + '\n')
 
 
 			#Evaluate only at the 0th gpu
