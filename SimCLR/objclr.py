@@ -234,7 +234,6 @@ class ObjCLR(object):
 				scaler.step(self.optimizer)
 				scaler.update()
 				batch_i +=1
-				print("just caulation time: ", time.time() - start)
 
 			if epoch_counter >= 10:
 				self.scheduler.step()
@@ -244,10 +243,11 @@ class ObjCLR(object):
 				print("Epoch: " + str(epoch_counter) +"Loss: " + str(loss))
 				f.write("Epoch: " + str(epoch_counter) +"Mean Loss: " + str(mean_loss/ (batch_i+1)) + '\n')
 				f.write("Epoch: " + str(epoch_counter) +"Loss: " + str(loss) + '\n')
+				f.write("Time took: " str(time.time() - start) + '\n')
 
 
 			#Evaluate only at the 0th gpu
-			if epoch_counter  % eval_period ==0:# and epoch_counter  >0:
+			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
