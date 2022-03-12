@@ -90,13 +90,13 @@ def main_objclr():
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 
 	if args.multi_gpu:
-		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=False)
+		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=True)
 		train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
 			num_workers=args.workers, pin_memory=False, drop_last=True) #sampler option is mutually exlusive with shuffle
 	else:
 		train_sampler = None
 		train_loader = torch.utils.data.DataLoader(
-			train_dataset, batch_size=args.batch_size, shuffle=False,
+			train_dataset, batch_size=args.batch_size, shuffle=True,
 			num_workers=args.workers, pin_memory=False, drop_last=True)
 
 
@@ -144,7 +144,7 @@ def main_objclr():
 		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
 		pickle.dump(test_dataset, open("temp_pickles/test_dataset.p", "wb"))
 
-		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.workers, pin_memory=True, shuffle=False)
+		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.workers, pin_memory=False, shuffle=False)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
 
 		args.log_name = 'object_logs/test_' + args.model_name +'.txt'
