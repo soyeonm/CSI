@@ -28,9 +28,9 @@ torch.manual_seed(0)
 def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu):
     last_model = os.path.join(save_dir, save_name+ "_epoch_" + str(epoch))
     if multi_gpu:
-        torch.save(model.module.cpu().state_dict(), last_model)
+        torch.save(model.module.state_dict(), last_model)
     else:
-        torch.save(model.cpu().state_dict(), last_model)
+        torch.save(model.state_dict(), last_model)
     
 
 def get_max_logit_refactored_march10(logits, labels, num_classes):
