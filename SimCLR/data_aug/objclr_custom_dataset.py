@@ -312,132 +312,132 @@ class ObjInferenceDataset(Dataset):
 #THIS DATASET JUST RETURNS each img instance
 #It keeps start index/ end index of each object
 #and also start index/ end index of each 
-class ObjImgInstanceDataset(Dataset):
-	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True):
-		"""
-		Args:
-			csv_file (string): Path to the csv file with annotations.
-			root_dir (string): Directory with all the images.
-			transform (callable, optional): Optional transform to be applied
-				on a sample.
-		"""
+# class ObjImgInstanceDataset(Dataset):
+# 	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True):
+# 		"""
+# 		Args:
+# 			csv_file (string): Path to the csv file with annotations.
+# 			root_dir (string): Directory with all the images.
+# 			transform (callable, optional): Optional transform to be applied
+# 				on a sample.
+# 		"""
 
-		#self.landmarks_frame = pd.read_csv(csv_file)
-		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
-		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
-		caegory_globs = glob(os.path.join(self.root_dir, '*'))
-		if not (ood_classes is None):
-			ood_classes_set = set(ood_classes)
-			caegory_globs = [c for c in caegory_globs if not(c in ood_classes_set)]
+# 		#self.landmarks_frame = pd.read_csv(csv_file)
+# 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
+# 		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
+# 		caegory_globs = glob(os.path.join(self.root_dir, '*'))
+# 		if not (ood_classes is None):
+# 			ood_classes_set = set(ood_classes)
+# 			caegory_globs = [c for c in caegory_globs if not(c in ood_classes_set)]
 		
-		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
-		#print("class2idx is ", self.class2idx)
-		globs = []
-		for c in caegory_globs:
-			if processed:
-				globs += glob(c + '/*.jpg') #For all the rest
-			else:
-				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
-		if processed:
-			jpgs = [g.split('/')[-1] for g in globs]
-		else:
-			jpgs = copy.deepcopy(globs)
-		#class_labels = [g.split('/')[-2] for g in globs]
-		#This is taking so much time
-		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
-		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
-		self.object_dict_p = {o:[] for o in object_ids}
-		self.object_class_dict_p = {o:None for o in object_ids}
-		self.object_class_dict_p_rev = {c:[] for c in self.class2idx}
-		for g in globs:
-			if processed:
-				jpg = g.split('/')[-1]
-			else:
-				jpg = g
-			if processed:
-				class_label = g.split('/')[-2]
-			else:
-				class_label = g.split('/')[-4]
-			obj_id = get_obj_num(jpg, processed) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
-			#if not(obj_id in object_ids):
-			self.object_dict_p[obj_id].append(g)
-			self.object_class_dict_p[obj_id] = class_label
-			self.object_class_dict_p_rev[class_label].append(obj_id)
+# 		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
+# 		#print("class2idx is ", self.class2idx)
+# 		globs = []
+# 		for c in caegory_globs:
+# 			if processed:
+# 				globs += glob(c + '/*.jpg') #For all the rest
+# 			else:
+# 				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
+# 		if processed:
+# 			jpgs = [g.split('/')[-1] for g in globs]
+# 		else:
+# 			jpgs = copy.deepcopy(globs)
+# 		#class_labels = [g.split('/')[-2] for g in globs]
+# 		#This is taking so much time
+# 		#self.object_dict = {get_obj_num(jpg): glob(os.path.join(self.root_dir, category, 'obj' + get_obj_num(jpg) +'*')) for jpg in set(jpgs)}
+# 		object_ids = set([get_obj_num(jpg, processed) for jpg in set(jpgs)])
+# 		self.object_dict_p = {o:[] for o in object_ids}
+# 		self.object_class_dict_p = {o:None for o in object_ids}
+# 		self.object_class_dict_p_rev = {c:[] for c in self.class2idx}
+# 		for g in globs:
+# 			if processed:
+# 				jpg = g.split('/')[-1]
+# 			else:
+# 				jpg = g
+# 			if processed:
+# 				class_label = g.split('/')[-2]
+# 			else:
+# 				class_label = g.split('/')[-4]
+# 			obj_id = get_obj_num(jpg, processed) #used to be just get_obj_num(jpg) but adding classlabel to prevent overlap just in cases
+# 			#if not(obj_id in object_ids):
+# 			self.object_dict_p[obj_id].append(g)
+# 			self.object_class_dict_p[obj_id] = class_label
+# 			self.object_class_dict_p_rev[class_label].append(obj_id)
 
-		self.object_class_dict_p_rev = {c: list(set(v)) for c, v in self.object_class_dict_p_rev.items()}
+# 		self.object_class_dict_p_rev = {c: list(set(v)) for c, v in self.object_class_dict_p_rev.items()}
 
-		self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths #DO we need this?
-		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #DO we need this?
-		self.views = views
-		self.transform = transform
-		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
-		self.t = transforms.ToTensor()
-		del self.object_dict_p; del self.object_class_dict_p
+# 		self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths #DO we need this?
+# 		self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #DO we need this?
+# 		self.views = views
+# 		self.transform = transform
+# 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
+# 		self.t = transforms.ToTensor()
+# 		del self.object_dict_p; del self.object_class_dict_p
 
-		#get the number of unique classes
-		######################################################################
-		#These are the added parts
+# 		#get the number of unique classes
+# 		######################################################################
+# 		#These are the added parts
 
 
-		self.img_dict = {}
-		img_counter = 0
-		o_counter = 0
-		self.class_idx2start = {c: None for c in self.class2idx}
-		self.obj_idx2start = {}
-		for c in self.class2idx:
-			o_list = self.object_class_dict_p_rev[c]
-			for o in o_list:
-				imgs = self.object_dict[o]
-				for img in imgs:
-					self.img_dict[img_counter] = 
-					img_counter +=1
-				o_counter +=1
+# 		self.img_dict = {}
+# 		img_counter = 0
+# 		o_counter = 0
+# 		self.class_idx2start = {c: None for c in self.class2idx}
+# 		self.obj_idx2start = {}
+# 		for c in self.class2idx:
+# 			o_list = self.object_class_dict_p_rev[c]
+# 			for o in o_list:
+# 				imgs = self.object_dict[o]
+# 				for img in imgs:
+# 					self.img_dict[img_counter] = 
+# 					img_counter +=1
+# 				o_counter +=1
 
-	def shuffle(self, seed):
-		#shuffle key
-		new_object_dict = {}
-		np.random.seed(seed)
-		permute = np.random.permutation(len(self.object_dict)).tolist()
-		for i, k in enumerate(list(self.object_dict.keys())):
-			new_object_dict[permute[i]] = self.object_dict[k]
-		self.object_dict = new_object_dict
-		del new_object_dict
+# 	def shuffle(self, seed):
+# 		#shuffle key
+# 		new_object_dict = {}
+# 		np.random.seed(seed)
+# 		permute = np.random.permutation(len(self.object_dict)).tolist()
+# 		for i, k in enumerate(list(self.object_dict.keys())):
+# 			new_object_dict[permute[i]] = self.object_dict[k]
+# 		self.object_dict = new_object_dict
+# 		del new_object_dict
 
-		#shuffle value
-		k_count = 1
-		for k in self.object_dict:
-			np.random.seed(seed + k_count)
-			np.random.shuffle(self.object_dict[k])
-			k_count +=1
+# 		#shuffle value
+# 		k_count = 1
+# 		for k in self.object_dict:
+# 			np.random.seed(seed + k_count)
+# 			np.random.shuffle(self.object_dict[k])
+# 			k_count +=1
 
-	def __len__(self):
-		return len(self.object_dict)
+# 	def __len__(self):
+# 		return len(self.object_dict)
 
-	#Should return the object in the "idx"
-	#Sample "view" views from the object
-	#Just return image, label
-	def __getitem__(self, idx):
-		#Get object from idx
-		return_dict = {}
-		object_paths = self.object_dict[idx]
-		#Sample 4(self.views) images at random from here
-		sample_view_indices = np.random.permutation(len(object_paths))[:self.views]
-		#Open and concatenate
-		for v in range(self.views):
-			im_path = object_paths[sample_view_indices[v]]
-			image = default_loader(im_path)
+# 	#Should return the object in the "idx"
+# 	#Sample "view" views from the object
+# 	#Just return image, label
+# 	def __getitem__(self, idx):
+# 		#Get object from idx
+# 		return_dict = {}
+# 		object_paths = self.object_dict[idx]
+# 		#Sample 4(self.views) images at random from here
+# 		sample_view_indices = np.random.permutation(len(object_paths))[:self.views]
+# 		#Open and concatenate
+# 		for v in range(self.views):
+# 			im_path = object_paths[sample_view_indices[v]]
+# 			image = default_loader(im_path)
 
 			
-			if self.transform is not None:
-				image = self.transform(image)
+# 			if self.transform is not None:
+# 				image = self.transform(image)
 
-			if self.transform is None:
-				image = self.resize_transform(image)
-				image = self.t(image)
+# 			if self.transform is None:
+# 				image = self.resize_transform(image)
+# 				image = self.t(image)
 
-			return_dict['image_' + str(v)] = image
-		return_dict['object_label'] = idx
-		return_dict['category_label'] = self.class2idx[self.object_class_dict[idx]]
+# 			return_dict['image_' + str(v)] = image
+# 		return_dict['object_label'] = idx
+# 		return_dict['category_label'] = self.class2idx[self.object_class_dict[idx]]
 
-		return return_dict
+# 		return return_dict
 
