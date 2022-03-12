@@ -129,7 +129,7 @@ def main_objclr():
 		train_loader = MultiEpochsDataLoader(
 			train_dataset, batch_size=args.batch_size, shuffle=True,
 			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=True)
-		pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
+		#pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
 
 
 	model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
