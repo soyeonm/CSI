@@ -187,9 +187,10 @@ class ObjCLR(object):
 			
 			mean_loss = 0.0
 			batch_i = 0
-			start = time.time()
+			
 			for batch_dict in tqdm(train_loader):
-				print("train_loader data loading time: ", time.time() - start)
+				#print("train_loader data loading time: ", time.time() - start)
+				start = time.time()
 				images_aug0 = torch.cat([batch_dict['image_' + str(i)][0] for i in range(self.args.object_views)])
 				images_aug1 = torch.cat([batch_dict['image_' + str(i)][1] for i in range(self.args.object_views)])
 
@@ -233,6 +234,7 @@ class ObjCLR(object):
 				scaler.step(self.optimizer)
 				scaler.update()
 				batch_i +=1
+				print("just caulation time: ", time.time() - start)
 
 			if epoch_counter >= 10:
 				self.scheduler.step()
