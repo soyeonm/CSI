@@ -179,7 +179,7 @@ def main_objclr():
 		pickle.dump(test_dataset, open("temp_pickles/test_dataset.p", "wb"))
 
 		test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
-		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
+		#pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
 
 		args.log_name = 'object_logs/test_' + args.model_name +'.txt'
 		tf = open(args.log_name, 'w')
