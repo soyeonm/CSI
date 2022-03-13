@@ -24,6 +24,8 @@ from modified_simclr import SimCLR
 
 import torchvision
 import torch.multiprocessing
+
+from collections import OrderedDict
 torch.multiprocessing.set_sharing_strategy('file_system') 
 
 parser.add_argument('--object_views', type=int, default=4)
