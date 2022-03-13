@@ -48,7 +48,7 @@ parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int, default=0, help='Local rank for distributed learning')
 parser.add_argument('--inf_workers', type=int, default=1)
 
-parser.add_argument('--simclr_pth_path', type='str', required=True)
+parser.add_argument('--simclr_pth_path', type=str, required=True)
 parser.add_argument('--ori_cifar_model', action='store_true')
 
 
