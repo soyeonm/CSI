@@ -1,9 +1,12 @@
 import torch.nn as nn
 import torchvision
 
-from simclr.modules.resnet_hacks import modify_resnet_model
-from simclr.modules.identity import Identity
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
 
+    def forward(self, x):
+        return x
 
 class SimCLR(nn.Module):
     """
