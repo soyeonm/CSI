@@ -148,6 +148,7 @@ def main_objclr():
 		#model = torchvision.models.resnet50(pretrained=False)
 		if args.load_pretrained:
 			checkpoint = torch.load('/home/soyeonm/projects/devendra/CSI/CSI_my/SimCLR/resnet50_checkpoint_100.tar', map_location=torch.device('cpu'))
+			model.load_state_dict(checkpoint)
 			state_dict = OrderedDict()
 			for k, v in checkpoint.items():
 				if not(k == 'projector.2.weight'): 
