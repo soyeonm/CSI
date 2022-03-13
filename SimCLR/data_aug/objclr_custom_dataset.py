@@ -179,7 +179,7 @@ class ObjDataset(Dataset):
 class ObjInferenceDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None):
+	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None, sample=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -187,7 +187,7 @@ class ObjInferenceDataset(Dataset):
 			transform (callable, optional): Optional transform to be applied
 				on a sample.
 		"""
-
+		assert (sample is None) or (shots is None)
 		#self.landmarks_frame = pd.read_csv(csv_file)
 		self.root_dir = root_dir #e.g. /home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_small_split_one_no_by_obj
 		#self.class2idx = {'hairdryer':0, 'suitcase':1, 'broccoli': 2}
@@ -248,6 +248,16 @@ class ObjInferenceDataset(Dataset):
 				np.random.seed(seed_counter)
 				perm = np.random.permutation(len(v)).tolist()
 				perm = perm[:shots]
+				self.object_class_dict_p_rev[c] = [v[p] for p in perm]
+				seed_counter +=1
+
+		if not(sample is None):
+			chosen_shots = []
+			seed_counter = 0
+			for c, v in self.object_class_dict_p_rev.items():
+				np.random.seed(seed_counter)
+				perm = np.random.permutation(len(v)).tolist()
+				perm = perm[:int(len(v)*sample)]
 				self.object_class_dict_p_rev[c] = [v[p] for p in perm]
 				seed_counter +=1
 
