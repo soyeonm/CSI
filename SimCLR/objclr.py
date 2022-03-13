@@ -25,8 +25,10 @@ import datetime
 torch.manual_seed(0)
 
 
-def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu):
+def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu, rank=0):
     last_model = os.path.join(save_dir, save_name+ "_epoch_" + str(epoch))
+    if rank!=0:
+    	last_model = os.path.join(save_dir, save_name+ "rank_" + str(rank) + "_epoch_" + str(epoch))
     if multi_gpu:
         torch.save(model.module.state_dict(), last_model)
     else:
@@ -254,7 +256,7 @@ class ObjCLR(object):
 						self.classify_inference(inference_train_datasets, test_loader, f, just_average, train_batch_size)
 						save_checkpoint(epoch_counter, self.model, self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu)
 				if self.args.local_rank ==1:
-					save_checkpoint(epoch_counter, self.model + "rank1", self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu)
+					save_checkpoint(epoch_counter, self.model, self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu, rank=1)
 				if self.args.multi_gpu:
 					dist.barrier() 
 			if self.args.local_rank ==0:
