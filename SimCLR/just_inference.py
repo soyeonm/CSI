@@ -23,6 +23,11 @@ import os
 import torch.distributed as dist
 import datetime
 
+
+parser.add_argument('--model_path', type=str, required=True)
+args = parser.parse_args()
+
+
 class MultiEpochsDataLoader(torch.utils.data.DataLoader):
 
     def __init__(self, *args, **kwargs):
@@ -55,6 +60,10 @@ class _RepeatSampler(object):
 
 
 model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+
+checkpoint = torch.load(args.model_path, map_location=torch.device('cpu'))
+state_dict = checkpoint['state_dict']
+model.load_state_dict(state_dict)
 
 permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
 train_class_idx = permclr_train_dataset.class2idx
