@@ -22,7 +22,7 @@ import torch.distributed as dist
 import datetime
 from modified_simclr import SimCLR
 
-
+import torchvision
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system') 
 
