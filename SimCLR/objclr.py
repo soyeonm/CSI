@@ -255,7 +255,8 @@ class ObjCLR(object):
 						save_checkpoint(epoch_counter, self.model, self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu)
 				if self.args.multi_gpu:
 					dist.barrier() 
-			f.close()
+			if self.args.local_rank ==0:
+				f.close()
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
