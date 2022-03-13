@@ -214,6 +214,7 @@ class ObjCLR(object):
 
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(images)
+					del images
 					print("features shape is ", features.shape)
 					features = F.normalize(features, dim=1)
 
