@@ -141,7 +141,7 @@ def main_objclr():
 
 	if args.simclr_package:
 		#TODO
-		encodr = torchvision.models.resnet50(pretrained=False)
+		encoder = torchvision.models.resnet50(pretrained=False)
 		model = SimCLR(encoder, 128, encoder.fc.in_features)
 		#model = torchvision.models.resnet50(pretrained=False)
 		if args.load_pretrained:
