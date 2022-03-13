@@ -122,15 +122,17 @@ def main_objclr():
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 	pickle.dump(train_dataset, open("temp_pickles/train_dataset.p", "wb"))
+	if args.workers >0:
+		persistent_workers = True
 	if args.multi_gpu:
 		train_sampler = DistributedSampler(train_dataset, num_replicas=args.n_gpus, rank=args.local_rank, shuffle=True)
 		train_loader = MultiEpochsDataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, shuffle=False,
-			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=True) #sampler option is mutually exlusive with shuffle
+			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=persistent_workers) #sampler option is mutually exlusive with shuffle
 	else:
 		train_sampler = None
 		train_loader = MultiEpochsDataLoader(
 			train_dataset, batch_size=args.batch_size, shuffle=True,
-			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=True)
+			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=persistent_workers)
 		#pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
 
 
