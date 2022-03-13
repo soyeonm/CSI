@@ -25,7 +25,7 @@ import datetime
 
 
 parser.add_argument('--model_path', type=str, required=True)
-parser.add_argument('--sanity', type=str, required=True)
+parser.add_argument('--sanity', action='store_true')
 parser.add_argument('--inf_workers', type=int, default=1)
 
 
