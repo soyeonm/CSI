@@ -39,6 +39,8 @@ parser.add_argument('--eval_test_batch_size', type=int, default=16)
 
 parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int, default=0, help='Local rank for distributed learning')
+parser.add_argument('--inf_workers', type=int, default=1)
+
 
 ############Set torch device for MiltiGPU###
 args = parser.parse_args()
@@ -176,7 +178,7 @@ def main_objclr():
 		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
 		pickle.dump(test_dataset, open("temp_pickles/test_dataset.p", "wb"))
 
-		test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.workers, pin_memory=False, shuffle=False)
+		test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
 		pickle.dump(test_data_loader, open("temp_pickles/test_data_loader.p", "wb"))
 
 		args.log_name = 'object_logs/test_' + args.model_name +'.txt'
