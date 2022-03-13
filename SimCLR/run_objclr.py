@@ -20,10 +20,13 @@ import os
 
 import torch.distributed as dist
 import datetime
-from modified_simclr import SimCLR
+#from modified_simclr import SimCLR
 
 import torchvision
 import torch.multiprocessing
+
+from google_resnet import get_resnet, name_to_params, get_contrastive_resnet
+
 
 from collections import OrderedDict
 torch.multiprocessing.set_sharing_strategy('file_system') 
@@ -45,7 +48,8 @@ parser.add_argument('--sanity', action='store_true')
 parser.add_argument("--local_rank", type=int, default=0, help='Local rank for distributed learning')
 parser.add_argument('--inf_workers', type=int, default=1)
 
-parser.add_argument('--simclr_package', action='store_true')
+parser.add_argument('--simclr_pth_path', type='str', required=True)
+parser.add_argument('--ori_cifar_model', action='store_true')
 
 
 
@@ -141,23 +145,13 @@ def main_objclr():
 			num_workers=args.workers, pin_memory=False, drop_last=True, persistent_workers=persistent_workers)
 		#pickle.dump(train_loader, open("temp_pickles/train_loader.p", "wb"))
 
-	if args.simclr_package:
-		#TODO
-		encoder = torchvision.models.resnet50(pretrained=False)
-		model = SimCLR(encoder, 128, encoder.fc.in_features)
-		#model = torchvision.models.resnet50(pretrained=False)
-		if args.load_pretrained:
-			checkpoint = torch.load('/home/soyeonm/projects/devendra/CSI/CSI_my/SimCLR/resnet50_checkpoint_100.tar', map_location=torch.device('cpu'))
-			model.load_state_dict(checkpoint)
-			state_dict = OrderedDict()
-			for k, v in checkpoint.items():
-				if not(k == 'projector.2.weight'): 
-					state_dict[k] = v
-				else:
-					state_dict[k] = model.state_dict()[k]
-			model.load_state_dict(state_dict)
-
-	else:
+	#Google simclr model
+	model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
+	model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'])
+	model = get_contrastive_resnet(model, _)
+	
+	if args.ori_cifar_model:
+		del model
 		model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
 		if args.load_pretrained:
 			checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
