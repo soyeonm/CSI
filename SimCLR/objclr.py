@@ -198,6 +198,7 @@ class ObjCLR(object):
 
 				images = torch.cat([images_aug0,images_aug1] , dim=0)
 				images = images.to(self.args.device, non_blocking=True)
+				images_shape = images.shape
 				#print("images shape is ", images.shape)
 
 				if self.args.class_label:
@@ -214,14 +215,14 @@ class ObjCLR(object):
 
 				with autocast(enabled=self.args.fp16_precision):
 					features = self.model(images)
-					del images
-					print("features shape is ", features.shape)
+					del images; torch.cuda.empty_cache()
+					#print("features shape is ", features.shape)
 					features = F.normalize(features, dim=1)
 
 					bsz = labels.shape[0] #Should be half the shape of images 
 
 					#TODO: Check bsz is half of the shape of images
-					assert bsz == images.shape[0]/2
+					assert bsz == images_shape[0]/2
 
 					#Now follow the protocol of SupContrast
 					f1, f2 = torch.split(features, [bsz, bsz], dim=0)
@@ -303,6 +304,7 @@ class ObjCLR(object):
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
+				del test_images; torch.cuda.empty_cache()
 				#Now separate into two
 				features_train = features[:train_len_with_multi_views, :].clone() 
 				#print("train shape ", features_train.shape)
