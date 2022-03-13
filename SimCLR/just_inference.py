@@ -72,8 +72,7 @@ if args.sanity:
 	test_root_dir = train_root_dir
 	sample = 0.1
 
-checkpoint = torch.load(args.model_path, map_location=torch.device('cpu'))
-state_dict = checkpoint['state_dict']
+state_dict = torch.load(args.model_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 
 permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
