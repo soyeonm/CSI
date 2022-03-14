@@ -24,6 +24,7 @@ def copy_instance(file, dest, rank):
     
 
 if __name__ == "__main__": 
+	os.chdir('/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 	assert os.getcwd() == '/projects/rsalakhugroup/soyeonm/co3d/co3d_download'
 	#files = os.listdir(src) # Getting the files to copy
 	#masks = glob('*/*/masks')
