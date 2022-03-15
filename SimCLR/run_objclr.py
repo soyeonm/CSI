@@ -160,9 +160,8 @@ def main_objclr():
 		#Make ordered dict statedict and load
 		state_dict = OrderedDict()
 		simclr_state_dict = torch.load(args.simclr_pth_path, map_location=torch.device('cpu'))
-		for k, v in state_dict.items():
+		for k, v in simclr_state_dict.items():
 			if k == 'resnet':
-				print('resnet!')
 				for vi, v_v in v.items():
 					state_dict['resnet_model.' + v] = v_v
 			elif k == 'head':
