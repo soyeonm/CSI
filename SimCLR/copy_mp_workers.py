@@ -9,7 +9,7 @@ import subprocess
 
 def copy_instance(files, dest, rank): 
 	# printing process id to SHOW that we're actually using MULTIPROCESSING 
-	if rank %1000 ==0:
+	if rank %100 ==0:
 		print("ID of main process: {}".format(os.getpid()))   
 	for file in files:  
 		im = cv2.imread(file)
@@ -22,7 +22,7 @@ def copy_instance(files, dest, rank):
 		cv2.imwrite(os.path.join(dest,file), im)
 
 if __name__ == "__main__": 
-	num_workers = 10000
+	num_workers = 100
 	os.chdir('/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 	assert os.getcwd() == '/projects/rsalakhugroup/soyeonm/co3d/co3d_download'
 	#files = os.listdir(src) # Getting the files to copy
