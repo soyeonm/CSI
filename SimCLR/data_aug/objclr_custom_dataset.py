@@ -330,7 +330,7 @@ class ObjInferenceDataset(Dataset):
 				elif self.root_dir == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test':
 					last_jpg = im_path.split('/')[-1]; rest = '/'.join(im_path.split('/')[:-1])
 					last_jpg = last_jpg[4:].replace('_f', '/masks/f').replace('jpg', 'png')
-					mask_path = os.path.join(im_path, last_jpg)
+					mask_path = os.path.join(rest, last_jpg)
 				else:
 					raise Exception("root dir invalid")
 				mask_path = mask_path.replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')

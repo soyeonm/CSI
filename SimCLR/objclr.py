@@ -186,6 +186,14 @@ class ObjCLR(object):
 			self.model.train()
 			if self.args.multi_gpu:
 				train_sampler.set_epoch(epoch_counter)
+			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+				if self.args.local_rank ==0:
+					with torch.no_grad():
+						self.model.eval()
+						self.classify_inference(inference_train_datasets, test_loader, f, just_average, train_batch_size)
+						save_checkpoint(epoch_counter, self.model, self.args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = self.args.multi_gpu)
+				if self.args.multi_gpu:
+					dist.barrier() 
 			
 			mean_loss = 0.0
 			batch_i = 0
