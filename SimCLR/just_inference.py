@@ -34,7 +34,7 @@ parser.add_argument('--object_views', type=int, default=4)
 
 args = parser.parse_args()
 
-
+args.device = torch.device('cuda')
 class MultiEpochsDataLoader(torch.utils.data.DataLoader):
 
     def __init__(self, *args, **kwargs):
