@@ -89,7 +89,7 @@ test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test
 
 args.ood = False
 objclr = ObjCLR(model=model, optimizer=None, scheduler=None, args=args)
-objclr.classify_inference(permclr_train_dataset, test_data_loader, f, just_average=True, train_batch_size=args.eval_train_batch_size)
+objclr.classify_inference(permclr_train_dataset, test_data_loader, f=None, just_average=True, train_batch_size=args.eval_train_batch_size)
 
 
 
