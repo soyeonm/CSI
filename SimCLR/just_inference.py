@@ -71,6 +71,7 @@ model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
 model = get_contrastive_resnet(model, _)
 model.load_state_dict(torch.load(args.model_path, map_location=torch.device('cpu')))
 model.eval()
+model = model.to(device=torch.device('cuda'))
 
 train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
