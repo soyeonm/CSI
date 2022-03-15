@@ -321,7 +321,7 @@ class ObjInferenceDataset(Dataset):
 					mask_path = os.path.join(im_path, last_jpg)
 				else:
 					raise Exception("root dir invalid")
-				mask_path = mask_path.replace(self.root, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
+				mask_path = mask_path.replace(self.root_dir, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 				mask = cv2.imread(mask_path)
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
