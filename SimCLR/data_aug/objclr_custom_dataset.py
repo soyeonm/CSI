@@ -64,7 +64,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None, crop_from=0.08):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True):
+	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True, mask=False):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -120,6 +120,7 @@ class ObjDataset(Dataset):
 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
 		del self.object_dict_p; del self.object_class_dict_p
+		self.mask = mask
 
 		#get the number of unique classes
 		#self.class_lens = len(set(list(self.object_class_dict.values())))
@@ -157,7 +158,14 @@ class ObjDataset(Dataset):
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
-
+			if self.mask:
+				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png')
+				mask = cv2.imread(mask_path)
+				wheres = np.where(mask !=0)
+				start_crop = wheres[0][0]
+				end_crop = wheres[1][0]
+				image = np.asarray(image)[start_crop[0]:start_crop[1]: end_crop[0]:end_crop[1]]
+				image = Image.fromarray(np.uint8(image))
 			
 			if self.transform is not None:
 				image = self.transform(image)
@@ -179,7 +187,7 @@ class ObjDataset(Dataset):
 class ObjInferenceDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None, sample=None):
+	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None, sample=None, mask=False):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -281,6 +289,7 @@ class ObjInferenceDataset(Dataset):
 		self.resize_transform = transforms.Resize((resize_shape, resize_shape))
 		self.t = transforms.ToTensor()
 		del self.object_dict_p#; del self.object_class_dict_p
+		self.mask = mask
 
 		#get the number of unique classes
 		#self.class_lens = len(set(list(self.object_class_dict.values())))
@@ -302,6 +311,21 @@ class ObjInferenceDataset(Dataset):
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
+			if self.mask:
+				if self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
+					mask_path = im_path.replace('images', 'masks').replace('jpg', 'png')
+				elif self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test':
+					last_jpg = im_path.split('/')[-1]; rest = '/'.join(im_path.split('/')[:-1])
+					last_jpg = last_jpg[4:].replace('_f', '/masks/f').replace('jpg', 'png')
+					mask_path = os.path.join(im_path, last_jpg)
+				else:
+					raise Exception("root dir invalid")
+				mask = cv2.imread(mask_path)
+				wheres = np.where(mask !=0)
+				start_crop = wheres[0][0]
+				end_crop = wheres[1][0]
+				image = np.asarray(image)[start_crop[0]:start_crop[1]: end_crop[0]:end_crop[1]]
+				image = Image.fromarray(np.uint8(image))
 
 			#image = self.resize_transform(image)
 			if self.transform is not None:

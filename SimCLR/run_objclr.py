@@ -51,6 +51,7 @@ parser.add_argument('--inf_workers', type=int, default=1)
 parser.add_argument('--simclr_pth_path', type=str, required=True)
 parser.add_argument('--ori_cifar_model', action='store_true')
 parser.add_argument('--crop_from', type=float, default=0.08)
+parser.add_argument('--mask_crop', action='store_true')
 
 
 
@@ -130,7 +131,7 @@ def main_objclr():
 	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 	#Add transform later
 	start = time.time()
-	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d, crop_from=args.crop_from), 2), processed=processed) #transform can be None too
+	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d, crop_from=args.crop_from), 2), processed=processed, mask=args.mask_crop) #transform can be None too
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 	pickle.dump(train_dataset, open("temp_pickles/train_dataset.p", "wb"))
@@ -189,12 +190,12 @@ def main_objclr():
 
 		#Replace prmclr datasets with new ObjInferenceDataset
 		#Fine when one shot. They are going to be in the same order of classes.
-		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
+		permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed,  mask=args.mask_crop)
 		pickle.dump(permclr_train_dataset, open("temp_pickles/permclr_train_dataset.p", "wb"))
 		train_class_idx = permclr_train_dataset.class2idx
 		pickle.dump(train_class_idx, open("temp_pickles/train_class_idx.p", "wb"))
 
-		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, processed=True, class_idx=train_class_idx)
+		test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, processed=True, class_idx=train_class_idx, mask=args.mask_crop)
 		pickle.dump(test_dataset, open("temp_pickles/test_dataset.p", "wb"))
 
 		test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
