@@ -162,8 +162,11 @@ class ObjDataset(Dataset):
 			#print("image is ", np.asarray(image))
 			if self.mask:
 				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
-				print("mask path is ", mask_path)
 				mask = cv2.imread(mask_path)
+				try:
+					len(mask.shape) == 3
+				except:
+					raise Exception("Mask not loaded correctly: " + str(mask_path)) 
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
 				pickle.dump(wheres, open('weres.p', 'wb'))
@@ -326,8 +329,12 @@ class ObjInferenceDataset(Dataset):
 				else:
 					raise Exception("root dir invalid")
 				mask_path = mask_path.replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
-				print("mask path is ", mask_path)
+				#print("mask path is ", mask_path)
 				mask = cv2.imread(mask_path)
+				try:
+					len(mask.shape) == 3
+				except:
+					raise Exception("Mask not loaded correctly: " + str(mask_path)) 
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
