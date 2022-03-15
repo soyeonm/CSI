@@ -52,6 +52,7 @@ parser.add_argument('--simclr_pth_path', type=str, required=True)
 parser.add_argument('--ori_cifar_model', action='store_true')
 parser.add_argument('--crop_from', type=float, default=0.08)
 parser.add_argument('--mask_crop', action='store_true')
+parser.add_argument('--load_head', action='store_true')
 
 
 
@@ -149,8 +150,24 @@ def main_objclr():
 
 	#Google simclr model
 	model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
-	model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'])
-	model = get_contrastive_resnet(model, _)
+	if args.load_head:
+		model = get_contrastive_resnet(model, _)
+		#Make ordered dict statedict and load
+		state_dict = OrderedDict()
+		simclr_state_dict = torch.load(args.simclr_pth_path, map_location=torch.device('cpu'))
+		for k, v in state_dict.items():
+			if k == 'resnet':
+				for v, v_v in v.items():
+					state_dict['resnet_model.' + v] = v_v
+			elif k == 'head':
+				for v, v_v in v.items():
+					state_dict['contrastive_head_model.' + v] = v_v
+			else:
+				raise Exception("Invalid key for simclr state dict!")
+		model.load_state_dict(state_dict)
+	else:
+		model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'], map_location=torch.device('cpu'))
+		model = get_contrastive_resnet(model, _)
 	
 	if args.ori_cifar_model:
 		del model
