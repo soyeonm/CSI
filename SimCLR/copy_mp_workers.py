@@ -8,18 +8,18 @@ from glob import glob
 import subprocess
 
 def copy_instance(files, dest, rank): 
-    # printing process id to SHOW that we're actually using MULTIPROCESSING 
-    if rank %1000 ==0:
-    	print("ID of main process: {}".format(os.getpid()))   
-   	for file in files:  
-	    im = cv2.imread(file)
-	    im = cv2.resize(im, (300,300))
-	    #Make directory
-	    bashCommand = "mkdir -p " + os.path.join(dest,'/'.join(file.split('/')[:-1]))
-	    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-	    output, error = process.communicate()
-	    #
-	    cv2.imwrite(os.path.join(dest,file), im)
+	# printing process id to SHOW that we're actually using MULTIPROCESSING 
+	if rank %1000 ==0:
+		print("ID of main process: {}".format(os.getpid()))   
+	for file in files:  
+		im = cv2.imread(file)
+		im = cv2.resize(im, (300,300))
+		#Make directory
+		bashCommand = "mkdir -p " + os.path.join(dest,'/'.join(file.split('/')[:-1]))
+		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+		output, error = process.communicate()
+		#
+		cv2.imwrite(os.path.join(dest,file), im)
 
 if __name__ == "__main__": 
 	num_workers = 10000
