@@ -159,6 +159,7 @@ class ObjDataset(Dataset):
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
+			pickle.dump(np.asarray(image), 'image.p')
 			if self.mask:
 				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
 				mask = cv2.imread(mask_path)
