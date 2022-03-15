@@ -186,7 +186,7 @@ class ObjCLR(object):
 			self.model.train()
 			if self.args.multi_gpu:
 				train_sampler.set_epoch(epoch_counter)
-			if epoch_counter  % eval_period ==0 and epoch_counter  >0:
+			if epoch_counter  % eval_period ==0 :
 				if self.args.local_rank ==0:
 					with torch.no_grad():
 						self.model.eval()
