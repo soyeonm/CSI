@@ -159,7 +159,7 @@ class ObjDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 			if self.mask:
-				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png')
+				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 				mask = cv2.imread(mask_path)
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
@@ -320,6 +320,7 @@ class ObjInferenceDataset(Dataset):
 					mask_path = os.path.join(im_path, last_jpg)
 				else:
 					raise Exception("root dir invalid")
+				mask_path = mask_path.replace(self.root, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 				mask = cv2.imread(mask_path)
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
