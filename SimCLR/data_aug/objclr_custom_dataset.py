@@ -173,7 +173,7 @@ class ObjDataset(Dataset):
 				if len(wheres[0]) >0:
 					#start_crop = wheres[0][0]
 					#end_crop = wheres[1][-1]
-					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1]]
+					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1], :]
 					image = Image.fromarray(np.uint8(image))
 
 			
@@ -343,7 +343,7 @@ class ObjInferenceDataset(Dataset):
 				if len(wheres[0]) >0:
 					#start_crop = wheres[0][0]
 					#end_crop = wheres[1][-1]
-					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1]]
+					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1], :]
 					image = Image.fromarray(np.uint8(image))
 
 			#image = self.resize_transform(image)
