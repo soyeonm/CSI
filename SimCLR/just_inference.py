@@ -88,7 +88,7 @@ test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shap
 test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
 
 args.ood = False
-objclr = ObjCLR(model=model, optimizer=optimizer, scheduler=scheduler, args=args)
+objclr = ObjCLR(model=model, optimizer=None, scheduler=scheduler, args=args)
 objclr.classify_inference(permclr_train_dataset, test_data_loader, f, just_average=True, train_batch_size=args.eval_train_batch_size)
 
 
