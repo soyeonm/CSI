@@ -162,7 +162,8 @@ class ObjDataset(Dataset):
 			#print("image is ", np.asarray(image))
 			if self.mask:
 				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
-				mask = cv2.imread(mask_path)
+				mask = pil_loader(mask_path)
+				mask = np.asarray(mask)
 				try:
 					len(mask.shape) == 3
 				except:
@@ -331,7 +332,8 @@ class ObjInferenceDataset(Dataset):
 					raise Exception("root dir invalid")
 				mask_path = mask_path.replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
 				#print("mask path is ", mask_path)
-				mask = cv2.imread(mask_path)
+				mask = pil_loader(mask_path)
+				mask = np.asarray(mask)
 				try:
 					len(mask.shape) == 3
 				except:
