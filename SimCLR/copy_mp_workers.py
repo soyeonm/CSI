@@ -32,7 +32,7 @@ if __name__ == "__main__":
 	#baseball_masks = glob(objs[0] + '/masks/*')
 	#
 	for worker_i in range(num_workers):
-		if worker_i < num_workers = 1:
+		if worker_i < num_workers - 1:
 			masks_i = masks[worker_i* int(len(masks)/num_workers):(worker_i+1)*int(len(masks)/num_workers)]
 		else:
 			masks_i = masks[worker_i* int(len(masks)/num_workers):]
