@@ -230,7 +230,7 @@ def main_objclr():
 	print("time taken per epoch is ", time.time() - start)
 
 	#save_checkpoint(args.epochs, model, args.model_name, 'obj_saved_models', multi_gpu = args.multi_gpu)
-	save_checkpoint(epoch_counter, model, args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = args.multi_gpu)
+	save_checkpoint(args.epochs, model, args.model_name, '/projects/rsalakhugroup/soyeonm/objs_saved_models', multi_gpu = args.multi_gpu)
 
 if __name__ == "__main__":
 	main_objclr()
