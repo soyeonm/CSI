@@ -312,7 +312,7 @@ class ObjInferenceDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 			if self.mask:
-				if self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
+				if self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train':
 					mask_path = im_path.replace('images', 'masks').replace('jpg', 'png')
 				elif self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test':
 					last_jpg = im_path.split('/')[-1]; rest = '/'.join(im_path.split('/')[:-1])
