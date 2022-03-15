@@ -159,7 +159,7 @@ class ObjDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 			if self.mask:
-				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
+				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root_dir, '/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 				mask = cv2.imread(mask_path)
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
