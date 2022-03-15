@@ -165,9 +165,10 @@ class ObjDataset(Dataset):
 				mask = cv2.imread(mask_path)
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
+				pickle.dump(wheres, open('weres.p', 'wb'))
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = copy.deepcopy(np.asarray(image))[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
+				image = np.asarray(image)[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
 				image = Image.fromarray(np.uint8(image))
 			
 			if self.transform is not None:
@@ -329,7 +330,7 @@ class ObjInferenceDataset(Dataset):
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = copy.deepcopy(np.asarray(image))[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
+				image = np.asarray(image)[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
 				image = Image.fromarray(np.uint8(image))
 
 			#image = self.resize_transform(image)
