@@ -67,9 +67,10 @@ class _RepeatSampler(object):
 
 
 #model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
-model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
-model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'])
+model, _ = get_resnet(*name_to_params(args.model_path))
 model = get_contrastive_resnet(model, _)
+model.load_state_dict(torch.load(args.model_path))
+
 train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 sample=None
