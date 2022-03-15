@@ -325,6 +325,7 @@ class ObjInferenceDataset(Dataset):
 				else:
 					raise Exception("root dir invalid")
 				mask_path = mask_path.replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
+				print("mask path is ", mask_path)
 				mask = cv2.imread(mask_path)
 				mask = cv2.resize(mask, (300,300))
 				wheres = np.where(mask !=0)
