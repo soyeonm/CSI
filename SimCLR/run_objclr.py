@@ -82,7 +82,8 @@ if args.n_gpus > 1:
 	args.multi_gpu = True
 	if args.p_num !=0:
 		os.environ['MASTER_ADDR'] = '127.' + str(args.p_num) + '.0.1'
-	    os.environ['MASTER_PORT'] = str(args.p_num*10 + 29500)
+		os.environ['MASTER_PORT'] = str(args.p_num*10 + 29500)
+		
 	torch.distributed.init_process_group(
 		'nccl',
 		init_method='env://',
@@ -97,33 +98,33 @@ else:
 
 class MultiEpochsDataLoader(torch.utils.data.DataLoader):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._DataLoader__initialized = False
-        self.batch_sampler = _RepeatSampler(self.batch_sampler)
-        self._DataLoader__initialized = True
-        self.iterator = super().__iter__()
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self._DataLoader__initialized = False
+		self.batch_sampler = _RepeatSampler(self.batch_sampler)
+		self._DataLoader__initialized = True
+		self.iterator = super().__iter__()
 
-    def __len__(self):
-        return len(self.batch_sampler.sampler)
+	def __len__(self):
+		return len(self.batch_sampler.sampler)
 
-    def __iter__(self):
-        for i in range(len(self)):
-            yield next(self.iterator)
+	def __iter__(self):
+		for i in range(len(self)):
+			yield next(self.iterator)
 
 
 class _RepeatSampler(object):
-    """ Sampler that repeats forever.
-    Args:
-        sampler (Sampler)
-    """
+	""" Sampler that repeats forever.
+	Args:
+		sampler (Sampler)
+	"""
 
-    def __init__(self, sampler):
-        self.sampler = sampler
+	def __init__(self, sampler):
+		self.sampler = sampler
 
-    def __iter__(self):
-        while True:
-            yield from iter(self.sampler)
+	def __iter__(self):
+		while True:
+			yield from iter(self.sampler)
 
 
 def main_objclr():
