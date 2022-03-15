@@ -22,6 +22,7 @@ import os
 
 import torch.distributed as dist
 import datetime
+from google_resnet import get_resnet, name_to_params, get_contrastive_resnet
 
 
 parser.add_argument('--model_path', type=str, required=True)
@@ -65,7 +66,10 @@ class _RepeatSampler(object):
             yield from iter(self.sampler)
 
 
-model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+#model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
+model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'])
+model = get_contrastive_resnet(model, _)
 train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 sample=None
