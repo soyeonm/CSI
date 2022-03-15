@@ -313,9 +313,9 @@ class ObjInferenceDataset(Dataset):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
 			if self.mask:
-				if self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train':
+				if self.root_dir == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train':
 					mask_path = im_path.replace('images', 'masks').replace('jpg', 'png')
-				elif self.root == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test':
+				elif self.root_dir == '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test':
 					last_jpg = im_path.split('/')[-1]; rest = '/'.join(im_path.split('/')[:-1])
 					last_jpg = last_jpg[4:].replace('_f', '/masks/f').replace('jpg', 'png')
 					mask_path = os.path.join(im_path, last_jpg)
