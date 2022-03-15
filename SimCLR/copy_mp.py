@@ -32,11 +32,12 @@ if __name__ == "__main__":
 	#baseball_masks = glob(objs[0] + '/masks/*')
 	#
 	rank = 0
+	num_processes = 0
 	for obj in objs:
 		masks =  glob(obj + '/masks/*.png')
 		for mask in masks:
 			#p1 = multiprocessing.Process(target=copy_instance, args=(mask, '/projects/rsalakhugroup/soyeonm/co3d/copy_test', rank)) 
-			p1 = multiprocessing.Process(target=copy_instance, args=(mask, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks', rank)) 
+			p1 = multiprocessing.Process(target=copy_instance, args=(mask, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks_real', rank)) 
 			p1.start() 
 			rank +=1
-	    	
+	    	num_processes +=1 
