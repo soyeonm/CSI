@@ -169,6 +169,7 @@ def main_objclr():
 					state_dict['contrastive_head_model.' + v] = v_v
 			else:
 				raise Exception("Invalid key for simclr state dict!")
+		pickle.dump(state_dict, open('state_dict.p', 'wb'))
 		model.load_state_dict(state_dict)
 	else:
 		model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'], map_location=torch.device('cpu'))
