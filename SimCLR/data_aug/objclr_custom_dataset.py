@@ -159,7 +159,7 @@ class ObjDataset(Dataset):
 		for v in range(self.views):
 			im_path = object_paths[sample_view_indices[v]]
 			image = default_loader(im_path)
-			print("image is ", np.asarray(image))
+			#print("image is ", np.asarray(image))
 			if self.mask:
 				mask_path = im_path.replace('images', 'masks').replace('jpg', 'png').replace(self.root_dir, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks')
 				mask = cv2.imread(mask_path)
@@ -167,7 +167,7 @@ class ObjDataset(Dataset):
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = np.asarray(image)[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
+				image = copy.deepcopy(np.asarray(image))[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
 				image = Image.fromarray(np.uint8(image))
 			
 			if self.transform is not None:
@@ -329,7 +329,7 @@ class ObjInferenceDataset(Dataset):
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = np.asarray(image)[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
+				image = copy.deepcopy(np.asarray(image))[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]]
 				image = Image.fromarray(np.uint8(image))
 
 			#image = self.resize_transform(image)
