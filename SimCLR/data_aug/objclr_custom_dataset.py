@@ -175,8 +175,9 @@ class ObjDataset(Dataset):
 				if len(wheres[0]) >1 and not(wheres[0][0] == wheres[0][-1]) and not(wheres[1][0] ==wheres[1][-1]):
 					#start_crop = wheres[0][0]
 					#end_crop = wheres[1][-1]
-					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1], :]
-					image = Image.fromarray(np.uint8(image))
+					#image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1], :]
+					#image = Image.fromarray(np.uint8(image))
+					image = image.crop((wheres[1][0],wheres[0][0],wheres[1][-1],wheres[0][-1]))
 
 			
 			if self.transform is not None:
@@ -347,8 +348,7 @@ class ObjInferenceDataset(Dataset):
 				if len(wheres[0]) >0 and not(wheres[0][0] == wheres[0][-1]) and not(wheres[1][0] ==wheres[1][-1]):
 					#start_crop = wheres[0][0]
 					#end_crop = wheres[1][-1]
-					image = np.asarray(image)[wheres[0][0]:wheres[0][-1], wheres[1][0]:wheres[1][-1], :]
-					image = Image.fromarray(np.uint8(image))
+					image = image.crop((wheres[1][0],wheres[0][0],wheres[1][-1],wheres[0][-1]))
 
 			#image = self.resize_transform(image)
 			if self.transform is not None:
