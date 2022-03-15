@@ -23,6 +23,7 @@ def copy_instance(files, dest, rank):
 
 if __name__ == "__main__": 
 	num_workers = 10000
+	os.chdir('/projects/rsalakhugroup/soyeonm/co3d/co3d_download')
 	assert os.getcwd() == '/projects/rsalakhugroup/soyeonm/co3d/co3d_download'
 	#files = os.listdir(src) # Getting the files to copy
 	masks = glob('*/*/masks/*.png')
