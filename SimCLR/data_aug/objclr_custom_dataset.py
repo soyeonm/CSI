@@ -48,10 +48,10 @@ def get_obj_num(string, processed):
 		return string.split('/')[-3]
 
 
-def get_simclr_pipeline_transform(size, s=1, resize_size=None):
+def get_simclr_pipeline_transform(size, s=1, resize_size=None, crop_from=0.08):
   """Return a set of data augmentation transformations as described in the SimCLR paper."""
   color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
-  transform_list = [transforms.RandomResizedCrop(size=size),
+  transform_list = [transforms.RandomResizedCrop(size=size, scale=(crop_from, 1.0)),
                                         transforms.RandomHorizontalFlip(),
                                         transforms.RandomApply([color_jitter], p=0.8),
                                         transforms.RandomGrayscale(p=0.2),

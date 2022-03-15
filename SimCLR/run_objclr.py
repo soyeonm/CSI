@@ -50,6 +50,7 @@ parser.add_argument('--inf_workers', type=int, default=1)
 
 parser.add_argument('--simclr_pth_path', type=str, required=True)
 parser.add_argument('--ori_cifar_model', action='store_true')
+parser.add_argument('--crop_from', type=float, default=0.08)
 
 
 
@@ -129,7 +130,7 @@ def main_objclr():
 	#train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
 	#Add transform later
 	start = time.time()
-	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d), 2), processed=processed) #transform can be None too
+	train_dataset = ObjDataset(train_root_dir, args.object_views,  transform=ContrastiveLearningViewGenerator(get_simclr_pipeline_transform(args.co3d_cropsize, 1, args.resize_co3d, crop_from=args.crop_from), 2), processed=processed) #transform can be None too
 	#pickle.dump(train_dataset, open("objclr_train_dataset.p", "wb"))
 	print("loaded train dataset in ", (time.time()- start)/60, " mins!")
 	pickle.dump(train_dataset, open("temp_pickles/train_dataset.p", "wb"))
