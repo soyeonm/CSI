@@ -164,7 +164,7 @@ class ObjDataset(Dataset):
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = np.asarray(image[start_crop[0]:start_crop[1]: end_crop[0]:end_crop[1]])
+				image = np.asarray(image[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]])
 				image = Image.fromarray(np.uint8(image))
 			
 			if self.transform is not None:
@@ -325,7 +325,7 @@ class ObjInferenceDataset(Dataset):
 				wheres = np.where(mask !=0)
 				start_crop = wheres[0][0]
 				end_crop = wheres[1][0]
-				image = np.asarray(image[start_crop[0]:start_crop[1]: end_crop[0]:end_crop[1]])
+				image = np.asarray(image[start_crop[0]:start_crop[1], end_crop[0]:end_crop[1]])
 				image = Image.fromarray(np.uint8(image))
 
 			#image = self.resize_transform(image)
