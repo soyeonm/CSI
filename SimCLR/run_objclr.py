@@ -53,6 +53,7 @@ parser.add_argument('--ori_cifar_model', action='store_true')
 parser.add_argument('--crop_from', type=float, default=0.08)
 parser.add_argument('--mask_crop', action='store_true')
 parser.add_argument('--load_head', action='store_true')
+parser.add_argument('--p_num', type=int, default=0)
 
 
 
@@ -79,6 +80,9 @@ if args.n_gpus > 1:
 	from torch.utils.data.distributed import DistributedSampler
 
 	args.multi_gpu = True
+	if args.p_num !=0:
+		os.environ['MASTER_ADDR'] = '127.' + str(args.p_num) + '.0.1'
+	    os.environ['MASTER_PORT'] = str(args.p_num*10 + 29500)
 	torch.distributed.init_process_group(
 		'nccl',
 		init_method='env://',
