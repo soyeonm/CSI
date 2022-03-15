@@ -37,3 +37,4 @@ if __name__ == "__main__":
 		else:
 			masks_i = masks[worker_i* int(len(masks)/num_workers):]
 		p1 = multiprocessing.Process(target=copy_instance, args=(masks, '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_14_masks', worker_i)) 
+		p1.start() 
