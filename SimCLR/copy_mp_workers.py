@@ -28,7 +28,6 @@ if __name__ == "__main__":
 	#files = os.listdir(src) # Getting the files to copy
 	masks = glob('*/*/masks/*.png')
 	#Divide it evenly into num_workers
-	each_worker
 	#objs = glob('*/*') #'baseballbat/375_42661_85494'
 	#baseball_masks = glob(objs[0] + '/masks/*')
 	#
