@@ -24,7 +24,7 @@ import torch.distributed as dist
 import datetime
 from google_resnet import get_resnet, name_to_params, get_contrastive_resnet
 
-
+parser.add_argument('--simclr_pth_path', type=str, required=True)
 parser.add_argument('--model_path', type=str, required=True)
 parser.add_argument('--sanity', action='store_true')
 parser.add_argument('--inf_workers', type=int, default=1)
@@ -67,9 +67,9 @@ class _RepeatSampler(object):
 
 
 #model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
-model, _ = get_resnet(*name_to_params(args.model_path))
+model, _ = get_resnet(*name_to_params(args.simclr_pth_path))
 model = get_contrastive_resnet(model, _)
-model.load_state_dict(torch.load(args.model_path))
+model.load_state_dict(torch.load(args.model_path, map_location=torch.device('cpu')))
 
 train_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify/train'
 test_root_dir = '/home/soyeonm/projects/devendra/CSI/CSI_my/data/co3d_march_9_classify_real/test'
@@ -79,8 +79,6 @@ if args.sanity:
 	test_root_dir = train_root_dir
 	sample = 0.1
 
-state_dict = torch.load(args.model_path, map_location=torch.device('cpu'))
-model.load_state_dict(state_dict)
 
 permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
 train_class_idx = permclr_train_dataset.class2idx
