@@ -163,13 +163,13 @@ def main_objclr():
 		for k, v in simclr_state_dict.items():
 			if k == 'resnet':
 				for vi, v_v in v.items():
-					state_dict['resnet_model.' + v] = v_v
+					state_dict['resnet_model.' + vi] = v_v
 			elif k == 'head':
 				for vi, v_v in v.items():
-					state_dict['contrastive_head_model.' + v] = v_v
+					state_dict['contrastive_head_model.' + vi] = v_v
 			else:
 				raise Exception("Invalid key for simclr state dict!")
-		pickle.dump(state_dict, open('state_dict.p', 'wb'))
+		#pickle.dump(state_dict, open('state_dict.p', 'wb'))
 		model.load_state_dict(state_dict)
 	else:
 		model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'], map_location=torch.device('cpu'))
