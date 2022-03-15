@@ -171,7 +171,7 @@ class ObjDataset(Dataset):
 				mask = cv2.resize(mask, (300,300))
 				mask = np.sum(mask, axis=2)
 				wheres = np.where(mask !=0)
-				print("len wheres is ", len(wheres[0]))
+				#print("len wheres is ", len(wheres[0]))
 				if len(wheres[0]) >1 and not(wheres[0][0] == wheres[0][-1]) and not(wheres[1][0] ==wheres[1][-1]):
 					#start_crop = wheres[0][0]
 					#end_crop = wheres[1][-1]
