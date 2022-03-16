@@ -362,11 +362,11 @@ class ObjCLR(object):
 				if not(self.args.pairwise):
 					features = torch.bmm(features, avg_matrix_128)
 				else:
-					print("features shape: ", features.shape)
+					#print("features shape: ", features.shape)
 					features_ori_shape0 = features.shape[0]
 					features_ori_shape1 = features.shape[1]
 					features = features[:, :, pairwise_indices_default]
-					print("features pairwise shape ", features.shape)
+					#print("features pairwise shape ", features.shape)
 					features = features.view(features_ori_shape0, features_ori_shape1*(self.args.object_views**2),2)
 
 				#Take dot product
@@ -385,7 +385,7 @@ class ObjCLR(object):
 
 				elif self.args.pairwise:
 					#Get the mean among the self.args.object_views**2 pairwise
-					logits = logits.reshape(features_ori_shape0,self.args.object_views**2)
+					logits = logits.reshape(features_ori_shape1,self.args.object_views**2)
 					logits = torch.mean(logits, axis=1)
 
 				logits= logits.detach().cpu().numpy()
