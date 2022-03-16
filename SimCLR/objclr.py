@@ -366,6 +366,7 @@ class ObjCLR(object):
 					features_ori_shape0 = features.shape[0]
 					features_ori_shape1 = features.shape[1]
 					features = features[:, :, pairwise_indices_default]
+					print("features pairwise shape ", features.shape)
 					features = features.view(features_ori_shape0, features_ori_shape1*(self.args.object_views**2),2)
 
 				#Take dot product
