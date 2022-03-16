@@ -35,7 +35,7 @@ def save_checkpoint(epoch, model, save_name, save_dir, multi_gpu, rank=0):
         torch.save(model.state_dict(), last_model)
     
 
-def get_max_logit_refactored_march10(logits, labels, num_classes):
+def get_max_logit_refactored_march10(logits, labels, num_classes, topk=1):
 	#logits should be 1 d
 	assert logits.shape[0] %num_classes ==0
 	assert logits.shape[0]/ num_classes == labels.shape[0]
@@ -44,7 +44,10 @@ def get_max_logit_refactored_march10(logits, labels, num_classes):
 	for i in range(int(logits.shape[0]/num_classes)):
 		#print("logit is ", logits[3*i:3*(i+1)])
 		max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
-		argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
+		if topk==1:
+			argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
+		else:
+			argmax_aligns.append(labels[i] in np.argsort(-logits[num_classes*i:num_classes*(i+1)])[:topk])
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
 		#print("argmax aligns last element is ", argmax_aligns[-1])
 	return max_logits, argmax_aligns
@@ -362,7 +365,7 @@ class ObjCLR(object):
 				logits= logits.detach().cpu().numpy()
 
 				assert logits.shape[0] %num_classes ==0
-				max_logits, aligns =  get_max_logit_refactored_march10(logits, test_labels, num_classes)
+				max_logits, aligns =  get_max_logit_refactored_march10(logits, test_labels, num_classes, self.args.inf_topk)
 				class_alignment += aligns
 
 		print("class alignment is ", np.mean(class_alignment))
