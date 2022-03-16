@@ -365,6 +365,7 @@ class ObjCLR(object):
 				if not(self.args.pairwise):
 					features = torch.bmm(features, avg_matrix_128)
 				else:
+					print("features shape: ", features.shape)
 					features_ori_shape0 = features.shape[0]
 					features_ori_shape1 = features.shape[1]
 					features = features[:, :, pairwise_indices]
