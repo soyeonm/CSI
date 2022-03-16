@@ -300,7 +300,7 @@ class ObjCLR(object):
 		catted_imgs = torch.cat(cat_by_category)
 		train_category_labels_tup.append(catted_imgs)
 
-		if self.args.pairwise:
+		if hasattr(self.args, 'pairwise') and self.args.pairwise:
 			pairwise_indices_default = []
 			for i in range(self.args.object_views):
 			    for j in range(self.args.object_views):
@@ -369,7 +369,7 @@ class ObjCLR(object):
 				features = features.permute(0, 2, 1) #Shape is now 128 x 9 x 8. THIS IS (kind of? reshaped) THE PERMUTED B (B * P^T)
 
 				#Get average
-				if not(self.args.pairwise):
+				if hasattr(self.args, 'pairwise') and not(self.args.pairwise):
 					features = torch.bmm(features, avg_matrix_128)
 				else:
 					#print("features shape: ", features.shape)
@@ -388,12 +388,12 @@ class ObjCLR(object):
 				#Now sum across the 128 dimensions
 				logits = torch.sum(features, axis=0) #Shape is torch.Size([9*train_batch_size]) or torch.Size([9*train_batch_size*17])
 
-				if (just_average) and not(self.args.pairwise):
+				if (just_average) and (not(hasattr(self.args, 'pairwise') ) or not(self.args.pairwise)):
 					#train_len == num_classes*train_batch_size
 					logits = logits.reshape(test_len*num_classes,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
 					logits = torch.mean(logits, axis=1)
 
-				elif self.args.pairwise:
+				elif hasattr(self.args, 'pairwise') and self.args.pairwise:
 					#Get the mean among the self.args.object_views**2 pairwise
 					logits = logits.reshape(features_ori_shape1,self.args.object_views**2)
 					logits = torch.mean(logits, axis=1)
