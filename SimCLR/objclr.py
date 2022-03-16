@@ -290,7 +290,7 @@ class ObjCLR(object):
 		catted_imgs = torch.cat(cat_by_category)
 		train_category_labels_tup.append(catted_imgs)
 
-		if self.pairwise:
+		if self.args.pairwise:
 			pairwise_indices_default = []
 			for i in range(self.args.object_views):
 			    for j in range(self.args.object_views):
@@ -311,7 +311,7 @@ class ObjCLR(object):
 			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
 			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
 
-			if self.pairwise:
+			if self.args.pairwise:
 				pairwise_indices = torch.cat([torch.tensor(pairwise_indices_default)]*test_len*train_len).numpy().tolist()
 
 			with autocast(enabled=self.args.fp16_precision):
@@ -378,12 +378,12 @@ class ObjCLR(object):
 				#Now sum across the 128 dimensions
 				logits = torch.sum(features, axis=0) #Shape is torch.Size([9*train_batch_size]) or torch.Size([9*train_batch_size*17])
 
-				if (just_average) and not(self.pairwise):
+				if (just_average) and not(self.args.pairwise):
 					#train_len == num_classes*train_batch_size
 					logits = logits.reshape(test_len*num_classes,train_batch_size) #The first tranin_batchsize are car_test, car_train(1,2,..,train_batch_size,), ...
 					logits = torch.mean(logits, axis=1)
 
-				elif self.pairwise:
+				elif self.args.pairwise:
 					#Get the mean among the self.args.object_views**2 pairwise
 					logits = logits.reshape(features_ori_shape0,self.args.object_views**2)
 					logits = torch.mean(logits, axis=1)
