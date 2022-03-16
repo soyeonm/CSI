@@ -365,9 +365,10 @@ class ObjCLR(object):
 				if not(self.args.pairwise):
 					features = torch.bmm(features, avg_matrix_128)
 				else:
+					features_ori_shape0 = features.shape[0]
 					features_ori_shape1 = features.shape[1]
 					features = features[:, :, pairwise_indices]
-					features = features.view(:, features_ori_shape1*(self.args.object_views**2),2)
+					features = features.view(features_ori_shape0, features_ori_shape1*(self.args.object_views**2),2)
 
 				#Take dot product
 				#Normalize across 128
