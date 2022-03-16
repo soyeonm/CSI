@@ -56,6 +56,7 @@ parser.add_argument('--load_head', action='store_true')
 parser.add_argument('--p_num', type=int, default=0)
 parser.add_argument('--train_with_dev_left', action='store_true')
 parser.add_argument('--inf_topk', type=int, default=1)
+parser.add_argument('--pairwise', action='store_true')
 
 
 

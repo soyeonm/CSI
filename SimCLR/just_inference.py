@@ -32,6 +32,8 @@ parser.add_argument('--eval_train_batch_size', type=int, default=10)
 parser.add_argument('--eval_test_batch_size', type=int, default=16)
 parser.add_argument('--object_views', type=int, default=4)
 parser.add_argument('--inf_topk', type=int, default=1)
+parser.add_argument('--pairwise', action='store_true')
+
 
 args = parser.parse_args()
 
