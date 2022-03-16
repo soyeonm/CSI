@@ -313,7 +313,7 @@ class ObjCLR(object):
 				#print("train shape ", features_train.shape)
 				features_test = features[train_len_with_multi_views:, :].clone() 
 				#print("test shape ", features_test.shape)
-				del features; del batch_imgs
+				del features
 
 				#Stack and concatenate
 				#Stack features_train first
