@@ -54,6 +54,7 @@ parser.add_argument('--crop_from', type=float, default=0.08)
 parser.add_argument('--mask_crop', action='store_true')
 parser.add_argument('--load_head', action='store_true')
 parser.add_argument('--p_num', type=int, default=0)
+parser.add_argument('--train_with_dev_left', action='store_true')
 
 
 
@@ -172,7 +173,7 @@ def main_objclr():
 		#pickle.dump(state_dict, open('state_dict.p', 'wb'))
 		model.load_state_dict(state_dict)
 	else:
-		model.load_state_dict(torch.load(args.simclr_pth_path)['resnet'], map_location=torch.device('cpu'))
+		model.load_state_dict(torch.load(args.simclr_pth_path, map_location=torch.device('cpu'))['resnet'])
 		model = get_contrastive_resnet(model, _)
 	
 	if args.ori_cifar_model:
