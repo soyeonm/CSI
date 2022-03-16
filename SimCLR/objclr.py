@@ -311,8 +311,8 @@ class ObjCLR(object):
 			train_len = int(train_len_with_multi_views/self.args.object_views); assert train_len * self.args.object_views == train_len_with_multi_views
 			test_len = int(test_len_with_multi_views/self.args.object_views); assert test_len * self.args.object_views == test_len_with_multi_views
 
-			if self.args.pairwise:
-				pairwise_indices = torch.cat([torch.tensor(pairwise_indices_default)]*test_len*train_len).numpy().tolist()
+			#if self.args.pairwise:
+			#	pairwise_indices = torch.cat([torch.tensor(pairwise_indices_default)]*test_len*train_len).numpy().tolist()
 
 			with autocast(enabled=self.args.fp16_precision):
 				features = self.model(batch_imgs)
@@ -329,8 +329,8 @@ class ObjCLR(object):
 				#assert int(train_len/self.args.object_views)*self.args.object_views == train_len
 				features_train = features_train.reshape(train_len, self.args.object_views, -1)
 				features_train = torch.cat([features_train]*test_len) #shape should be (len(test_images)*len(train object numbers), self.args.object_views, 128 )
-				if self.args.pairwise:
-					features_train = torch.cat([features_train]*self.args.object_views)
+				#if self.args.pairwise:
+				#	features_train = torch.cat([features_train]*self.args.object_views)
 
 				#SHOULD work from here
 				#Stack features_test
@@ -342,13 +342,10 @@ class ObjCLR(object):
 				assert features_test.shape[2] == self.args.out_dim
 				features_test = features_test.transpose(0,1) #(self.args.object_views, num_classes, 128)
 				features_test = torch.cat([features_test]*train_len) #(self.args.object_views*num_classes, num_classes, 128)
-				if self.args.pairwise:
-					features_test = torch.cat([features_test]*self.args.object_views)
+				#if self.args.pairwise:
+				#	features_test = torch.cat([features_test]*self.args.object_views)
 				features_test = features_test.transpose(0,1)
-				if not(self.args.pairwise):
-					features_test = features_test.reshape(test_len*train_len, self.args.object_views, -1) #shape is (num_classes**2*train_batch_size,, self.args.object_views, 128 ) WITH batch size 1
-				else:
-					features_test = features_test.reshape(test_len*train_len*self.args.object_views, self.args.object_views, -1)
+				features_test = features_test.reshape(test_len*train_len, self.args.object_views, -1)
 
 				#Do the same for test labels for later (for calculating accuracy)
 				#test_labels = torch.cat([test_labels.unsqueeze(0)] *num_classes, dim=1) 
@@ -368,7 +365,7 @@ class ObjCLR(object):
 					print("features shape: ", features.shape)
 					features_ori_shape0 = features.shape[0]
 					features_ori_shape1 = features.shape[1]
-					features = features[:, :, pairwise_indices]
+					features = features[:, :, pairwise_indices_default]
 					features = features.view(features_ori_shape0, features_ori_shape1*(self.args.object_views**2),2)
 
 				#Take dot product
