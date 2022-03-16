@@ -40,17 +40,24 @@ def get_max_logit_refactored_march10(logits, labels, num_classes, topk=1):
 	assert logits.shape[0] %num_classes ==0
 	assert logits.shape[0]/ num_classes == labels.shape[0]
 	max_logits = []
-	argmax_aligns = []
+	argmax_aligns_top5 = []
+	argmax_aligns_top3 = []
+	argmax_aligns_top2 = []
+	argmax_aligns_top1 = []
 	for i in range(int(logits.shape[0]/num_classes)):
 		#print("logit is ", logits[3*i:3*(i+1)])
 		max_logits.append(max(logits[num_classes*i:num_classes*(i+1)]))
-		if topk==1:
-			argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
-		else:
-			argmax_aligns.append(labels[i] in np.argsort(-logits[num_classes*i:num_classes*(i+1)])[:topk])
+		#if topk==1:
+		#	argmax_aligns.append(np.argmax(logits[num_classes*i:num_classes*(i+1)]) == labels[i])
+		#else:
+		sorted_logits = np.argsort(-logits[num_classes*i:num_classes*(i+1)])
+		argmax_aligns_top1.append(labels[i] in sorted_logits[:1])
+		argmax_aligns_top2.append(labels[i] in sorted_logits[:2])
+		argmax_aligns_top3.append(labels[i] in sorted_logits[:3])
+		argmax_aligns_top5.append(labels[i] in sorted_logits[:5])
 		#print("argmax for i: ", i, " is ", np.argmax(logits[3*i:3*(i+1)]))
 		#print("argmax aligns last element is ", argmax_aligns[-1])
-	return max_logits, argmax_aligns
+	return max_logits, argmax_aligns_top1, argmax_aligns_top2, argmax_aligns_top3, argmax_aligns_top5
 
 class ObjCLR(object):
 	def __init__(self, temperature=0.07, contrast_mode='all',
@@ -271,6 +278,9 @@ class ObjCLR(object):
 	def classify_inference(self, train_dataset, test_loader, f=None, just_average=True, train_batch_size=1):
 		print("Start Inference!")
 		class_alignment = []
+		class_alignment_2 = []
+		class_alignment_3 = []
+		class_alignment_5 = []
 
 		P_mat = get_perm_matrix_identity(self.args.object_views).to(self.args.device) #has shape 8x8 
 		P_mat_128 = torch.cat([P_mat.unsqueeze(0)]*128, axis=0).float()
@@ -391,11 +401,21 @@ class ObjCLR(object):
 				logits= logits.detach().cpu().numpy()
 
 				assert logits.shape[0] %num_classes ==0
-				max_logits, aligns =  get_max_logit_refactored_march10(logits, test_labels, num_classes, self.args.inf_topk)
-				class_alignment += aligns
+				max_logits, argmax_aligns_top1, argmax_aligns_top2, argmax_aligns_top3, argmax_aligns_top5 =  get_max_logit_refactored_march10(logits, test_labels, num_classes, self.args.inf_topk)
+				class_alignment += argmax_aligns_top1
+				class_alignment_2 += argmax_aligns_top2
+				class_alignment_3 += argmax_aligns_top3
+				class_alignment_5 += argmax_aligns_top5
 
-		print("class alignment is ", np.mean(class_alignment))
+		print("top 1 class alignment is ", np.mean(class_alignment))
+		print("top 2 class alignment is ", np.mean(class_alignment_2))
+		print("top 3 class alignment is ", np.mean(class_alignment_3))
+		print("top 5 class alignment is ", np.mean(class_alignment_5))
 		if not(f is None):
-			f.write("class alignment is " + str( np.mean(class_alignment)) + '\n')
+			#f.write("class alignment is " + str( np.mean(class_alignment)) + '\n')
+			f.write("top 1 class alignment is " +str(np.mean(class_alignment))+ '\n')
+			f.write("top 2 class alignment is "+str(np.mean(class_alignment_2))+ '\n')
+			f.write("top 3 class alignment is "+str(np.mean(class_alignment_3))+ '\n')
+			f.write("top 5 class alignment is "+str(np.mean(class_alignment_5))+ '\n')
 
 
