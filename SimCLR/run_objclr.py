@@ -174,7 +174,7 @@ def main_objclr():
 				raise Exception("Invalid key for simclr state dict!")
 		#pickle.dump(state_dict, open('state_dict.p', 'wb'))
 		model.load_state_dict(state_dict)
-	else:
+	elif args.load_pretrained:
 		model.load_state_dict(torch.load(args.simclr_pth_path, map_location=torch.device('cpu'))['resnet'])
 		model = get_contrastive_resnet(model, _)
 	
