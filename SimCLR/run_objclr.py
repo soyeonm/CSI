@@ -176,7 +176,7 @@ def main_objclr():
 		model.load_state_dict(state_dict)
 	elif args.load_pretrained:
 		model.load_state_dict(torch.load(args.simclr_pth_path, map_location=torch.device('cpu'))['resnet'])
-		model = get_contrastive_resnet(model, _)
+	model = get_contrastive_resnet(model, _)
 	
 	if args.ori_cifar_model:
 		del model
