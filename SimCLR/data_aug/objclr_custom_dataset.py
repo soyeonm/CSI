@@ -65,7 +65,7 @@ def get_simclr_pipeline_transform(size, s=1, resize_size=None, crop_from=0.08):
   return data_transforms
 
 class ObjDataset(Dataset):
-	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True, mask=False):
+	def __init__(self, root_dir, views, resize_shape= 32,transform=None, ood_classes=None, processed=True, mask=False, globs=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -84,12 +84,15 @@ class ObjDataset(Dataset):
 		
 		self.class2idx = {c.split('/')[-1]: i for i, c in enumerate(caegory_globs)}
 		#print("class2idx is ", self.class2idx)
-		globs = []
-		for c in caegory_globs:
-			if processed:
-				globs += glob(c + '/*.jpg') #For all the rest
-			else:
-				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
+		if not(globs is None):
+			globs = globs
+		else:
+			globs = []
+			for c in caegory_globs:
+				if processed:
+					globs += glob(c + '/*.jpg') #For all the rest
+				else:
+					globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
 		if processed:
 			jpgs = [g.split('/')[-1] for g in globs]
 		else:
@@ -200,7 +203,7 @@ class ObjDataset(Dataset):
 class ObjInferenceDataset(Dataset):
 	"""Face Landmarks dataset."""
 
-	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None, sample=None, mask=False):
+	def __init__(self, root_dir, views, resize_shape=32, shots=None, transform=None, ood_classes=None, processed=True, class_idx = None, sample=None, mask=False, globs=None):
 		"""
 		Args:
 			csv_file (string): Path to the csv file with annotations.
@@ -222,12 +225,15 @@ class ObjInferenceDataset(Dataset):
 		else:
 			self.class2idx = class_idx
 		#print("class2idx is ", self.class2idx)
-		globs = []
-		for c in caegory_globs:
-			if processed:
-				globs += glob(c + '/*.jpg') #For all the rest
-			else:
-				globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
+		if not(globs is None):
+			globs = globs
+		else:
+			globs = []
+			for c in caegory_globs:
+				if processed:
+					globs += glob(c + '/*.jpg') #For all the rest
+				else:
+					globs += glob(c + '/*/*/*.jpg') #For '/projects/rsalakhugroup/soyeonm/co3d/co3d_march_9_classify/train'
 		if processed:
 			jpgs = [g.split('/')[-1] for g in globs]
 		else:
@@ -294,8 +300,8 @@ class ObjInferenceDataset(Dataset):
 		self.object_dict = {i: self.object_dict_p[v] for i, v in self.object_dict.items()} 
 		#self.object_class_dict = {i: self.object_class_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))}
 		#self.object_dict = {i: self.object_dict_p[k] for i, k in enumerate(list(self.object_dict_p.keys()))} #object id to jpg paths
-		pickle.dump(self.object_class_dict, open("temp_pickles/new_object_class_dict.p", "wb"))
-		pickle.dump(self.object_dict, open("temp_pickles/new_object_dict.p", "wb"))
+		#pickle.dump(self.object_class_dict, open("temp_pickles/new_object_class_dict.p", "wb"))
+		#pickle.dump(self.object_dict, open("temp_pickles/new_object_dict.p", "wb"))
 		
 		self.views = views
 		self.transform = transform
