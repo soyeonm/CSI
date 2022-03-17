@@ -182,7 +182,7 @@ def main_objclr():
 	
 	if args.ori_cifar_model:
 		del model
-		model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
+		model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim) 
 		if args.load_pretrained:
 			checkpoint = torch.load('../simclr_embeddings/CIFAR10_resnet18/checkpoint_0100.pth.tar', map_location=torch.device('cpu'))
 			state_dict = checkpoint['state_dict']
