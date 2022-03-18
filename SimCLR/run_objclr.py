@@ -142,6 +142,7 @@ def main_objclr():
 	#Add transform later
 	start = time.time()
 
+	train_glob = None; test_glob= None
 	if args.train_glob:
 		train_glob = pickle.load(open('train_glob.p', 'rb'))
 	if args.test_glob:
