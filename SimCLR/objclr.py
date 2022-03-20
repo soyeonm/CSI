@@ -88,7 +88,7 @@ class ObjCLR(object):
 			features = features.view(features.shape[0], features.shape[1], -1)
 
 		#####################Multigpu
-		if multi_gpu:
+		if self.args.multi_gpu:
 			features_gathered = []
 			for out in features.chunk(chunk):
 				gather_t = [torch.empty_like(out) for _ in range(dist.get_world_size())]
@@ -98,7 +98,7 @@ class ObjCLR(object):
 			print("shape of features is ", features.shape)
 
 		#What do I do about this?
-		if multi_gpu and not(labels is None):	
+		if self.args.multi_gpu and not(labels is None):	
 			gather_t = [torch.empty_like(labels) for _ in range(dist.get_world_size())]
 			labels = torch.cat(distops.all_gather(gather_t, labels))
 		# Then what do I do about masks? -> automatically done
