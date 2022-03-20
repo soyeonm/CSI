@@ -279,7 +279,7 @@ class ObjCLR(object):
 
 	#use permclr datasets for train_datasets, test_loader
 	#trin_datasets have transform "None"
-	def classify_inference(self, train_dataset, test_loader, f=None, just_average=True, train_batch_size=1):
+	def classify_inference(self, train_dataset, test_loader, f=None, just_average=True, train_batch_size=1, output=False):
 		print("Start Inference!")
 		class_alignment = []
 		class_alignment_2 = []
@@ -421,5 +421,8 @@ class ObjCLR(object):
 			f.write("top 2 class alignment is "+str(np.mean(class_alignment_2))+ '\n')
 			f.write("top 3 class alignment is "+str(np.mean(class_alignment_3))+ '\n')
 			f.write("top 5 class alignment is "+str(np.mean(class_alignment_5))+ '\n')
+
+		if output:
+			return np.mean(class_alignment), np.mean(class_alignment_2), np.mean(class_alignment_3), np.mean(class_alignment_5)
 
 

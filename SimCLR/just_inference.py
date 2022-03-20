@@ -33,7 +33,8 @@ parser.add_argument('--eval_test_batch_size', type=int, default=16)
 parser.add_argument('--object_views', type=int, default=4)
 parser.add_argument('--inf_topk', type=int, default=1)
 parser.add_argument('--pairwise', action='store_true')
-
+parser.add_argument('--repeat', type=int, default=1)
+parser.add_argument('--save_dir', type=str, required=True)
 
 args = parser.parse_args()
 
@@ -87,19 +88,29 @@ if args.sanity:
 else:
 	processed_test = True
 
+top1s = []
+top2s = []
+top3s = []
+top5s = []
+for rep in range(args.repeat):
+	permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
+	train_class_idx = permclr_train_dataset.class2idx
 
-permclr_train_dataset = ObjInferenceDataset(train_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=args.eval_train_batch_size,  transform=None, processed=processed)
-train_class_idx = permclr_train_dataset.class2idx
+	test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, class_idx=train_class_idx, sample=sample, processed=processed_test)
 
-test_dataset = ObjInferenceDataset(test_root_dir, args.object_views, resize_shape= args.resize_co3d, shots=None,  transform=None, class_idx=train_class_idx, sample=sample, processed=processed_test)
+	test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
 
-test_data_loader = MultiEpochsDataLoader(test_dataset, batch_size=args.eval_test_batch_size, num_workers=args.inf_workers, pin_memory=False, shuffle=False, persistent_workers=True)
+	args.ood = False
+	objclr = ObjCLR(model=model, optimizer=None, scheduler=None, args=args)
+	with torch.no_grad():
+		top1, top2, top3, top5 = objclr.classify_inference(permclr_train_dataset, test_data_loader, f=None, just_average=True, train_batch_size=args.eval_train_batch_size)
+		top1s.append(top1)
+		top2s.append(top2)
+		top3s.append(top3)
+		top5s.append(top5)
 
-args.ood = False
-objclr = ObjCLR(model=model, optimizer=None, scheduler=None, args=args)
-with torch.no_grad():
-	objclr.classify_inference(permclr_train_dataset, test_data_loader, f=None, just_average=True, train_batch_size=args.eval_train_batch_size)
-
+result_dict = {'top1': top1s, 'top2': top2s, 'top3':top3s, 'top5':top5s}
+pickle.dump(result_dict, open( save_dir+ '_inf.p', 'wb'))
 
 
 
